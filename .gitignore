@@ -1,0 +1,47 @@
+# Spring Boot / Maven
+go-waqaf-backend/target/
+go-waqaf-backend/.mvn/wrapper/maven-wrapper.jar
+!go-waqaf-backend/src/main/**/target/
+!go-waqaf-backend/src/test/**/target/
+
+# Spring Boot local configuration
+go-waqaf-backend/src/main/resources/application-local.properties
+# application-docker.properties is intentionally NOT ignored
+
+### STS ###
+go-waqaf-backend/.apt_generated
+go-waqaf-backend/.classpath
+go-waqaf-backend/.factorypath
+go-waqaf-backend/.project
+go-waqaf-backend/.settings
+go-waqaf-backend/.springBeans
+go-waqaf-backend/.sts4-cache
+
+### IntelliJ IDEA ###
+go-waqaf-backend/.idea
+go-waqaf-backend/*.iws
+go-waqaf-backend/*.iml
+go-waqaf-backend/*.ipr
+
+### NetBeans ###
+go-waqaf-backend/nbproject/private/
+go-waqaf-backend/nbbuild/
+go-waqaf-backend/dist/
+go-waqaf-backend/nbdist/
+go-waqaf-backend/.nb-gradle/
+
+### Build ###
+go-waqaf-backend/build/
+!go-waqaf-backend/src/main/**/build/
+!go-waqaf-backend/src/test/**/build/
+
+### VS Code ###
+go-waqaf-backend/.vscode/
+
+### Environment / secrets ###
+.env
+**/.env
+
+### OS ###
+.DS_Store
+Thumbs.db

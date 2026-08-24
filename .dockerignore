@@ -1,0 +1,24 @@
+# Backend
+
+## Git
+gowaqaf-backend/.gitignore
+gowaqaf-backend/.gitattributes
+
+# Local Spring configuration
+gowaqaf-backend/src/main/resources/application-local.properties
+gowaqaf-backend/src/main/resources/static/*
+!gowaqaf-backend/src/main/resources/static/.gitkeep
+
+# Build output
+gowaqaf-backend/target
+
+# Eclipse / STS
+gowaqaf-backend/.metadata/
+gowaqaf-backend/.settings/
+gowaqaf-backend/.classpath
+gowaqaf-backend/.project
+gowaqaf-backend/HELP.md
+
+
+# Logs
+gowaqaf-backend/*.log

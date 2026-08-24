@@ -1,0 +1,52 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: gowaqaf-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: gowaqaf
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - gw_db_data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: gowaqaf-storage
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      LOCALSTACK_AUTH_TOKEN: ls-rEvUqEtA-JObu-6550-GurE-fUtEbOko6344
+    volumes:
+      - gw_localstack_data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gowaqaf-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_started
+      localstack:
+        condition: service_healthy
+
+volumes:
+  gw_db_data:
+  gw_localstack_data:
