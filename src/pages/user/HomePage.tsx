@@ -40,11 +40,7 @@ export const HomePage: React.FC = () => {
             <span className="font-bold text-[22px] tracking-tight">Waqaf Taqwa</span>
           </div>
           <div className="w-9 h-9 rounded-full border-2 border-white/80 overflow-hidden shadow-sm flex-shrink-0">
-            <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"
-              alt="Profil"
-              className="w-full h-full object-cover"
-            />
+            <img/>
           </div>
         </header>
 
