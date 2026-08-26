@@ -15,6 +15,7 @@ import { AutoWaqafPage } from './pages/user/AutoWaqafPage';
 import { TransactionHistoryPage } from './pages/user/TransactionHistoryPage';
 import { ReceiptPage } from './pages/user/ReceiptPage';
 import { ProfilePage } from './pages/user/ProfilePage';
+import { VendorPosPage } from './pages/user/VendorPosPage';
 
 // Admin Pages
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -22,6 +23,7 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminCampaignsPage } from './pages/admin/AdminCampaignsPage';
 import { AdminVendorsPage } from './pages/admin/AdminVendorsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+
 
 export const App: React.FC = () => {
   return (
@@ -109,6 +111,14 @@ export const App: React.FC = () => {
           </AppLayout>
         }
       />
+      <Route
+  path="/pos"
+  element={
+    <AppLayout>
+      <VendorPosPage />
+    </AppLayout>
+  }
+/>
 
       {/* Admin Subsystem Routes */}
       <Route

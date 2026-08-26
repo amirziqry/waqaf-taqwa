@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
     if (role === 'member') endpoint = '/member/auth/login';
 
     try {
-      const response = await api.post(endpoint, { username, password });
+      await api.post(endpoint, { username, password });
       
       // Store current user metadata locally
       // Inside handleLogin on LoginPage.tsx:

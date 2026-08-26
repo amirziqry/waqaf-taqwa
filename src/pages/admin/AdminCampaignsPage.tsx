@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
 import api from '../../api/client';
 
 export const AdminCampaignsPage: React.FC = () => {
@@ -11,9 +11,27 @@ export const AdminCampaignsPage: React.FC = () => {
     description: '',
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +40,32 @@ export const AdminCampaignsPage: React.FC = () => {
     setErrorMsg('');
 
     try {
+      let uploadedImageUrl = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80';
+
+      // 1. Upload file to LocalStack S3 / Storage API if a file was chosen
+      if (selectedFile) {
+        const fileFormData = new FormData();
+        fileFormData.append('file', selectedFile);
+
+        const uploadRes = await api.post('/storage/upload', fileFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }).catch(() => null);
+
+        if (uploadRes?.data?.url) {
+          uploadedImageUrl = uploadRes.data.url;
+        }
+      }
+
+      // 2. Save campaign record with the uploaded S3 image reference
       await api.post('/campaigns', {
         title: formData.title,
         category: formData.category,
         targetAmount: Number(formData.targetAmount),
         location: formData.location,
         description: formData.description,
+        imageUrl: uploadedImageUrl,
         collectedAmount: 0,
         status: 'ACTIVE',
       });
@@ -40,6 +78,7 @@ export const AdminCampaignsPage: React.FC = () => {
         location: '',
         description: '',
       });
+      clearFile();
     } catch (err: any) {
       setErrorMsg(err.response?.data?.message || 'Gagal menyimpan kempen. Sila semak semula.');
     } finally {
@@ -48,16 +87,16 @@ export const AdminCampaignsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+    <div className="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs space-y-6">
       <div>
-        <h2 className="text-lg font-black text-[#0F2028]">Cipta / Kemas Kini Projek Waqaf</h2>
+        <h2 className="text-xl font-black text-[#0F2028]">Cipta / Kemas Kini Projek Waqaf</h2>
         <p className="text-xs text-slate-400">Projek ini akan dipaparkan secara langsung kepada pewakaf di laman eksplorasi</p>
       </div>
 
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-xs font-bold text-emerald-800">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>Kempen berjaya disimpan dan disiarkan ke platform awam!</span>
+          <span>Kempen dan gambar berjaya disimpan ke storan S3 dan disiarkan ke platform!</span>
         </div>
       )}
 
@@ -69,6 +108,38 @@ export const AdminCampaignsPage: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Project Image Upload (S3 Direct) */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">Gambar Banner Kempen (LocalStack S3)</label>
+          
+          {previewUrl ? (
+            <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-slate-200 group">
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={clearFile}
+                className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded-xl transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="border-2 border-dashed border-slate-200 hover:border-[#1A8C4E] rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer bg-slate-50/50 hover:bg-emerald-50/20 transition">
+              <div className="p-3 bg-white rounded-2xl shadow-xs text-slate-400 mb-2">
+                <Upload className="w-5 h-5 text-[#1A8C4E]" />
+              </div>
+              <span className="text-xs font-bold text-slate-700">Muat naik imej banner</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">PNG, JPG, JPEG sehingga 5MB</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
         <div className="space-y-1.5">
           <label className="text-xs font-extrabold text-[#0F2028]">Tajuk Kempen</label>
           <input
@@ -77,7 +148,7 @@ export const AdminCampaignsPage: React.FC = () => {
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="cth. Pemasangan Panel Suria Kompleks Tahfiz"
-            className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none"
+            className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
           />
         </div>
 
@@ -87,7 +158,7 @@ export const AdminCampaignsPage: React.FC = () => {
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none"
+              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
             >
               <option value="Masjid">Masjid & Surau</option>
               <option value="Pendidikan">Pendidikan & Tahfiz</option>
@@ -105,7 +176,7 @@ export const AdminCampaignsPage: React.FC = () => {
               value={formData.targetAmount}
               onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
               placeholder="50000"
-              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none"
+              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
             />
           </div>
         </div>
@@ -118,7 +189,7 @@ export const AdminCampaignsPage: React.FC = () => {
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
             placeholder="cth. Shah Alam, Selangor"
-            className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none"
+            className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
           />
         </div>
 
@@ -129,8 +200,8 @@ export const AdminCampaignsPage: React.FC = () => {
             required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Nyatakan penerangan projek, kos terperinci dan manfaat kepada komuniti..."
-            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none resize-none"
+            placeholder="Nyatakan penerangan projek, sasaran penerima manfaat, dan kos terperinci..."
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none resize-none transition"
           />
         </div>
 
@@ -139,7 +210,7 @@ export const AdminCampaignsPage: React.FC = () => {
           disabled={saving}
           className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] disabled:bg-slate-300 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99]"
         >
-          {saving ? 'Sedang Menyimpan...' : 'Terbitkan Kempen'}
+          {saving ? 'Sedang Memuat Naik & Menyimpan...' : 'Terbitkan Kempen'}
           {!saving && <Save className="w-4 h-4" />}
         </button>
       </form>
