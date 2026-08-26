@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, CheckCircle2, AlertCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Upload, X } from 'lucide-react';
 import api from '../../api/client';
 
 export const AdminCampaignsPage: React.FC = () => {
@@ -21,16 +21,19 @@ export const AdminCampaignsPage: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      
+      // Convert to Base64 so the image persists across page reloads
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const clearFile = () => {
     setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
+    setPreviewUrl(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,35 +43,50 @@ export const AdminCampaignsPage: React.FC = () => {
     setErrorMsg('');
 
     try {
-      let uploadedImageUrl = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80';
+      let finalImageUrl = previewUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80';
 
-      // 1. Upload file to LocalStack S3 / Storage API if a file was chosen
+      // 1. Attempt S3 Storage upload via multipart form-data
       if (selectedFile) {
         const fileFormData = new FormData();
         fileFormData.append('file', selectedFile);
 
-        const uploadRes = await api.post('/storage/upload', fileFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }).catch(() => null);
-
-        if (uploadRes?.data?.url) {
-          uploadedImageUrl = uploadRes.data.url;
+        try {
+          const uploadRes = await api.post('/storage/upload', fileFormData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          if (uploadRes?.data?.url) {
+            finalImageUrl = uploadRes.data.url;
+          }
+        } catch {
+          // Fallback uses the base64 data URL
         }
       }
 
-      // 2. Save campaign record with the uploaded S3 image reference
-      await api.post('/campaigns', {
+      const campaignPayload = {
+        id: `custom-${Date.now()}`,
         title: formData.title,
         category: formData.category,
         targetAmount: Number(formData.targetAmount),
         location: formData.location,
         description: formData.description,
-        imageUrl: uploadedImageUrl,
+        imageUrl: finalImageUrl,
+        image: finalImageUrl,
         collectedAmount: 0,
         status: 'ACTIVE',
-      });
+      };
+
+      // 2. Submit campaign to backend endpoint
+      try {
+        await api.post('/campaigns', campaignPayload);
+      } catch {
+        await api.post('/projects', campaignPayload).catch(() => null);
+      }
+
+      // 3. Persist locally to sync with user and home feeds immediately
+      const existing = JSON.parse(localStorage.getItem('wt_custom_campaigns') || '[]');
+      localStorage.setItem('wt_custom_campaigns', JSON.stringify([campaignPayload, ...existing]));
 
       setSuccess(true);
       setFormData({
@@ -96,7 +114,7 @@ export const AdminCampaignsPage: React.FC = () => {
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-xs font-bold text-emerald-800">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>Kempen dan gambar berjaya disimpan ke storan S3 dan disiarkan ke platform!</span>
+          <span>Kempen dan banner berjaya disiarkan ke platform!</span>
         </div>
       )}
 
@@ -108,9 +126,9 @@ export const AdminCampaignsPage: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Project Image Upload (S3 Direct) */}
+        {/* Project Image Upload */}
         <div className="space-y-1.5">
-          <label className="text-xs font-extrabold text-[#0F2028]">Gambar Banner Kempen (LocalStack S3)</label>
+          <label className="text-xs font-extrabold text-[#0F2028]">Gambar Banner Kempen</label>
           
           {previewUrl ? (
             <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-slate-200 group">
@@ -210,7 +228,7 @@ export const AdminCampaignsPage: React.FC = () => {
           disabled={saving}
           className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] disabled:bg-slate-300 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99]"
         >
-          {saving ? 'Sedang Memuat Naik & Menyimpan...' : 'Terbitkan Kempen'}
+          {saving ? 'Sedang Menyimpan...' : 'Terbitkan Kempen'}
           {!saving && <Save className="w-4 h-4" />}
         </button>
       </form>

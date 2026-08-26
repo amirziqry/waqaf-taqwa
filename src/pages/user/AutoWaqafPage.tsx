@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Calendar, CheckCircle2, Clock, Zap, ArrowLeft, RefreshCw } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, Clock, ArrowLeft, RefreshCw } from 'lucide-react';
 import api from '../../api/client';
 
 export const AutoWaqafPage: React.FC = () => {

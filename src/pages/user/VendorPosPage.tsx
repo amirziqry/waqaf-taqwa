@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { QrCode, Store, CheckCircle2, RotateCcw, ShieldCheck, Printer, ArrowRight } from 'lucide-react';
+import { QrCode, Store, CheckCircle2, RotateCcw, ArrowRight } from 'lucide-react';
 
 export const VendorPosPage: React.FC = () => {
   const [billAmount, setBillAmount] = useState<string>('');
   const [roundUpWaqaf, setRoundUpWaqaf] = useState<number>(0);
   const [step, setStep] = useState<'INPUT' | 'QR_TERMINAL' | 'COMPLETED'>('INPUT');
-  const [qrPayload, setQrPayload] = useState<string>('');
+  const [, setQrPayload] = useState<string>('');
 
   const handleCalculateWaqaf = (e: React.FormEvent) => {
     e.preventDefault();

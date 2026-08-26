@@ -63,12 +63,24 @@ export const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (campaigns.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % campaigns.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [campaigns.length]);
+  // Load custom admin-created campaigns from local storage
+  const customCampaigns: CampaignItem[] = JSON.parse(
+    localStorage.getItem('wt_custom_campaigns') || '[]'
+  );
+
+  api.get('/campaigns')
+    .then((res) => {
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        const combined = [...customCampaigns, ...res.data];
+        setCampaigns(combined);
+      } else {
+        setCampaigns([...customCampaigns, ...DEFAULT_SLIDES]);
+      }
+    })
+    .catch(() => {
+      setCampaigns([...customCampaigns, ...DEFAULT_SLIDES]);
+    });
+}, []);
 
   const reachedCount = campaigns.filter(c => (c.collectedAmount || 0) >= (c.targetAmount || 1)).length;
   const inProgressCount = campaigns.filter(c => (c.collectedAmount || 0) < (c.targetAmount || 1) && c.status !== 'INACTIVE').length;

@@ -44,18 +44,27 @@ export const ProjectsExplorePage: React.FC = () => {
   const [, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    api.get('/campaigns')
-      .then((res) => {
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          setCampaigns(res.data);
-        }
-      })
-      .catch(() => {
-        // Keeps fallback mock data if backend route is not returning entries yet
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  setLoading(true);
+  
+  // Load custom admin-created campaigns from local storage
+  const customCampaigns: CampaignItem[] = JSON.parse(
+    localStorage.getItem('wt_custom_campaigns') || '[]'
+  );
+
+  api.get('/campaigns')
+    .then((res) => {
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        // Merge API campaigns with custom campaigns (custom on top)
+        setCampaigns([...customCampaigns, ...res.data]);
+      } else {
+        setCampaigns([...customCampaigns, ...FALLBACK_PROJECTS]);
+      }
+    })
+    .catch(() => {
+      setCampaigns([...customCampaigns, ...FALLBACK_PROJECTS]);
+    })
+    .finally(() => setLoading(false));
+}, []);
 
   // Filter by Category and Search Query
   const filteredProjects = campaigns.filter((item) => {
