@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Store, Shield, Lock, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { User, Store, Shield, Lock, Mail, ArrowRight, } from 'lucide-react';
 import api from '../../api/client';
 
 export const SignUpPage: React.FC = () => {
@@ -82,7 +82,7 @@ export const SignUpPage: React.FC = () => {
             }`}
           >
             <Shield className="w-4 h-4 mx-auto mb-1 text-[#1A8C4E]" />
-            <h4 className="font-extrabold text-[11px] text-[#0F2028]">Pentadbir</h4>
+            <h4 className="font-extrabold text-[11px] text-[#0F2028]">Admin</h4>
           </div>
         </div>
       </div>

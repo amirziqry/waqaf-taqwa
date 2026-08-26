@@ -27,8 +27,9 @@ export const LoginPage: React.FC = () => {
       const response = await api.post(endpoint, { username, password });
       
       // Store current user metadata locally
-      localStorage.setItem('wt_user_role', role);
-      localStorage.setItem('wt_user_name', response.data.username || username);
+      // Inside handleLogin on LoginPage.tsx:
+        localStorage.setItem('wt_user_role', role);
+        localStorage.setItem('wt_user_name', username); // <--- saves your actual username  
       
       if (role === 'member') {
         navigate('/admin');
@@ -77,7 +78,7 @@ export const LoginPage: React.FC = () => {
             role === 'member' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Shield className="w-3.5 h-3.5" /> Pentadbir
+          <Shield className="w-3.5 h-3.5" /> Admin
         </button>
       </div>
 
