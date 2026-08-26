@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
 import com.taqwa.gowaqaf.storage.dto.UploadUrl;
@@ -65,7 +65,7 @@ public class OrganizationProfileFlowTest {
 	}
 
 	@Test
-	@WithMockMember(username = "mock_member", roles = { "EDITOR" })
+	@WithMockAdmin(username = "mock_member", roles = { "EDITOR" })
 	void uploadAndGetProfileTest() throws Exception {
 		String profileUpdateRequest = """
 				{

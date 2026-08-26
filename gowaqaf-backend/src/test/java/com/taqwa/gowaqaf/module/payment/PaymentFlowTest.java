@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.PaymentStatus;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
 import com.taqwa.gowaqaf.payment.dto.PaymentUrlResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class PaymentFlowTest {
 	}
 
 	@Test
-	@WithMockMember(username = "member1", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member1", roles = { "ADMIN" })
 	void donatorPaymentFlowTest() throws Exception {
 
 		String requestJson = """

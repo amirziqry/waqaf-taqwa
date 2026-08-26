@@ -31,7 +31,7 @@ public class CampaignController {
 	private final CampaignService campaignService;
 
 	@PostMapping("/create")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<CampaignUploadResponse> createCampaign(@RequestBody CampaignUploadRequest request) {
 		CampaignUploadResponse response = campaignService.createCampaign(request);
 
@@ -39,7 +39,7 @@ public class CampaignController {
 	}
 
 	@PutMapping("/{id}/update")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<CampaignUploadResponse> updateCampaignById(@PathVariable UUID id,
 			@RequestBody CampaignUploadRequest request) {
 		CampaignUploadResponse response = campaignService.updateCampaignById(id, request);
@@ -48,7 +48,7 @@ public class CampaignController {
 	}
 
 	@PutMapping("/{id}/image-keys/upload")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateCampaignImageKeysById(@PathVariable UUID id,
 			@RequestBody List<CampaignImageKey> request) {
 		campaignService.updateCampaignImageKeysById(id, request);
@@ -71,7 +71,7 @@ public class CampaignController {
 	}
 
 	@DeleteMapping("/{id}/delete")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> deleteCampaignById(@PathVariable UUID id) {
 		campaignService.deleteCampaignById(id);
 

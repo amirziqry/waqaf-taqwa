@@ -31,7 +31,7 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@PostMapping("/create")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ProjectUploadResponse> createProject(@RequestBody ProjectUploadRequest dto) {
 		ProjectUploadResponse response = projectService.createProject(dto);
 
@@ -39,7 +39,7 @@ public class ProjectController {
 	}
 
 	@PutMapping("/{id}/update")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ProjectUploadResponse> updateProjectById(@PathVariable UUID id,
 			@RequestBody ProjectUploadRequest dto) {
 		ProjectUploadResponse response = projectService.updateProjectById(id, dto);
@@ -48,7 +48,7 @@ public class ProjectController {
 	}
 
 	@PutMapping("/{id}/image-keys/upload")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateProjectImageKeysById(@PathVariable UUID id,
 			@RequestBody List<ProjectImageKey> request) {
 		projectService.updateProjectImageKeysById(id, request);
@@ -71,7 +71,7 @@ public class ProjectController {
 	}
 
 	@DeleteMapping("/{id}/delete")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> deleteProjectById(@PathVariable UUID id) {
 		projectService.deleteProjectById(id);
 

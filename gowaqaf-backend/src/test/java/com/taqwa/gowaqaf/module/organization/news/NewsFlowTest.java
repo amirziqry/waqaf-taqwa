@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.news.component.category.NewsCategory;
 import com.taqwa.gowaqaf.modules.organization.news.component.category.NewsCategoryRepository;
 import com.taqwa.gowaqaf.modules.organization.news.component.image.dto.NewsImageKey;
@@ -96,7 +96,7 @@ public class NewsFlowTest {
 	}
 
 	@Test
-	@WithMockMember(username = "member", roles = { "EDITOR" })
+	@WithMockAdmin(username = "member", roles = { "EDITOR" })
 	void creatAndGetNewsTest() throws Exception {
 
 		String request = """

@@ -6,27 +6,27 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 
-import com.taqwa.gowaqaf.security.donator.authentication.DonatorAuthenticationProvider;
-import com.taqwa.gowaqaf.security.member.authentication.MemberAuthenticationProvider;
-import com.taqwa.gowaqaf.security.vendor.authentication.VendorAuthenticationProvider;
+import com.taqwa.gowaqaf.security.user.admin.authentication.AdminAuthenticationProvider;
+import com.taqwa.gowaqaf.security.user.merchant.authentication.MerchantAuthenticationProvider;
+import com.taqwa.gowaqaf.security.user.personal.authentication.PersonalAuthenticationProvider;
 
 @Configuration
 public class AuthenticationConfig {
 
-	@Bean("donatorAuthenticationManager")
+	@Bean("personalAuthenticationManager")
 	@Primary
-	AuthenticationManager donatorAuthenticationManager(DonatorAuthenticationProvider donatorAuthenticationProvider) {
-		return new ProviderManager(donatorAuthenticationProvider);
+	AuthenticationManager personalAuthenticationManager(PersonalAuthenticationProvider personalAuthenticationProvider) {
+		return new ProviderManager(personalAuthenticationProvider);
 	}
 
-	@Bean("vendorAuthenticationManager")
-	AuthenticationManager vendorAuthenticationManager(VendorAuthenticationProvider vendorAuthenticationProvider) {
-		return new ProviderManager(vendorAuthenticationProvider);
+	@Bean("merchantAuthenticationManager")
+	AuthenticationManager merchantAuthenticationManager(MerchantAuthenticationProvider merchantAuthenticationProvider) {
+		return new ProviderManager(merchantAuthenticationProvider);
 	}
 
-	@Bean("memberAuthenticationManager")
-	AuthenticationManager memberAuthenticationManager(MemberAuthenticationProvider memberAuthenticationProvider) {
-		return new ProviderManager(memberAuthenticationProvider);
+	@Bean("adminAuthenticationManager")
+	AuthenticationManager adminAuthenticationManager(AdminAuthenticationProvider adminAuthenticationProvider) {
+		return new ProviderManager(adminAuthenticationProvider);
 	}
 
 }

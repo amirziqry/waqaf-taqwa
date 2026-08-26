@@ -31,7 +31,7 @@ public class NewsController {
 	private final NewsService newsService;
 
 	@PostMapping("/create")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<NewsUploadResponse> createNews(@RequestBody NewsUploadRequest request) {
 		NewsUploadResponse response = newsService.createNews(request);
 
@@ -39,7 +39,7 @@ public class NewsController {
 	}
 
 	@PutMapping("/{id}/update")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<NewsUploadResponse> updateNewsById(@PathVariable UUID id,
 			@RequestBody NewsUploadRequest request) {
 		NewsUploadResponse response = newsService.updateNewsById(id, request);
@@ -48,7 +48,7 @@ public class NewsController {
 	}
 
 	@PutMapping("/{id}/images/upload")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateNewsImageKeysById(@PathVariable UUID id, @RequestBody List<NewsImageKey> request) {
 		newsService.uploadNewsImageKeysById(id, request);
 
@@ -70,7 +70,7 @@ public class NewsController {
 	}
 
 	@DeleteMapping("/{id}/delete")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> deleteNewsById(@PathVariable UUID id) {
 		newsService.deleteNewsById(id);
 

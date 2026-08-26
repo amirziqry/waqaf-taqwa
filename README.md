@@ -64,13 +64,13 @@ export default api;
 
 # REST API Endpoints
 
-## Member
+## Admin (Org User Account)
 
-### Member — Register Editor
+### Admin — Register Editor
 
 ```javascript
 const response = await api.post(
-    "/member/register-editor",
+    "/admin/register-editor",
     requestBody
 );
 
@@ -87,11 +87,11 @@ const frontend.object = {
 };
 ```
 
-### Member — Register Admin
+### Admin — Register Admin
 
 ```javascript
 const response = await api.post(
-    "/member/register-admin",
+    "/admin/register-admin",
     requestBody
 );
 
@@ -108,11 +108,11 @@ const frontend.object = {
 };
 ```
 
-### Member — Get By Username
+### Admin — Get By Username
 
 ```javascript
 const response = await api.get(
-    `/member/get/${frontend.username}`
+    `/admin/get/${frontend.username}`
 );
 
 const frontend.object = {
@@ -123,11 +123,11 @@ const frontend.object = {
 };
 ```
 
-### Member — Get All
+### Admin — Get All
 
 ```javascript
 const response = await api.get(
-    "/member/get/all"
+    "/admin/get/all"
 );
 
 const frontend.list = response.data.map(object => ({
@@ -138,11 +138,11 @@ const frontend.list = response.data.map(object => ({
 }));
 ```
 
-### Member — Update Role
+### Admin — Update Role
 
 ```javascript
 const response = await api.patch(
-    `/member/update/${frontend.username}/role`,
+    `/admin/update/${frontend.username}/role`,
     requestBody
 );
 
@@ -151,19 +151,19 @@ const requestBody = {
 };
 ```
 
-### Member — Delete
+### Admin — Delete
 
 ```javascript
 const response = await api.delete(
-    `/member/delete/${frontend.username}`
+    `/admin/delete/${frontend.username}`
 );
 ```
 
-### Member — Login
+### Admin — Login
 
 ```javascript
 const response = await api.post(
-    "/member/login",
+    "/admin/login",
     requestBody
 );
 
@@ -179,21 +179,21 @@ const frontend.object = {
 };
 ```
 
-### Member — Get Current User Authentication Status
+### Admin — Get Current User Authentication Status
 
 ```javascript
 const response = await api.get(
-    "/member/me"
+    "/admin/me"
 );
 ```
 
-## Vendor
+## Merchant (Vendor Account)
 
-### Vendor — Register
+### Merchant — Register
 
 ```javascript
 const response = await api.post(
-    "/vendor/register",
+    "/merchant/register",
     requestBody
 );
 
@@ -209,11 +209,11 @@ const frontend.object = {
 };
 ```
 
-### Vendor — Login
+### Merchant — Login
 
 ```javascript
 const response = await api.post(
-    "/vendor/auth/login",
+    "/merchant/auth/login",
     requestBody
 );
 
@@ -228,19 +228,19 @@ const frontend.object = {
 };
 ```
 
-### Vendor — Get Current User Auth Status
+### Merchant — Get Current User Auth Status
 
 ```javascript
 const response = await api.get(
-    "/vendor/auth/me"
+    "/merchant/auth/me"
 );
 ```
 
-### Vendor — Get Donation Sum (Placeholder)
+### Merchant — Get Donation Sum (Placeholder)
 
 ```javascript
 const response = await api.get(
-    "/vendor/donation/sum"
+    "/merchant/donation/sum"
 );
 
 const frontend.object = {
@@ -248,13 +248,13 @@ const frontend.object = {
 };
 ```
 
-## Donator
+## Personal (Donor Account)
 
-### Donator — Register
+### Personal — Register
 
 ```javascript
 const response = await api.post(
-    "/donator/register",
+    "/personal/register",
     requestBody
 );
 
@@ -270,11 +270,11 @@ const frontend.object = {
 };
 ```
 
-### Donator — Login
+### Personal — Login
 
 ```javascript
 const response = await api.post(
-    "/donator/auth/login",
+    "/personal/auth/login",
     requestBody
 );
 
@@ -289,19 +289,19 @@ const frontend.object = {
 };
 ```
 
-### Donator — Get Current User Auth Status
+### Personal — Get Current User Auth Status
 
 ```javascript
 const response = await api.get(
-    "/donator/auth/me"
+    "/personal/auth/me"
 );
 ```
 
-### Donator — Request Payment Gateway URL (Placeholder)
+### Personal — Request Payment Gateway URL (Placeholder)
 
 ```javascript
 const response = await api.post(
-    "/donator/donation/payment/request-gateway-url",
+    "/personal/donation/payment/request-gateway-url",
     requestBody
 );
 
@@ -317,11 +317,11 @@ const frontend.object = {
 };
 ```
 
-### Donator — Get Donation Sum (Placeholder)
+### Personal — Get Donation Sum (Placeholder)
 
 ```javascript
 const response = await api.get(
-    "/donator/donation/sum"
+    "/personal/donation/sum"
 );
 
 const frontend.object = {
@@ -334,13 +334,21 @@ const frontend.object = {
 ### Organization — Get Donation Summary (Placeholder)
 
 ```javascript
+const filter = {
+    startDate: frontend.startDate, // dd-MM-yyyy
+    endDate: frontend.endDate // dd-MM-yyyy
+};
+
 const response = await api.get(
-    "/organization/donation/sum"
+    "/organization/donation/sum",
+    {
+        params: filter // Optional
+    }
 );
 
 const frontend.object = {
-    frontend.var: response.data.donatorTotal,
-    frontend.var: response.data.vendorTotal,
+    frontend.var: response.data.personalTotal,
+    frontend.var: response.data.merchantTotal,
     frontend.var: response.data.total
 };
 ```
@@ -1116,4 +1124,79 @@ const frontend.list = response.data.map(object => ({
 const response = await api.delete(
     `/organization/${contentType}/tag/${frontend.tagId}/delete`
 );
+```
+
+## RakanQr
+
+## RakanQr Management
+
+### Rakan QR Agent — Apply
+
+```javascript
+const response = await api.post(
+    "/rakan-qr-agent/apply"
+);
+
+const frontend.object = {
+    frontend.var: response.data.id,
+    frontend.var: response.data.code,
+    frontend.var: response.data.type, // PERSONAL / MERCHANT
+    frontend.var: response.data.status, // ACTIVE / PENDING / INACTIVE
+    frontend.var: response.data.email
+```
+
+### Rakan QR Agent — Get All
+
+```javascript
+const filter = {
+    type: frontend.agentType, // PERSONAL / MERCHANT
+    status: frontend.status // ACTIVE / PENDING / INACTIVE
+};
+
+const response = await api.get(
+    "/rakan-qr-agent/get/all",
+    {
+        params: filter // Optional
+    }
+);
+
+const frontend.object = response.data.map(item => ({
+    frontend.var: item.id,
+    frontend.var: item.code,
+    frontend.var: item.type,  // PERSONAL / MERCHANT
+    frontend.var: item.status // ACTIVE / PENDING / INACTIVE
+}));
+```
+
+### Rakan QR Agent — Update Status
+
+```javascript
+const response = await api.patch(
+    `/rakan-qr-agent/${frontend.id}/status`,
+    {
+        status: frontend.status // ACTIVE / PENDING / INACTIVE
+    }
+);
+```
+
+## RakanQr Donation
+
+### Rakan QR Donation — Get Sum
+
+```javascript
+const filter = {
+    startDate: frontend.startDate, // dd-MM-yyyy
+    endDate: frontend.endDate // dd-MM-yyyy
+};
+
+const response = await api.get(
+    "/rakan-qr-agent/donation/sum",
+    {
+        params: filter // Optional
+    }
+);
+
+const frontend.object = {
+    frontend.var: response.data.total
+};
 ```

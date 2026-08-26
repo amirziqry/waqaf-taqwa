@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,17 +21,18 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.DonatorDonation;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.donator.repository.DonatorDonationRepository;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.donation.merchant.entity.MerchantDonation;
+import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.organization.dto.OrganizationDonationSum;
-import com.taqwa.gowaqaf.modules.donation.vendor.entity.VendorDonation;
-import com.taqwa.gowaqaf.modules.donation.vendor.repository.VendorDonationRepository;
-import com.taqwa.gowaqaf.modules.user.donator.entity.Donator;
-import com.taqwa.gowaqaf.modules.user.donator.repository.DonatorRepository;
-import com.taqwa.gowaqaf.modules.user.vendor.entity.Vendor;
-import com.taqwa.gowaqaf.modules.user.vendor.repository.VendorRepository;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.DonationType;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
+import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
+import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
+import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
+import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
+import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,69 +46,83 @@ public class OrganizationDonationSumFlowTest {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
-	private final DonatorRepository donatorRepository;
-	private final VendorRepository vendorRepository;
-	private final DonatorDonationRepository donatorDonationRepository;
-	private final VendorDonationRepository vendorDonationRepository;
+	private final PersonalRepository personalRepository;
+	private final MerchantRepository merchantRepository;
+	private final PersonalDonationRepository personalDonationRepository;
+	private final MerchantDonationRepository merchantDonationRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	void setup() {
-		Donator d1 = createTestDonator("donator1", "0000");
-		Donator d2 = createTestDonator("donator2", "0000");
+		Personal d1 = createTestPersonal("donator1", "0000");
+		Personal d2 = createTestPersonal("donator2", "0000");
 
-		createMockDonatorDonation(d1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PAID);
-		createMockDonatorDonation(d1, UUID.randomUUID(), new BigDecimal("50.00"), PaymentStatus.PAID);
-		createMockDonatorDonation(d2, UUID.randomUUID(), new BigDecimal("25.00"), PaymentStatus.PAID);
-		createMockDonatorDonation(d1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PENDING);
+		createMockPersonalDonation(d1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 1, 10, 0, 0));
+		createMockPersonalDonation(d1, UUID.randomUUID(), new BigDecimal("50.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 10, 14, 30, 0));
+		createMockPersonalDonation(d2, UUID.randomUUID(), new BigDecimal("25.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 15, 18, 0, 0));
+		createMockPersonalDonation(d1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PENDING,
+				LocalDateTime.of(2026, 8, 20, 12, 0, 0));
 
-		Vendor v1 = createTestVendor("vendor1", "0000");
-		Vendor v2 = createTestVendor("vendor2", "0000");
+		Merchant v1 = createTestMerchant("vendor1", "0000");
+		Merchant v2 = createTestMerchant("vendor2", "0000");
 
-		createMockVendorDonation(v1, UUID.randomUUID(), new BigDecimal("200.00"), PaymentStatus.PAID);
-		createMockVendorDonation(v1, UUID.randomUUID(), new BigDecimal("50.00"), PaymentStatus.PAID);
-		createMockVendorDonation(v2, UUID.randomUUID(), new BigDecimal("25.00"), PaymentStatus.PAID);
-		createMockVendorDonation(v1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PENDING);
+		createMockMerchantDonation(v1, UUID.randomUUID(), new BigDecimal("200.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 5, 10, 0, 0));
+		createMockMerchantDonation(v1, UUID.randomUUID(), new BigDecimal("50.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 12, 15, 0, 0));
+		createMockMerchantDonation(v2, UUID.randomUUID(), new BigDecimal("25.00"), PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 18, 20, 0, 0));
+		createMockMerchantDonation(v1, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PENDING,
+				LocalDateTime.of(2026, 8, 25, 12, 0, 0));
 	}
 
-	private Donator createTestDonator(String username, String password) {
-		Donator user = new Donator();
+	private Personal createTestPersonal(String username, String password) {
+		Personal user = new Personal();
 		user.setUsername(username);
 		user.setPassword(passwordEncoder.encode(password));
 
-		return donatorRepository.save(user);
+		return personalRepository.save(user);
 	}
 
-	private Vendor createTestVendor(String username, String password) {
-		Vendor user = new Vendor();
+	private Merchant createTestMerchant(String username, String password) {
+		Merchant user = new Merchant();
 		user.setUsername(username);
 		user.setPassword(passwordEncoder.encode(password));
 
-		return vendorRepository.save(user);
+		return merchantRepository.save(user);
 	}
 
-	private void createMockDonatorDonation(Donator donator, UUID id, BigDecimal amount, PaymentStatus status) {
-		DonatorDonation donation = new DonatorDonation();
-		donation.setDonator(donator);
+	private void createMockPersonalDonation(Personal personal, UUID id, BigDecimal amount, PaymentStatus status,
+			LocalDateTime paidAt) {
+		PersonalDonation donation = new PersonalDonation();
+		donation.setPersonal(personal);
 		donation.setBillingCode(id.toString());
 		donation.setAmount(amount);
 		donation.setStatus(status);
+		donation.setPaidAt(paidAt);
+		donation.setDonationType(DonationType.DIRECT);
 
-		donatorDonationRepository.save(donation);
+		personalDonationRepository.save(donation);
 	}
 
-	private void createMockVendorDonation(Vendor vendor, UUID id, BigDecimal amount, PaymentStatus status) {
-		VendorDonation donation = new VendorDonation();
-		donation.setVendor(vendor);
+	private void createMockMerchantDonation(Merchant merchant, UUID id, BigDecimal amount, PaymentStatus status,
+			LocalDateTime paidAt) {
+		MerchantDonation donation = new MerchantDonation();
+		donation.setMerchant(merchant);
 		donation.setBillingCode(id.toString());
 		donation.setAmount(amount);
 		donation.setStatus(status);
+		donation.setPaidAt(paidAt);
+		donation.setDonationType(DonationType.DIRECT);
 
-		vendorDonationRepository.save(donation);
+		merchantDonationRepository.save(donation);
 	}
 
 	@Test
-	@WithMockMember(username = "mock_member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "mock_member", roles = { "ADMIN" })
 	void orgDonationFlowTest() throws Exception {
 		MvcResult result = mockMvc.perform(get("/api/organization/donation/sum")).andExpect(status().isOk())
 				.andReturn();
@@ -119,6 +135,25 @@ public class OrganizationDonationSumFlowTest {
 		assertEquals(new BigDecimal("175.00"), sum.donatorTotal());
 		assertEquals(new BigDecimal("275.00"), sum.vendorTotal());
 		assertEquals(new BigDecimal("450.00"), sum.total());
+	}
+
+	@Test
+	@WithMockAdmin(username = "mock_member", roles = { "ADMIN" })
+	void orgDonationFlowWithDateRangeTest() throws Exception {
+
+		MvcResult result = mockMvc.perform(
+				get("/api/organization/donation/sum").param("startDate", "05-08-2026").param("endDate", "15-08-2026"))
+				.andExpect(status().isOk()).andReturn();
+
+		String response = result.getResponse().getContentAsString();
+
+		OrganizationDonationSum sum = objectMapper.readValue(response, OrganizationDonationSum.class);
+
+		assertNotNull(sum);
+
+		assertEquals(new BigDecimal("75.00"), sum.donatorTotal());
+		assertEquals(new BigDecimal("250.00"), sum.vendorTotal());
+		assertEquals(new BigDecimal("325.00"), sum.total());
 	}
 
 }

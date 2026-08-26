@@ -25,7 +25,7 @@ public class OrganizationProfileController {
 	private final OrganizationService organizationService;
 
 	@PutMapping("/update-request")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<OrganizationProfileUploadUrlsResponse> updateProfile(@RequestBody OrganizationProfileUpload dto) {
 		OrganizationProfileUploadUrlsResponse response = organizationService.updateProfile(dto);
 
@@ -33,7 +33,7 @@ public class OrganizationProfileController {
 	}
 
 	@PutMapping("/image-keys/upload")
-	@PreAuthorize("@accountSecurity.isMember(authentication)")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateImageKeys(@RequestBody OrganizationImagesRequest request) {
 		organizationService.uploadImageKeys(request);
 

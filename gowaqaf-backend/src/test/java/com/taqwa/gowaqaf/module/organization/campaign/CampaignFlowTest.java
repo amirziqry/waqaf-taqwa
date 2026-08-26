@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.campaign.component.category.entity.CampaignCategory;
 import com.taqwa.gowaqaf.modules.organization.campaign.component.category.repository.CampaignCategoryRepository;
 import com.taqwa.gowaqaf.modules.organization.campaign.component.image.CampaignImageKey;
@@ -176,7 +176,7 @@ public class CampaignFlowTest {
 	}
 
 	@Test
-	@WithMockMember(username = "member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member", roles = { "ADMIN" })
 	void createAndGetCampaignTest() throws Exception {
 		// ============================================================
 		// Create project + get response
@@ -277,7 +277,7 @@ public class CampaignFlowTest {
 
 	@Disabled
 	@Test
-	@WithMockMember(username = "member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member", roles = { "ADMIN" })
 	void getCampaignNonExistTest() throws Exception {
 		String id = "79caa3f1-54b5-44d9-906f-104a14648af9";
 

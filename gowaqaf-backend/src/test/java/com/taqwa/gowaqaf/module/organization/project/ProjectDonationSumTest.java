@@ -23,11 +23,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.DonationType;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.DonatorDonation;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.donator.repository.DonatorDonationRepository;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.DonationType;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
+import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationSum;
 import com.taqwa.gowaqaf.modules.organization.project.component.category.entity.ProjectCategory;
 import com.taqwa.gowaqaf.modules.organization.project.component.category.repository.ProjectCategoryRepository;
@@ -36,8 +36,8 @@ import com.taqwa.gowaqaf.modules.organization.project.component.tag.repository.P
 import com.taqwa.gowaqaf.modules.organization.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.project.entity.Status;
 import com.taqwa.gowaqaf.modules.organization.project.repository.ProjectRepository;
-import com.taqwa.gowaqaf.modules.user.donator.entity.Donator;
-import com.taqwa.gowaqaf.modules.user.donator.repository.DonatorRepository;
+import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
+import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,22 +52,22 @@ public class ProjectDonationSumTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final DonatorDonationRepository donatorDonationRepository;
+	private final PersonalDonationRepository personalDonationRepository;
 
 	private final ProjectRepository projectRepository;
 	private final ProjectCategoryRepository categoryRepository;
 	private final ProjectTagRepository tagRepository;
 
-	private final DonatorRepository donatorRepository;
+	private final PersonalRepository personalRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	Project p1, p2;
-	Donator d1, d2;
+	Personal d1, d2;
 
 	@BeforeEach
 	void setup() {
-		this.d1 = createTestDonator("donator1", "0000");
-		this.d2 = createTestDonator("donator2", "0000");
+		this.d1 = createTestPersonal("donator1", "0000");
+		this.d2 = createTestPersonal("donator2", "0000");
 
 		this.p1 = createTestProject("Project1");
 		this.p2 = createTestProject("Project2");
@@ -78,12 +78,12 @@ public class ProjectDonationSumTest {
 		createMockProjectDonation(d2, UUID.randomUUID(), new BigDecimal("100.00"), PaymentStatus.PAID, p2);
 	}
 
-	private Donator createTestDonator(String username, String password) {
-		Donator user = new Donator();
+	private Personal createTestPersonal(String username, String password) {
+		Personal user = new Personal();
 		user.setUsername(username);
 		user.setPassword(passwordEncoder.encode(password));
 
-		return donatorRepository.save(user);
+		return personalRepository.save(user);
 	}
 
 	private Project createTestProject(String name) {
@@ -99,21 +99,21 @@ public class ProjectDonationSumTest {
 		return projectRepository.save(project);
 	}
 
-	private void createMockProjectDonation(Donator donator, UUID id, BigDecimal amount, PaymentStatus status,
+	private void createMockProjectDonation(Personal personal, UUID id, BigDecimal amount, PaymentStatus status,
 			Project project) {
-		DonatorDonation donation = new DonatorDonation();
-		donation.setDonator(donator);
+		PersonalDonation donation = new PersonalDonation();
+		donation.setPersonal(personal);
 		donation.setBillingCode(id.toString());
 		donation.setAmount(amount);
 		donation.setStatus(status);
 		donation.setProject(project);
 		donation.setDonationType(DonationType.PROJECT);
 
-		donatorDonationRepository.save(donation);
+		personalDonationRepository.save(donation);
 	}
 
 	@Test
-	@WithMockMember(username = "mock_member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "mock_member", roles = { "ADMIN" })
 	void projectSumFlowTest() throws Exception {
 		MvcResult result = mockMvc.perform(get("/api/project/donation/" + p1.getId() + "/sum"))
 				.andExpect(status().isOk()).andReturn();

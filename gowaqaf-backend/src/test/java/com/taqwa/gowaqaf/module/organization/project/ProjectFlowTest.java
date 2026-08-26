@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.project.component.category.entity.ProjectCategory;
 import com.taqwa.gowaqaf.modules.organization.project.component.category.repository.ProjectCategoryRepository;
 import com.taqwa.gowaqaf.modules.organization.project.component.image.dto.ProjectImageKey;
@@ -188,7 +188,7 @@ public class ProjectFlowTest {
 	}
 
 	@Test
-	@WithMockMember(username = "member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member", roles = { "ADMIN" })
 	void createAndGetProjectTest() throws Exception {
 		// ============================================================
 		// 1. Create project + get response
@@ -267,7 +267,7 @@ public class ProjectFlowTest {
 
 	@Disabled
 	@Test
-	@WithMockMember(username = "member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member", roles = { "ADMIN" })
 	void updateProjectTest() throws Exception {
 		// ============================================================
 		// 1. Create project + save
@@ -360,7 +360,7 @@ public class ProjectFlowTest {
 
 	@Disabled
 	@Test
-	@WithMockMember(username = "member", roles = { "ADMIN" })
+	@WithMockAdmin(username = "member", roles = { "ADMIN" })
 	void deleteProjectTest() throws Exception {
 		MvcResult result = createProjectRequest();
 

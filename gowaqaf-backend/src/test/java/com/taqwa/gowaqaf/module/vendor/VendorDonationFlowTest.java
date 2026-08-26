@@ -20,13 +20,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.vendor.WithMockVendor;
-import com.taqwa.gowaqaf.modules.donation.donator.dto.DonatorDonationSum;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.vendor.entity.VendorDonation;
-import com.taqwa.gowaqaf.modules.donation.vendor.repository.VendorDonationRepository;
-import com.taqwa.gowaqaf.modules.user.vendor.entity.Vendor;
-import com.taqwa.gowaqaf.modules.user.vendor.repository.VendorRepository;
+import com.taqwa.gowaqaf.mockuser.vendor.WithMockMerchant;
+import com.taqwa.gowaqaf.modules.donation.merchant.entity.MerchantDonation;
+import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSum;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
+import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,46 +40,46 @@ public class VendorDonationFlowTest {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
-	private final VendorDonationRepository vendorDonationRepository;
-	private final VendorRepository vendorRepository;
+	private final MerchantDonationRepository merchantDonationRepository;
+	private final MerchantRepository merchantRepository;
 	private final PasswordEncoder passwordEncoder;
-	private Vendor test;
+	private Merchant test;
 
 	@BeforeEach
 	void setup() {
-		Vendor test = new Vendor();
+		Merchant test = new Merchant();
 		test.setUsername("donator_test");
 		test.setPassword(passwordEncoder.encode("0000"));
 
-		this.test = vendorRepository.save(test);
+		this.test = merchantRepository.save(test);
 
-		createMockVendor(this.test, UUID.randomUUID(), new BigDecimal("1.50"), PaymentStatus.PAID);
-		createMockVendor(this.test, UUID.randomUUID(), new BigDecimal("3.50"), PaymentStatus.PAID);
+		createMockMerchant(this.test, UUID.randomUUID(), new BigDecimal("1.50"), PaymentStatus.PAID);
+		createMockMerchant(this.test, UUID.randomUUID(), new BigDecimal("3.50"), PaymentStatus.PAID);
 	}
 
-	private void createMockVendor(Vendor vendor, UUID id, BigDecimal amount, PaymentStatus status) {
-		VendorDonation donation = new VendorDonation();
-		donation.setVendor(vendor);
+	private void createMockMerchant(Merchant merchant, UUID id, BigDecimal amount, PaymentStatus status) {
+		MerchantDonation donation = new MerchantDonation();
+		donation.setMerchant(merchant);
 		donation.setBillingCode(id.toString());
 		donation.setAmount(amount);
 		donation.setStatus(status);
 
-		vendorDonationRepository.save(donation);
+		merchantDonationRepository.save(donation);
 	}
 
 	@Test
-	@WithMockVendor(username = "vendor_mock")
+	@WithMockMerchant(username = "vendor_mock")
 	void vendorDonationSummaryFlowTest() throws Exception {
-		Vendor mock = vendorRepository.findByUsername("vendor_mock");
+		Merchant mock = merchantRepository.findByUsername("vendor_mock").get();
 
-		createMockVendor(mock, UUID.randomUUID(), new BigDecimal("2.50"), PaymentStatus.PAID);
-		createMockVendor(mock, UUID.randomUUID(), new BigDecimal("3.00"), PaymentStatus.PAID);
-		createMockVendor(mock, UUID.randomUUID(), new BigDecimal("2.50"), PaymentStatus.PENDING);
+		createMockMerchant(mock, UUID.randomUUID(), new BigDecimal("2.50"), PaymentStatus.PAID);
+		createMockMerchant(mock, UUID.randomUUID(), new BigDecimal("3.00"), PaymentStatus.PAID);
+		createMockMerchant(mock, UUID.randomUUID(), new BigDecimal("2.50"), PaymentStatus.PENDING);
 
 		MvcResult result = mockMvc.perform(get("/api/vendor/donation/sum")).andExpect(status().isOk()).andReturn();
 
 		String response = result.getResponse().getContentAsString();
-		DonatorDonationSum sum = objectMapper.readValue(response, DonatorDonationSum.class);
+		PersonalDonationSum sum = objectMapper.readValue(response, PersonalDonationSum.class);
 
 		assertNotNull(sum);
 		assertEquals(new BigDecimal("5.50"), sum.total());

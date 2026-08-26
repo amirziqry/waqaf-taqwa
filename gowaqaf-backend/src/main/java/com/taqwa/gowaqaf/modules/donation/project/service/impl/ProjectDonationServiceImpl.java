@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.DonationType;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.DonatorDonation;
-import com.taqwa.gowaqaf.modules.donation.donator.entity.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.donator.repository.DonatorDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.DonationType;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
+import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationRequest;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationSum;
 import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProjectDonationServiceImpl implements ProjectDonationService {
 
-	private final DonatorDonationRepository donatorDonationRepository;
+	private final PersonalDonationRepository personalDonationRepository;
 	private final ProjectRepository projectRepository;
 	private final PaymentService paymentService;
 
@@ -44,14 +44,14 @@ public class ProjectDonationServiceImpl implements ProjectDonationService {
 		// TODO: Pass collection code
 		PaymentUrlResponse response = paymentService.createPaymentBill(paymentRequest);
 
-		DonatorDonation donation = new DonatorDonation();
+		PersonalDonation donation = new PersonalDonation();
 		donation.setName(null);
 		donation.setBillingCode(response.getBillingCode());
 		donation.setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
 		donation.setDonationType(DonationType.PROJECT);
 		donation.setProject(project);
 
-		DonatorDonation saved = donatorDonationRepository.save(donation);
+		PersonalDonation saved = personalDonationRepository.save(donation);
 
 		response.setId(saved.getId());
 
@@ -60,7 +60,7 @@ public class ProjectDonationServiceImpl implements ProjectDonationService {
 
 	@Override
 	public ProjectDonationSum getProjectDonationSumById(UUID id) {
-		BigDecimal total = donatorDonationRepository.sumPaidDonationsByProjectId(id);
+		BigDecimal total = personalDonationRepository.sumPaidDonationsByProjectId(id);
 
 		return new ProjectDonationSum(total);
 	}

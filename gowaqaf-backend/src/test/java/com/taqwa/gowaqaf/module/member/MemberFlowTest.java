@@ -20,10 +20,10 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
-import com.taqwa.gowaqaf.modules.user.member.entity.Member;
-import com.taqwa.gowaqaf.modules.user.member.entity.Role;
-import com.taqwa.gowaqaf.modules.user.member.repository.MemberRepository;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
+import com.taqwa.gowaqaf.modules.user.admin.entity.Role;
+import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,31 +35,31 @@ import lombok.RequiredArgsConstructor;
 public class MemberFlowTest {
 
 	private final MockMvc mockMvc;
-	private final MemberRepository memberRepository;
+	private final AdminRepository adminRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	void setup() {
 
-		memberRepository.deleteAll();
+		adminRepository.deleteAll();
 
-		Member member1 = new Member(null, "member1", "member1@gmail.com", passwordEncoder.encode("0000"),
+		Admin admin1 = new Admin(null, "member1", "member1@gmail.com", passwordEncoder.encode("0000"),
 				Set.of(Role.EDITOR));
 
-		Member member2 = new Member(null, "member2", "member2@gmail.com", passwordEncoder.encode("0000"),
+		Admin admin2 = new Admin(null, "member2", "member2@gmail.com", passwordEncoder.encode("0000"),
 				Set.of(Role.EDITOR));
 
-		Member member3 = new Member(null, "member3", "member3@gmail.com", passwordEncoder.encode("0000"),
+		Admin admin3 = new Admin(null, "member3", "member3@gmail.com", passwordEncoder.encode("0000"),
 				Set.of(Role.ADMIN));
 
-		Member member4 = new Member(null, "member4", "member4@gmail.com", passwordEncoder.encode("0000"),
+		Admin admin4 = new Admin(null, "member4", "member4@gmail.com", passwordEncoder.encode("0000"),
 				Set.of(Role.EDITOR));
 
-		memberRepository.saveAll(List.of(member1, member2, member3, member4));
+		adminRepository.saveAll(List.of(admin1, admin2, admin3, admin4));
 	}
 
 	@Test
-	@WithMockMember(username = "supermember", roles = { "ADMIN" })
+	@WithMockAdmin(username = "supermember", roles = { "ADMIN" })
 	void memberFlowTest() throws Exception {
 
 		mockMvc.perform(get("/api/member/get/" + "member1")).andExpect(MockMvcResultMatchers.status().isOk())

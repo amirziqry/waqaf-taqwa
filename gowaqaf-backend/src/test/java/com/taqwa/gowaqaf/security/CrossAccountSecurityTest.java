@@ -17,15 +17,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taqwa.gowaqaf.mockuser.donator.WithMockDonator;
-import com.taqwa.gowaqaf.mockuser.member.WithMockMember;
-import com.taqwa.gowaqaf.mockuser.vendor.WithMockVendor;
-import com.taqwa.gowaqaf.modules.user.donator.entity.Donator;
-import com.taqwa.gowaqaf.modules.user.donator.repository.DonatorRepository;
-import com.taqwa.gowaqaf.modules.user.member.entity.Member;
-import com.taqwa.gowaqaf.modules.user.member.repository.MemberRepository;
-import com.taqwa.gowaqaf.modules.user.vendor.entity.Vendor;
-import com.taqwa.gowaqaf.modules.user.vendor.repository.VendorRepository;
+import com.taqwa.gowaqaf.mockuser.donator.WithMockPersonal;
+import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.mockuser.vendor.WithMockMerchant;
+import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
+import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
+import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
+import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
+import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
+import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,32 +38,39 @@ import lombok.RequiredArgsConstructor;
 public class CrossAccountSecurityTest {
 
 	private final MockMvc mockMvc;
-	private final MemberRepository memberRepository;
-	private final DonatorRepository donatorRepository;
-	private final VendorRepository vendorRepository;
+	private final AdminRepository adminRepository;
+	private final PersonalRepository personalRepository;
+	private final MerchantRepository merchantRepository;
 	private final PasswordEncoder passwordEncoder;
+
+	public static String adminLoginEndpoint = "/api/admin/auth/login";
+	public static String merchantLoginEndpoint = "/api/merchant/auth/login";
+	public static String personalLoginEndpoint = "/api/personal/auth/login";
+	public static String adminMeEndpoint = "/api/admin/auth/me";
+	public static String merchantMeEndpoint = "/api/merchant/auth/me";
+	public static String personalMeEndpoint = "/api/personal/auth/me";
 
 	@BeforeEach
 	void setup() {
-		Donator donator = new Donator();
-		donator.setUsername("donator_test");
-		donator.setPassword(passwordEncoder.encode("0000"));
+		Personal personal = new Personal();
+		personal.setUsername("donator_test");
+		personal.setPassword(passwordEncoder.encode("0000"));
 
-		Vendor vendor = new Vendor();
-		vendor.setUsername("vendor_test");
-		vendor.setPassword(passwordEncoder.encode("0000"));
+		Merchant merchant = new Merchant();
+		merchant.setUsername("vendor_test");
+		merchant.setPassword(passwordEncoder.encode("0000"));
 
-		Member member = new Member();
-		member.setUsername("member_test");
-		member.setPassword(passwordEncoder.encode("0000"));
+		Admin admin = new Admin();
+		admin.setUsername("member_test");
+		admin.setPassword(passwordEncoder.encode("0000"));
 
-		donatorRepository.save(donator);
-		vendorRepository.save(vendor);
-		memberRepository.save(member);
+		personalRepository.save(personal);
+		merchantRepository.save(merchant);
+		adminRepository.save(admin);
 	}
 
 	@Test
-	void donatorToMemberLoginShouldFail() throws Exception {
+	void personalToAdminLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "donator_test",
@@ -72,12 +79,12 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/member/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(adminLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void donatorToVendorLoginShouldFail() throws Exception {
+	void personalToMerchantLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "donator_test",
@@ -86,12 +93,12 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/vendor/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(merchantLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void vendorToDonatorLoginShouldFail() throws Exception {
+	void merchantToPersonalLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "vendor_test",
@@ -100,12 +107,12 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/donator/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(personalLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void vendorToMemberLoginShouldFail() throws Exception {
+	void merchantToAdminLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "vendor_test",
@@ -114,12 +121,12 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/member/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(adminLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void memberToDonatorLoginShouldFail() throws Exception {
+	void adminToPersonalLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "member_test",
@@ -128,12 +135,12 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/donator/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(personalLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void memberToVendorLoginShouldFail() throws Exception {
+	void adminToMerchantLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "member_test",
@@ -142,46 +149,46 @@ public class CrossAccountSecurityTest {
 				    }
 				""";
 
-		mockMvc.perform(post("/api/vendor/auth/login").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(merchantLoginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	@WithMockDonator(username = "donator_mock")
-	void donatorToMemberEndpointShouldFail() throws Exception {
-		mockMvc.perform(get("/api/member/auth/me")).andExpect(status().isForbidden());
+	@WithMockPersonal(username = "donator_mock")
+	void personalToAdminEndpointShouldFail() throws Exception {
+		mockMvc.perform(get(adminMeEndpoint)).andExpect(status().isForbidden());
 	}
 
 	@Test
-	@WithMockDonator(username = "donator_mock")
-	void donatorToVendorEndpointShouldFail() throws Exception {
-		mockMvc.perform(get("/api/vendor/auth/me")).andExpect(status().isForbidden());
+	@WithMockPersonal(username = "donator_mock")
+	void personalToMerchantEndpointShouldFail() throws Exception {
+		mockMvc.perform(get(merchantMeEndpoint)).andExpect(status().isForbidden());
 	}
 
 	@Test
-	@WithMockMember(username = "member_mock", roles = { "ADMIN" })
-	void memberToDonatorEndpointShouldFail() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/donator/auth/me"))
+	@WithMockAdmin(username = "member_mock", roles = { "ADMIN" })
+	void adminToPersonalEndpointShouldFail() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get(personalMeEndpoint))
 				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 	@Test
-	@WithMockMember(username = "member_mock", roles = { "ADMIN" })
-	void memberToVendorEndpointShouldFail() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/vendor/auth/me"))
+	@WithMockAdmin(username = "member_mock", roles = { "ADMIN" })
+	void adminToMerchantEndpointShouldFail() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get(merchantMeEndpoint))
 				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 	@Test
-	@WithMockVendor(username = "vendor_mock")
-	void vendorToMemberEndpointShouldFail() throws Exception {
-		mockMvc.perform(get("/api/member/auth/me")).andExpect(status().isForbidden());
+	@WithMockMerchant(username = "vendor_mock")
+	void merchantToAdminEndpointShouldFail() throws Exception {
+		mockMvc.perform(get(adminMeEndpoint)).andExpect(status().isForbidden());
 	}
 
 	@Test
-	@WithMockVendor(username = "vendor_mock")
-	void vendorToDonatorEndpointShouldFail() throws Exception {
-		mockMvc.perform(get("/api/donator/auth/me")).andExpect(status().isForbidden());
+	@WithMockMerchant(username = "vendor_mock")
+	void merchantToPersonalEndpointShouldFail() throws Exception {
+		mockMvc.perform(get(personalMeEndpoint)).andExpect(status().isForbidden());
 	}
 
 }

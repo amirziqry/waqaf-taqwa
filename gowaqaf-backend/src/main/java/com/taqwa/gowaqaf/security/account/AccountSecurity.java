@@ -6,22 +6,22 @@ import org.springframework.stereotype.Component;
 @Component("accountSecurity")
 public class AccountSecurity {
 
-	public Boolean isMember(Authentication authentication) {
+	public Boolean isAdmin(Authentication authentication) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		return principal.getAccountType() == AccountType.MEMBER;
+		return principal.getAccountType() == AccountType.ADMIN;
 	}
 
-	public Boolean isVendor(Authentication authentication) {
+	public Boolean isMerchant(Authentication authentication) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		return principal.getAccountType() == AccountType.VENDOR;
+		return principal.getAccountType() == AccountType.MERCHANT;
 	}
 
-	public Boolean isDonator(Authentication authentication) {
+	public Boolean isPersonal(Authentication authentication) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		return principal.getAccountType() == AccountType.DONATOR;
+		return principal.getAccountType() == AccountType.PERSONAL;
 	}
 
 }
