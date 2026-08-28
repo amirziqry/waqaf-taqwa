@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 public class PersonalDonationRequest {
 
 	private BigDecimal amount;
+	
+	private Boolean taxExempt;
 
 }

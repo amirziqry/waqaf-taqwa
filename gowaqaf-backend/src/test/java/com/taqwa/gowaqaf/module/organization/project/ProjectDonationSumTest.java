@@ -24,9 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.DonationType;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationSum;
 import com.taqwa.gowaqaf.modules.organization.project.component.category.entity.ProjectCategory;

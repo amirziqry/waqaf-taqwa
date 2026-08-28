@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.security.account.AccountType;
@@ -18,15 +20,19 @@ import lombok.RequiredArgsConstructor;
 public class WithMockMerchantSecurityContextFactory implements WithSecurityContextFactory<WithMockMerchant> {
 
 	private final MerchantRepository merchantRepository;
+	private final AccountIdentityRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public SecurityContext createSecurityContext(WithMockMerchant annotation) {
 		Merchant merchant = new Merchant();
+		AccountIdentity identity = new AccountIdentity();
 
 		merchant.setUsername(annotation.username());
 		merchant.setPassword(passwordEncoder.encode("0000"));
-		merchant.setEmail("test@gmail.com");
+
+		identity.setEmail("test@gmail.com");
+		merchant.setIdentity(identityRepository.save(identity));
 
 		Merchant mock = merchantRepository.save(merchant);
 

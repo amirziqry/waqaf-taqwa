@@ -10,7 +10,13 @@ import lombok.NoArgsConstructor;
 public class AdminRegisterCredentials {
 
 	private String username;
-	private String email;
+
 	private String password;
+
+	private String email;
+
+	private String phone;
+
+	private Boolean modMesra;
 
 }

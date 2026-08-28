@@ -31,7 +31,7 @@ public class RakanQrDonationController {
 	@GetMapping("/donation/sum")
 	public ResponseEntity<RakanQrDonationSum> getRakanQrDonationSum(Authentication authentication,
 			@ModelAttribute RakanQrDonationFilter filter) {
-		RakanQrDonationSum response = service.getDonationSum(authentication, filter);
+		RakanQrDonationSum response = service.getDonationSumByUser(authentication, filter);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

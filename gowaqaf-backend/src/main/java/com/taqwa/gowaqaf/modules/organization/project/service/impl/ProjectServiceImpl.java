@@ -102,8 +102,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ProjectUploadResponse updateProjectById(UUID id, ProjectUploadRequest dto) {
-		Project project = projectRepository.findById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
+		Project project = getProjectById(id);
 
 		project.setName(dto.getName());
 		project.setSlugUrl(dto.getSlugUrl());
@@ -146,8 +145,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void updateProjectImageKeysById(UUID id, List<ProjectImageKey> request) {
-		Project project = projectRepository.findById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
+		Project project = getProjectById(id);
 
 		List<ProjectImage> existingImages = project.getImages();
 
@@ -184,8 +182,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ProjectDetails getProjectDetailsById(UUID id) {
-		Project project = projectRepository.findById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
+		Project project = getProjectById(id);
 
 		ProjectDetails dto = ProjectMapper.mapToProjectDetails(project);
 
@@ -205,7 +202,7 @@ public class ProjectServiceImpl implements ProjectService {
 	public List<ProjectDetails> getAllProjectsDetails() {
 		List<Project> projects = projectRepository.findAll();
 		if (projects.size() == 0)
-			throw new BadRequestException(ErrorCode.A001, "No news found.");
+			return List.of();
 
 		List<ProjectDetails> dtos = projects.stream().map(project -> {
 
@@ -234,6 +231,14 @@ public class ProjectServiceImpl implements ProjectService {
 		projectRepository.deleteById(id);
 
 		return;
+	}
+
+	@Override
+	public Project getProjectById(UUID id) {
+		Project project = projectRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
+
+		return project;
 	}
 
 }

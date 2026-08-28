@@ -17,7 +17,7 @@ public interface MerchantDonationRepository extends JpaRepository<MerchantDonati
 			FROM MerchantDonation d
 			WHERE d.status = 'PAID'
 			AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			AND (:endDate IS NULL OR d.paidAt <= :endDate)
+			AND (:endDate IS NULL OR d.paidAt < :endDate)
 			""")
 	BigDecimal sumAllPaidDonations(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);

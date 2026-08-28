@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taqwa.gowaqaf.common.CommonClass;
 import com.taqwa.gowaqaf.mockuser.donator.WithMockPersonal;
 import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
 import com.taqwa.gowaqaf.mockuser.vendor.WithMockMerchant;
@@ -33,6 +34,7 @@ import com.taqwa.gowaqaf.modules.agent.dto.RakanQrInfo;
 import com.taqwa.gowaqaf.modules.agent.dto.RakanQrStatusRequest;
 import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
 import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -52,6 +54,7 @@ public class RakanQrFlowTest {
 	private final MockMvc mockMvc;
 	private final MerchantRepository merchantRepository;
 	private final PersonalRepository personalRepository;
+	private final AccountIdentityRepository identityRepository;
 	private final RakanQrRepository agentRepository;
 	private final PasswordEncoder passwordEncoder;
 
@@ -59,32 +62,14 @@ public class RakanQrFlowTest {
 
 	@BeforeEach
 	void setup() {
-		createMockAgent(createMockMerchant("merchant1", "merchant1@gmail.com"), null, AgentType.MERCHANT,
-				AgentStatus.ACTIVE);
-		createMockAgent(createMockMerchant("merchant2", "merchant2@gmail.com"), null, AgentType.MERCHANT,
-				AgentStatus.ACTIVE);
-		createMockAgent(null, createMockPersonal("personal1", "personal1@gmail.com"), AgentType.PERSONAL,
-				AgentStatus.ACTIVE);
-		this.test = createMockAgent(null, createMockPersonal("personal2", "personal2@gmail.com"), AgentType.PERSONAL,
-				AgentStatus.PENDING);
-	}
-
-	private Merchant createMockMerchant(String username, String email) {
-		Merchant test = new Merchant();
-		test.setUsername(username);
-		test.setEmail(email);
-		test.setPassword(passwordEncoder.encode("0000"));
-
-		return merchantRepository.save(test);
-	}
-
-	private Personal createMockPersonal(String username, String email) {
-		Personal test = new Personal();
-		test.setUsername(username);
-		test.setEmail(email);
-		test.setPassword(passwordEncoder.encode("0000"));
-
-		return personalRepository.save(test);
+		createMockAgent(CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder,
+				"merchant1", "merchant1@gmail.com"), null, AgentType.MERCHANT, AgentStatus.ACTIVE);
+		createMockAgent(CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder,
+				"merchant2", "merchant2@gmail.com"), null, AgentType.MERCHANT, AgentStatus.ACTIVE);
+		createMockAgent(null, CommonClass.createMockPersonal(personalRepository, identityRepository, passwordEncoder,
+				"personal1", "personal1@gmail.com"), AgentType.PERSONAL, AgentStatus.ACTIVE);
+		this.test = createMockAgent(null, CommonClass.createMockPersonal(personalRepository, identityRepository,
+				passwordEncoder, "personal2", "personal2@gmail.com"), AgentType.PERSONAL, AgentStatus.PENDING);
 	}
 
 	private RakanQr createMockAgent(Merchant merchant, Personal personal, AgentType type, AgentStatus status) {

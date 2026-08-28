@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.payment.dto.PaymentUrlResponse;
 
 import lombok.RequiredArgsConstructor;

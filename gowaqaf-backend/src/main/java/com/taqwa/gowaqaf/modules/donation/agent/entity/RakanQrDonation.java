@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

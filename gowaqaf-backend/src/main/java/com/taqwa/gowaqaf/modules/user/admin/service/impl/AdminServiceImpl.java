@@ -10,12 +10,13 @@ import org.springframework.stereotype.Service;
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminInfo;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterCredentials;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterResponse;
 import com.taqwa.gowaqaf.modules.user.admin.dto.UpdateAdminRoleRequest;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
-import com.taqwa.gowaqaf.modules.user.admin.entity.Role;
+import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 import com.taqwa.gowaqaf.modules.user.admin.mapper.AdminMapper;
 import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
 import com.taqwa.gowaqaf.modules.user.admin.service.AdminService;
@@ -30,13 +31,18 @@ public class AdminServiceImpl implements AdminService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
-	public AdminRegisterResponse createEditor(AdminRegisterCredentials request) {
+	public AdminRegisterResponse createEditor(AdminRegisterCredentials dto) {
 		Admin user = new Admin();
+		AccountIdentity identity = new AccountIdentity();
 
-		user.setUsername(request.getUsername());
-		user.setEmail(request.getEmail());
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
+		user.setUsername(dto.getUsername());
+		user.setPassword(passwordEncoder.encode(dto.getPassword()));
 		user.setRoles(Set.of(Role.EDITOR));
+
+		identity.setEmail(dto.getEmail());
+		identity.setPhone(dto.getPhone());
+		identity.setModMesra(dto.getModMesra());
+		user.setIdentity(identity);
 
 		Admin saved = adminRepository.save(user);
 
@@ -44,13 +50,18 @@ public class AdminServiceImpl implements AdminService {
 	}
 
 	@Override
-	public AdminRegisterResponse createAdmin(AdminRegisterCredentials request) {
+	public AdminRegisterResponse createAdmin(AdminRegisterCredentials dto) {
 		Admin user = new Admin();
+		AccountIdentity identity = new AccountIdentity();
 
-		user.setUsername(request.getUsername());
-		user.setEmail(request.getEmail());
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
-		user.setRoles(Set.of(Role.EDITOR, Role.ADMIN));
+		user.setUsername(dto.getUsername());
+		user.setPassword(passwordEncoder.encode(dto.getPassword()));
+		user.setRoles(Set.of(Role.ADMIN));
+
+		identity.setEmail(dto.getEmail());
+		identity.setPhone(dto.getPhone());
+		identity.setModMesra(dto.getModMesra());
+		user.setIdentity(identity);
 
 		Admin saved = adminRepository.save(user);
 

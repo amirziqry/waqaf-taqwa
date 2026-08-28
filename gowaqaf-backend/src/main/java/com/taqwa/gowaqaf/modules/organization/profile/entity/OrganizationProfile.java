@@ -60,10 +60,10 @@ public class OrganizationProfile {
 	@Column(columnDefinition = "TEXT")
 	private String contentHtml;
 
-	@Column
+	@Column(nullable = true)
 	private String logoKey;
 
-	@Column
+	@Column(nullable = true)
 	private String heroKey;
 
 }

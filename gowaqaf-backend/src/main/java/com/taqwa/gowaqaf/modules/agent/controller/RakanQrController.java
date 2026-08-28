@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taqwa.gowaqaf.modules.agent.dto.RakanQrFilter;
 import com.taqwa.gowaqaf.modules.agent.dto.RakanQrInfo;
 import com.taqwa.gowaqaf.modules.agent.dto.RakanQrStatusRequest;
+import com.taqwa.gowaqaf.modules.agent.dto.RakanQrWithSum;
+import com.taqwa.gowaqaf.modules.agent.dto.RakanQrWithSumFilter;
 import com.taqwa.gowaqaf.modules.agent.service.RakanQrService;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,14 @@ public class RakanQrController {
 	@PreAuthorize("@accountSecurity.isAdmin(authentication) && hasRole('ADMIN')")
 	public ResponseEntity<List<RakanQrInfo>> getAllRakanQr(@ModelAttribute RakanQrFilter filter) {
 		List<RakanQrInfo> response = service.getAllRakanQr(filter);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/get/sum/all")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication) && hasRole('ADMIN')")
+	public ResponseEntity<List<RakanQrWithSum>> getAllRakanQrWithSum(@ModelAttribute RakanQrWithSumFilter filter) {
+		List<RakanQrWithSum> response = service.getAllRakanQrWithSum(filter);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

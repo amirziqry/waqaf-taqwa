@@ -58,8 +58,8 @@ public class Campaign {
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate dateEnd;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id")
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "category_id", nullable = true)
 	private CampaignCategory category;
 
 	@ManyToMany

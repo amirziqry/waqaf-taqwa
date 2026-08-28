@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 public class MerchantRegisterResponse {
 
 	private String username;
+
 	private String email;
+
+	private String phone;
 
 }

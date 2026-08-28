@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.organization.news.mapper;
 
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.taqwa.gowaqaf.modules.organization.news.component.category.NewsCategoryDto;
@@ -18,8 +19,17 @@ public class NewsMapper {
 		dto.setSlugUrl(news.getSlugUrl());
 		dto.setAuthor(news.getAuthor());
 		dto.setDate(news.getDate());
-		dto.setCategory(new NewsCategoryDto(news.getCategory().getId(), news.getCategory().getName()));
-		dto.setTags(news.getTags().stream().map(tag -> NewsTagMapper.mapTagToDto(tag)).collect(Collectors.toSet()));
+
+		if (news.getCategory() == null)
+			dto.setCategory(null);
+		else
+			dto.setCategory(new NewsCategoryDto(news.getCategory().getId(), news.getCategory().getName()));
+
+		if (news.getTags().isEmpty())
+			dto.setTags(new HashSet<>());
+		else
+			dto.setTags(news.getTags().stream().map(tag -> NewsTagMapper.mapTagToDto(tag)).collect(Collectors.toSet()));
+
 		dto.setSummary(news.getSummary());
 		dto.setContentHtml(news.getContentHtml());
 		dto.setStatus(news.getStatus());

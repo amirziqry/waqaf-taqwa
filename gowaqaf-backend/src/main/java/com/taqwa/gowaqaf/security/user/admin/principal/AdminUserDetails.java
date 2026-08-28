@@ -69,7 +69,11 @@ public class AdminUserDetails implements AccountUserDetails {
 	}
 
 	public String getEmail() {
-		return admin.getEmail();
+		return admin.getIdentity().getEmail();
+	}
+
+	public String getPhone() {
+		return admin.getIdentity().getEmail();
 	}
 
 }

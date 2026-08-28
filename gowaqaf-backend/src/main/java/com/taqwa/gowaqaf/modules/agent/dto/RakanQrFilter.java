@@ -14,6 +14,6 @@ public class RakanQrFilter {
 
 	private AgentType type;
 
-	private AgentStatus status;
+	private AgentStatus status;;
 
 }

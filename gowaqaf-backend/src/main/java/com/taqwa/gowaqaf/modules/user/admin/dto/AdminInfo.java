@@ -3,7 +3,7 @@ package com.taqwa.gowaqaf.modules.user.admin.dto;
 import java.util.Set;
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.user.admin.entity.Role;
+import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +19,11 @@ public class AdminInfo {
 	private String username;
 
 	private String email;
+	
+	private String phone;
 
 	private Set<Role> roles;
+	
+	private Boolean modMesra;
+	
 }

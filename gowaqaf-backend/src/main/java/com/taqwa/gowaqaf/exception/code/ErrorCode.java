@@ -22,6 +22,12 @@ public enum ErrorCode {
 	// Donator
 	DON001("Donator not found"),
 
+	// Personal User
+	PER001("Personal not found"),
+
+	// Personal User
+	MER001("Merchant not found"),
+
 	// Organization Profile,
 	PRO010("Profile not created"),
 

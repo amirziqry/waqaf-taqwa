@@ -1,6 +1,7 @@
 package com.taqwa.gowaqaf.modules.donation.agent.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -29,7 +30,7 @@ public class RakanQrDonationServiceImpl implements RakanQrDonationService {
 	private final RakanQrDonationRepository donationRepository;
 
 	@Override
-	public RakanQrDonationSum getDonationSum(Authentication authentication, RakanQrDonationFilter filter) {
+	public RakanQrDonationSum getDonationSumByUser(Authentication authentication, RakanQrDonationFilter filter) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
 		RakanQr agent = null;
@@ -58,6 +59,16 @@ public class RakanQrDonationServiceImpl implements RakanQrDonationService {
 		BigDecimal sum = donationRepository.sumPaidDonationsByAgent(agent.getId(), startDateTime, endDateTime);
 
 		return new RakanQrDonationSum(sum);
+	}
+
+	@Override
+	public BigDecimal getCollectionSum(LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+		LocalDateTime endDateTime = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
+
+		BigDecimal total = donationRepository.sumAllPaidDonations(startDateTime, endDateTime);
+
+		return total;
 	}
 
 }

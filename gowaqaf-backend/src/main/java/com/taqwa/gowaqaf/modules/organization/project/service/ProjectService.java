@@ -7,6 +7,7 @@ import com.taqwa.gowaqaf.modules.organization.project.component.image.dto.Projec
 import com.taqwa.gowaqaf.modules.organization.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.project.dto.ProjectUploadRequest;
 import com.taqwa.gowaqaf.modules.organization.project.dto.ProjectUploadResponse;
+import com.taqwa.gowaqaf.modules.organization.project.entity.Project;
 
 public interface ProjectService {
 
@@ -21,5 +22,7 @@ public interface ProjectService {
 	List<ProjectDetails> getAllProjectsDetails();
 
 	void deleteProjectById(UUID id);
+
+	Project getProjectById(UUID id);
 
 }

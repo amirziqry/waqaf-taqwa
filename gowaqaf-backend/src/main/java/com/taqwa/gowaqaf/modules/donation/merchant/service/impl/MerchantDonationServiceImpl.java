@@ -1,6 +1,8 @@
 package com.taqwa.gowaqaf.modules.donation.merchant.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -26,6 +28,16 @@ public class MerchantDonationServiceImpl implements MerchantDonationService {
 		BigDecimal total = merchantDonationRepository.sumPaidDonationsById(id);
 
 		return new MerchantDonationSum(total);
+	}
+
+	@Override
+	public BigDecimal getCollectionSum(LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+		LocalDateTime endDateTime = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
+
+		BigDecimal total = merchantDonationRepository.sumAllPaidDonations(startDateTime, endDateTime);
+
+		return total;
 	}
 
 }

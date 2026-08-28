@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.organization.project.entity.Project;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 
@@ -64,5 +66,11 @@ public class PersonalDonation {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private DonationType donationType;
+
+	@Column(nullable = false)
+	private Boolean taxExempt;
+
+	@Column(unique = true, nullable = true)
+	private String receiptHashId;
 
 }

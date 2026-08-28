@@ -24,9 +24,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taqwa.gowaqaf.common.CommonClass;
 import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
-import com.taqwa.gowaqaf.modules.user.admin.entity.Role;
+import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
 
 import jakarta.servlet.http.Cookie;
@@ -42,17 +44,13 @@ public class AdminAuthFlowTest {
 
 	private final MockMvc mockMvc;
 	private final AdminRepository adminRepository;
+	private final AccountIdentityRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	void setup() {
-		Admin admin = new Admin();
-
-		admin.setUsername("member_test");
-		admin.setPassword(passwordEncoder.encode("0000"));
-		admin.setRoles(Set.of(Role.ADMIN));
-
-		adminRepository.save(admin);
+		CommonClass.createMockAdmin(adminRepository, identityRepository, passwordEncoder, "member_test",
+				"member1@gmail.com", Set.of(Role.ADMIN));
 	}
 
 	public static String loginEndpoint = "/api/admin/auth/login";

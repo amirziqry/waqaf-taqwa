@@ -11,6 +11,4 @@ public interface MerchantRepository extends JpaRepository<Merchant, UUID> {
 
 	Optional<Merchant> findByUsername(String username);
 
-	Merchant findByEmail(String email);
-
 }

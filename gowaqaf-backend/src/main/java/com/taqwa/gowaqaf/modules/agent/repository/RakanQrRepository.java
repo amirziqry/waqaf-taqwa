@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.agent.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
 import com.taqwa.gowaqaf.modules.agent.component.AgentType;
+import com.taqwa.gowaqaf.modules.agent.dto.RakanQrWithSum;
 import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
 
 public interface RakanQrRepository extends JpaRepository<RakanQr, UUID> {
@@ -25,5 +27,24 @@ public interface RakanQrRepository extends JpaRepository<RakanQr, UUID> {
 	Optional<RakanQr> findByMerchant_Username(String username);
 
 	Optional<RakanQr> findByPersonal_Username(String username);
+
+	@Query("""
+			SELECT new com.taqwa.gowaqaf.modules.agent.dto.RakanQrWithSum(
+			    a.id,
+			    a.code,
+			    a.type,
+			    a.status,
+			    COALESCE(SUM(d.amount), 0)
+			)
+			FROM RakanQr a
+			LEFT JOIN RakanQrDonation d
+			    ON d.rakanQr = a
+			    AND d.status = 'PAID'
+			    AND (:startDate IS NULL OR d.paidAt >= :startDate)
+			    AND (:endDate IS NULL OR d.paidAt < :endDate)
+			GROUP BY a.id, a.code, a.type, a.status
+			""")
+	List<RakanQrWithSum> findAllRakanQrWithSum(@Param("startDate") LocalDateTime startDate,
+			@Param("endDate") LocalDateTime endDate);
 
 }

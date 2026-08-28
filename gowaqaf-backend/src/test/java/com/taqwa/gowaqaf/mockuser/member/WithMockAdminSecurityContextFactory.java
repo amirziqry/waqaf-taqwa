@@ -14,8 +14,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
-import com.taqwa.gowaqaf.modules.user.admin.entity.Role;
+import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
 import com.taqwa.gowaqaf.security.account.AccountType;
 import com.taqwa.gowaqaf.security.jwt.JwtUserDetails;
@@ -26,15 +28,19 @@ import lombok.RequiredArgsConstructor;
 public class WithMockAdminSecurityContextFactory implements WithSecurityContextFactory<WithMockAdmin> {
 
 	private final AdminRepository adminRepository;
+	private final AccountIdentityRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public SecurityContext createSecurityContext(WithMockAdmin annotation) {
 		Admin admin = new Admin();
+		AccountIdentity identity = new AccountIdentity();
 
 		admin.setUsername(annotation.username());
 		admin.setPassword(passwordEncoder.encode("0000"));
-		admin.setEmail("test@gmail.com");
+
+		identity.setEmail("test@gmail.com");
+		admin.setIdentity(identityRepository.save(identity));
 
 		Set<Role> roles = Arrays.stream(annotation.roles()).map(Role::valueOf).collect(Collectors.toSet());
 		admin.setRoles(roles);
@@ -44,8 +50,7 @@ public class WithMockAdminSecurityContextFactory implements WithSecurityContextF
 		List<GrantedAuthority> authorities = mock.getRoles().stream()
 				.map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).collect(Collectors.toList());
 
-		JwtUserDetails principal = new JwtUserDetails(mock.getId(), mock.getUsername(), AccountType.ADMIN,
-				authorities);
+		JwtUserDetails principal = new JwtUserDetails(mock.getId(), mock.getUsername(), AccountType.ADMIN, authorities);
 
 		Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null,
 				principal.getAuthorities());

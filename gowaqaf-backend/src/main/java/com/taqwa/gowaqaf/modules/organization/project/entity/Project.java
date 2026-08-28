@@ -63,8 +63,8 @@ public class Project {
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate date;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id")
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "category_id", nullable = true)
 	private ProjectCategory category;
 
 	@ManyToMany

@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
 import com.taqwa.gowaqaf.security.account.AccountType;
@@ -18,15 +20,19 @@ import lombok.RequiredArgsConstructor;
 public class WithMockPersonalSecurityContextFactory implements WithSecurityContextFactory<WithMockPersonal> {
 
 	private final PersonalRepository personalRepository;
+	private final AccountIdentityRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public SecurityContext createSecurityContext(WithMockPersonal annotation) {
 		Personal personal = new Personal();
+		AccountIdentity identity = new AccountIdentity();
 
 		personal.setUsername(annotation.username());
 		personal.setPassword(passwordEncoder.encode("0000"));
-		personal.setEmail("test@gmail.com");
+
+		identity.setEmail("test@gmail.com");
+		personal.setIdentity(identityRepository.save(identity));
 
 		Personal mock = personalRepository.save(personal);
 

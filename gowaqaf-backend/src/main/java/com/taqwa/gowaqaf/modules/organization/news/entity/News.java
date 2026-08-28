@@ -57,8 +57,8 @@ public class News {
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate date;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "news")
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "news", nullable = true)
 	private NewsCategory category;
 
 	@ManyToMany

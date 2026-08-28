@@ -16,10 +16,10 @@ public class RakanQrMapper {
 		dto.setStatus(model.getStatus());
 
 		if (model.getType() == AgentType.MERCHANT)
-			dto.setEmail(model.getMerchant().getEmail());
+			dto.setEmail(model.getMerchant().getIdentity().getEmail());
 
 		if (model.getType() == AgentType.PERSONAL)
-			dto.setEmail(model.getPersonal().getEmail());
+			dto.setEmail(model.getPersonal().getIdentity().getEmail());
 
 		return dto;
 	}

@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.organization.project.mapper;
 
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.taqwa.gowaqaf.modules.organization.project.component.category.mapper.ProjectCategoryMapper;
@@ -20,9 +21,18 @@ public class ProjectMapper {
 		dto.setTargetAmount(entity.getTargetAmount());
 		dto.setLocation(entity.getLocation());
 		dto.setDate(entity.getDate());
-		dto.setCategory(ProjectCategoryMapper.mapCategoryToDto(entity.getCategory()));
-		dto.setTags(
-				entity.getTags().stream().map(tag -> ProjectTagMapper.mapTagToDto(tag)).collect(Collectors.toSet()));
+		
+		if (entity.getCategory() == null)
+			dto.setCategory(null);
+		else
+			dto.setCategory(ProjectCategoryMapper.mapCategoryToDto(entity.getCategory()));
+
+		if (entity.getTags().isEmpty())
+			dto.setTags(new HashSet<>());
+		else
+			dto.setTags(entity.getTags().stream().map(tag -> ProjectTagMapper.mapTagToDto(tag))
+					.collect(Collectors.toSet()));
+		
 		dto.setSummary(entity.getSummary());
 		dto.setContentHtml(entity.getContentHtml());
 		dto.setStatus(entity.getStatus());

@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.organization.campaign.mapper;
 
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.taqwa.gowaqaf.modules.organization.campaign.component.category.dto.CampaignCategoryDto;
@@ -17,9 +18,18 @@ public class CampaignMapper {
 		dto.setSlugUrl(campaign.getSlugUrl());
 		dto.setDateStart(campaign.getDateStart());
 		dto.setDateEnd(campaign.getDateEnd());
-		dto.setCategory(new CampaignCategoryDto(campaign.getCategory().getId(), campaign.getCategory().getName()));
-		dto.setTags(campaign.getTags().stream().map(tag -> CampaignTagMapper.mapTagToDto(tag))
-				.collect(Collectors.toSet()));
+
+		if (campaign.getCategory() == null)
+			dto.setCategory(null);
+		else
+			dto.setCategory(new CampaignCategoryDto(campaign.getCategory().getId(), campaign.getCategory().getName()));
+
+		if (campaign.getTags().isEmpty())
+			dto.setTags(new HashSet<>());
+		else
+			dto.setTags(campaign.getTags().stream().map(tag -> CampaignTagMapper.mapTagToDto(tag))
+					.collect(Collectors.toSet()));
+
 		dto.setSummary(campaign.getSummary());
 		dto.setContentHtml(campaign.getContentHtml());
 		dto.setStatus(campaign.getStatus());
