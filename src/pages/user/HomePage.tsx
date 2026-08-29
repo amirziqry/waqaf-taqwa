@@ -16,138 +16,132 @@ interface CampaignItem {
   status?: string;
 }
 
-const DEFAULT_SLIDES: CampaignItem[] = [
+// Exactly matched with ProjectsExplorePage.tsx
+const FALLBACK_PROJECTS: CampaignItem[] = [
   {
     id: '1',
-    title: 'Pembinaan Kompleks Tahfiz Al-Quran',
-    category: 'Pendidikan',
-    targetAmount: 150000,
-    collectedAmount: 81000,
-    description: 'Membantu membina fasiliti pembelajaran serba moden untuk 150 pelajar tahfiz tempatan.',
-    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&q=80&w=800',
-  },
-  {
-    id: '2',
     title: 'Pembinaan Dewan Solat Masjid Cyberjaya',
     category: 'Masjid',
     targetAmount: 50000,
     collectedAmount: 37500,
-    description: 'Peluasan ruang solat utama bagi menampung pertambahan jemaah solat Jumaat.',
+    description: 'Peluasan ruang solat utama bagi menampung pertambahan jemaah solat Jumaat dan aktiviti komuniti.',
     image: 'https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=80',
   },
   {
-    id: '3',
-    title: 'Safar Tour: Kembara Barakah Komuniti',
-    category: 'Kebajikan',
-    targetAmount: 40000,
-    collectedAmount: 40000,
-    description: 'Tunaikan umrah & ziarah sambil menyumbang waqaf pelancongan Islam kebajikan.',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800',
+    id: '2',
+    title: 'Dana Pendidikan Huffaz Asnaf',
+    category: 'Pendidikan',
+    targetAmount: 30000,
+    collectedAmount: 18400,
+    description: 'Bantuan pembiayaan yuran pengajian, asrama, dan penyediaan mushaf Al-Quran bagi pelajar asnaf.',
+    image: 'https://images.unsplash.com/photo-1584697964190-7bb9b1f72787?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isAutoWaqafOpen, setIsAutoWaqafOpen] = useState(false);
-  const [campaigns, setCampaigns] = useState<CampaignItem[]>(DEFAULT_SLIDES);
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>(FALLBACK_PROJECTS);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Sync campaigns with custom local storage & API
   useEffect(() => {
+    const customCampaigns: CampaignItem[] = JSON.parse(
+      localStorage.getItem('wt_custom_campaigns') || '[]'
+    );
+
     api.get('/campaigns')
       .then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          setCampaigns(res.data);
+          setCampaigns([...customCampaigns, ...res.data]);
+        } else {
+          setCampaigns([...customCampaigns, ...FALLBACK_PROJECTS]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setCampaigns([...customCampaigns, ...FALLBACK_PROJECTS]);
+      });
   }, []);
 
+  // 4-second auto-slide interval
   useEffect(() => {
-  // Load custom admin-created campaigns from local storage
-  const customCampaigns: CampaignItem[] = JSON.parse(
-    localStorage.getItem('wt_custom_campaigns') || '[]'
-  );
+    if (campaigns.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % campaigns.length);
+    }, 4000);
 
-  api.get('/campaigns')
-    .then((res) => {
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const combined = [...customCampaigns, ...res.data];
-        setCampaigns(combined);
-      } else {
-        setCampaigns([...customCampaigns, ...DEFAULT_SLIDES]);
-      }
-    })
-    .catch(() => {
-      setCampaigns([...customCampaigns, ...DEFAULT_SLIDES]);
-    });
-}, []);
+    return () => clearInterval(interval);
+  }, [campaigns.length]);
 
   const reachedCount = campaigns.filter(c => (c.collectedAmount || 0) >= (c.targetAmount || 1)).length;
   const inProgressCount = campaigns.filter(c => (c.collectedAmount || 0) < (c.targetAmount || 1) && c.status !== 'INACTIVE').length;
   const deactivatedCount = campaigns.filter(c => c.status === 'INACTIVE').length;
 
-  const activeProject = campaigns[currentSlide] || DEFAULT_SLIDES[0];
+  const activeProject = campaigns[currentSlide] || FALLBACK_PROJECTS[0];
   const target = activeProject.targetAmount || 1;
   const collected = activeProject.collectedAmount || 0;
   const percent = Math.min(Math.round((collected / target) * 100), 100);
 
   return (
     <div className="w-full space-y-6">
-      {/* Top Section: Hero Banner + Stats / Quick Actions */}
+      {/* Top Section: Hero Banner + Fast Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left / Main Banner (Hero) */}
-        <div className="lg:col-span-7 flex flex-col justify-between">
-          <div
-            onClick={() => navigate(`/projek/${activeProject.id}`)}
-            className="relative h-[220px] md:h-[280px] w-full rounded-3xl overflow-hidden shadow-sm cursor-pointer group"
-          >
-            <img
-              src={activeProject.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800'}
-              alt={activeProject.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent backdrop-blur-[1px] text-white">
-              <span className="inline-block px-2.5 py-0.5 mb-1.5 text-[10px] font-black uppercase tracking-wider bg-[#1A8C4E] rounded-md">
-                {activeProject.category || 'Waqaf'}
-              </span>
-              <h2 className="font-extrabold text-lg md:text-xl leading-snug line-clamp-1">{activeProject.title}</h2>
-              <p className="text-xs text-gray-200 mt-1 font-normal line-clamp-2 leading-relaxed max-w-xl">
-                {activeProject.description}
-              </p>
+        <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+          <div className="space-y-2">
+            <div
+              onClick={() => navigate(`/projek/${activeProject.id}`)}
+              className="relative h-[220px] md:h-[280px] w-full rounded-3xl overflow-hidden shadow-sm cursor-pointer group"
+            >
+              <img
+                src={activeProject.image || 'https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=80'}
+                alt={activeProject.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent backdrop-blur-[1px] text-white">
+                <span className="inline-block px-2.5 py-0.5 mb-1.5 text-[10px] font-black uppercase tracking-wider bg-[#1A8C4E] rounded-md">
+                  {activeProject.category || 'Waqaf'}
+                </span>
+                <h2 className="font-extrabold text-lg md:text-xl leading-snug line-clamp-1">{activeProject.title}</h2>
+                <p className="text-xs text-gray-200 mt-1 font-normal line-clamp-2 leading-relaxed max-w-xl">
+                  {activeProject.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Dots Indicator Directly Below Hero */}
+            <div className="flex justify-center items-center gap-1.5 pt-1">
+              {campaigns.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`transition-all duration-300 rounded-full ${
+                    currentSlide === idx ? 'w-6 h-1.5 bg-[#1A8C4E]' : 'w-2 h-1.5 bg-gray-300'
+                  }`}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
             </div>
           </div>
-          <div className="bg-gradient-to-r from-[#0F2028] to-[#1A8C4E] p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-  <div className="space-y-1 text-center sm:text-left">
-    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 bg-white/20 rounded-full">Inisiatif Komuniti</span>
-    <h3 className="text-base font-black">Jadilah Duta Waqaf (Rakan QR)</h3>
-    <p className="text-xs text-white/80">Mohon pelekat dan standee QR fizikal rasmi untuk premis, surau, atau acara anda.</p>
-  </div>
-  <button
-    onClick={() => navigate('/rakan-qr')}
-    className="px-5 py-2.5 bg-white text-[#0F2028] hover:bg-slate-100 rounded-2xl text-xs font-bold shrink-0 transition"
-  >
-    Mohon QR Fizikal
-  </button>
-</div>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center items-center gap-2 mt-3">
-            {campaigns.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                className={`transition-all duration-300 rounded-full ${
-                  currentSlide === idx ? 'w-6 h-2 bg-[#1A8C4E]' : 'w-2 h-2 bg-gray-300'
-                }`}
-                aria-label={`Slide ${idx + 1}`}
-              />
-            ))}
+          {/* Rakan QR Card */}
+          <div className="bg-gradient-to-r from-[#0F2028] to-[#1A8C4E] p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+            <div className="space-y-1 text-center sm:text-left">
+              <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 bg-white/20 rounded-full">Inisiatif Komuniti</span>
+              <h3 className="text-base font-black">Jadilah Duta Waqaf (Rakan QR)</h3>
+              <p className="text-xs text-white/80">Mohon pelekat dan standee QR fizikal rasmi untuk premis, surau, atau acara anda.</p>
+            </div>
+            <button
+              onClick={() => navigate('/rakan-qr')}
+              className="px-5 py-2.5 bg-white text-[#0F2028] hover:bg-slate-100 rounded-2xl text-xs font-bold shrink-0 transition"
+            >
+              Mohon QR Fizikal
+            </button>
           </div>
         </div>
 
-        {/* Right / Fast Stats & Action Buttons */}
+        {/* Right / Metric Counters & Action Buttons */}
         <div className="lg:col-span-5 flex flex-col justify-between gap-4">
-          {/* 3 Metric Cards */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col justify-between h-[110px]">
               <span className="text-3xl font-black text-[#1A8C4E] leading-none">{reachedCount}</span>
@@ -171,7 +165,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Tax Exemption Banner */}
+          {/* Tax Exemption Notice */}
           <div className="bg-[#EBF7F0] border border-[#CDEED9] rounded-2xl p-4 flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-[#1A8C4E] text-white flex items-center justify-center shrink-0 shadow-sm">
               <Percent className="w-5 h-5 stroke-[2.5]" />
@@ -184,7 +178,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Button Pills */}
+          {/* Fast Action Buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => navigate('/projek')}
@@ -204,9 +198,8 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Section: Featured Campaigns & Articles Grid */}
+      {/* Bottom Section: Featured Project Highlight Card */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
-        {/* Featured Campaign Highlight */}
         <div className="lg:col-span-7 space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="font-extrabold text-lg text-[#0F2028]">Projek Pilihan Utama</h3>
@@ -221,7 +214,7 @@ export const HomePage: React.FC = () => {
           <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-xs flex flex-col md:flex-row">
             <div className="md:w-5/12 h-[190px] md:h-auto bg-slate-100 overflow-hidden relative">
               <img
-                src={activeProject.image || 'https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&q=80&w=800'}
+                src={activeProject.image || 'https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=80'}
                 alt={activeProject.title}
                 className="w-full h-full object-cover"
               />
@@ -276,7 +269,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* News & Updates Grid */}
+        {/* News & Community Updates */}
         <div className="lg:col-span-5 space-y-3">
           <h3 className="font-extrabold text-lg text-[#0F2028]">Berita & Laporan Komuniti</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">

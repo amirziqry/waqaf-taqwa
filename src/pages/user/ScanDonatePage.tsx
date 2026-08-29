@@ -1,25 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QrCode, CreditCard, ShieldCheck, CheckCircle2, ArrowRight, Building2 } from 'lucide-react';
+import { 
+  QrCode, 
+  CreditCard, 
+  ShieldCheck, 
+  CheckCircle2, 
+  ArrowRight, 
+  Building2, 
+  X, 
+  Loader2 
+} from 'lucide-react';
 import api from '../../api/client';
 
 export const ScanDonatePage: React.FC = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'scan' | 'amount' | 'processing' | 'success'>('amount');
+  const [step, setStep] = useState<'amount' | 'gateway' | 'processing' | 'success'>('amount');
   const [amount, setAmount] = useState<string>('20');
   const [selectedMethod, setSelectedMethod] = useState<'duitnow' | 'fpx' | 'card'>('duitnow');
+  const [selectedBank, setSelectedBank] = useState('Maybank2u');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [akadAgreed, setAkadAgreed] = useState(true);
-  const [campaignId] = useState('1'); // Defaults to main waqf fund
+  const [campaignId] = useState('1');
   const [transactionData, setTransactionData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const presetAmounts = ['10', '20', '50', '100', '200'];
 
-  const handleDonate = async (e: React.FormEvent) => {
+  // Step 1: Open the Gateway verification instead of completing instantly
+  const handleInitiatePayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!akadAgreed || Number(amount) <= 0) return;
+    setStep('gateway');
+  };
 
+  // Step 2: Execute actual payment verification & save receipt
+  const handleConfirmGatewayPayment = async () => {
     setLoading(true);
     setStep('processing');
 
@@ -27,6 +42,7 @@ export const ScanDonatePage: React.FC = () => {
       campaignId,
       amount: Number(amount),
       paymentMethod: selectedMethod,
+      bank: selectedMethod === 'fpx' ? selectedBank : undefined,
       akadAgreed,
       isAnonymous,
       notes: 'Infaq & Waqaf Digital Taqwa',
@@ -49,7 +65,7 @@ export const ScanDonatePage: React.FC = () => {
         status: 'SUCCESS',
       };
 
-      // 2. Persist to local transactions store for immediate offline sync
+      // 2. Persist to local transactions store
       const stored = JSON.parse(localStorage.getItem('wt_transactions') || '[]');
       localStorage.setItem('wt_transactions', JSON.stringify([record, ...stored]));
 
@@ -65,7 +81,7 @@ export const ScanDonatePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6 pb-12">
       {/* Top Banner */}
       <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xs flex items-center justify-between">
         <div>
@@ -77,8 +93,9 @@ export const ScanDonatePage: React.FC = () => {
         </div>
       </div>
 
+      {/* 1. Payment Amount & Method Selection Form */}
       {step === 'amount' && (
-        <form onSubmit={handleDonate} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-5">
+        <form onSubmit={handleInitiatePayment} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-5">
           {/* Quick Preset Amounts */}
           <div className="space-y-2">
             <label className="text-xs font-extrabold text-[#0F2028]">Pilih Amaun (RM)</label>
@@ -187,7 +204,7 @@ export const ScanDonatePage: React.FC = () => {
 
           <button
             type="submit"
-            disabled={!akadAgreed || loading}
+            disabled={!akadAgreed || Number(amount) <= 0}
             className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] disabled:bg-slate-300 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99]"
           >
             <span>Sahkan & Bayar RM {Number(amount).toFixed(2)}</span>
@@ -196,6 +213,112 @@ export const ScanDonatePage: React.FC = () => {
         </form>
       )}
 
+      {/* 2. Interactive Payment Gateway Step */}
+      {step === 'gateway' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-extrabold text-[#0F2028]">
+              {selectedMethod === 'duitnow' && 'Pengesahan DuitNow QR'}
+              {selectedMethod === 'fpx' && 'Perbankan FPX Online'}
+              {selectedMethod === 'card' && 'Pengesahan Kad Debit / Kredit'}
+            </h3>
+            <button
+              onClick={() => setStep('amount')}
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-xl"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* DuitNow Dynamic QR */}
+          {selectedMethod === 'duitnow' && (
+            <div className="flex flex-col items-center justify-center space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="p-3 bg-white rounded-2xl shadow-xs border border-slate-100">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=DuitNow-WaqafTaqwa-RM${Number(amount).toFixed(2)}`}
+                  alt="DuitNow Dynamic QR"
+                  className="w-40 h-40 object-contain"
+                />
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-black text-slate-800">Jumlah Bayaran: RM {Number(amount).toFixed(2)}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Imbas menggunakan MAE, Touch 'n Go, CIMB, atau perbankan anda</p>
+              </div>
+            </div>
+          )}
+
+          {/* FPX Bank Selector */}
+          {selectedMethod === 'fpx' && (
+            <div className="space-y-2">
+              <label className="text-xs font-extrabold text-[#0F2028]">Pilih Bank Pembayar</label>
+              <div className="grid grid-cols-2 gap-2">
+                {['Maybank2u', 'CIMB Clicks', 'Bank Islam', 'RHB Now', 'Public Bank', 'Hong Leong'].map((bank) => (
+                  <button
+                    key={bank}
+                    type="button"
+                    onClick={() => setSelectedBank(bank)}
+                    className={`p-3 rounded-xl border text-xs font-bold transition text-left ${
+                      selectedBank === bank
+                        ? 'border-[#1A8C4E] bg-emerald-50 text-[#1A8C4E]'
+                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {bank}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Card Form */}
+          {selectedMethod === 'card' && (
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Nombor Kad (16-Digit)"
+                defaultValue="4111 2222 3333 4444"
+                className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  defaultValue="12/28"
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none"
+                />
+                <input
+                  type="password"
+                  placeholder="CVV"
+                  defaultValue="123"
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Gateway Submit Action */}
+          <div className="space-y-2 pt-2">
+            <button
+              type="button"
+              onClick={handleConfirmGatewayPayment}
+              disabled={loading}
+              className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] disabled:bg-slate-300 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Sahkan Pembayaran (RM {Number(amount).toFixed(2)})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep('amount')}
+              className="w-full h-9 text-xs font-bold text-slate-500 hover:text-slate-800"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Processing State */}
       {step === 'processing' && (
         <div className="bg-white p-12 rounded-3xl border border-slate-100 shadow-xs text-center space-y-4">
           <div className="w-12 h-12 border-4 border-emerald-100 border-t-[#1A8C4E] rounded-full animate-spin mx-auto" />
@@ -204,6 +327,7 @@ export const ScanDonatePage: React.FC = () => {
         </div>
       )}
 
+      {/* 4. Verified Success & Receipt Record */}
       {step === 'success' && transactionData && (
         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xs text-center space-y-5">
           <div className="w-16 h-16 bg-emerald-50 text-[#1A8C4E] rounded-3xl flex items-center justify-center mx-auto border border-emerald-100">
