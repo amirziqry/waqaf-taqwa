@@ -16,6 +16,7 @@ import { TransactionHistoryPage } from './pages/user/TransactionHistoryPage';
 import { ReceiptPage } from './pages/user/ReceiptPage';
 import { ProfilePage } from './pages/user/ProfilePage';
 import { VendorPosPage } from './pages/user/VendorPosPage';
+import { RakanQrPage } from './pages/user/RakanQrPage';
 
 // Admin Pages
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -119,6 +120,7 @@ export const App: React.FC = () => {
     </AppLayout>
   }
 />
+      <Route path="/rakan-qr" element={<RakanQrPage />} />
 
       {/* Admin Subsystem Routes */}
       <Route

@@ -116,6 +116,19 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
           </div>
+          <div className="bg-gradient-to-r from-[#0F2028] to-[#1A8C4E] p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+  <div className="space-y-1 text-center sm:text-left">
+    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 bg-white/20 rounded-full">Inisiatif Komuniti</span>
+    <h3 className="text-base font-black">Jadilah Duta Waqaf (Rakan QR)</h3>
+    <p className="text-xs text-white/80">Mohon pelekat dan standee QR fizikal rasmi untuk premis, surau, atau acara anda.</p>
+  </div>
+  <button
+    onClick={() => navigate('/rakan-qr')}
+    className="px-5 py-2.5 bg-white text-[#0F2028] hover:bg-slate-100 rounded-2xl text-xs font-bold shrink-0 transition"
+  >
+    Mohon QR Fizikal
+  </button>
+</div>
 
           {/* Dots Indicator */}
           <div className="flex justify-center items-center gap-2 mt-3">
