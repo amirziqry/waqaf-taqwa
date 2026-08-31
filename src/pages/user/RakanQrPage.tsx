@@ -4,11 +4,9 @@ import {
   QrCode, 
   ShieldCheck, 
   Send, 
-  CheckCircle2, 
-  Download, 
+  CheckCircle2,  
   ArrowLeft, 
-  Building2, 
-  Share2, 
+  Building2,  
   Printer 
 } from 'lucide-react';
 import api from '../../api/client';
@@ -31,7 +29,7 @@ export const RakanQrPage: React.FC = () => {
   const navigate = useNavigate();
   const [hasExistingApp, setHasExistingApp] = useState<RakanApplication | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',

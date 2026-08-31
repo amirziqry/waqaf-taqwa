@@ -8,7 +8,6 @@ import {
   ArrowRight, 
   Building2, 
   X, 
-  Loader2 
 } from 'lucide-react';
 import api from '../../api/client';
 
