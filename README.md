@@ -306,7 +306,8 @@ const response = await api.post(
 );
 
 const requestBody = {
-    amount: frontend.amount
+    amount: frontend.amount,
+    taxExempt: frontend.taxExemptFlag // true/false
 };
 
 const frontend.object = {
@@ -393,7 +394,8 @@ const response = await api.post(
 );
 
 const requestBody = {
-    amount: frontend.amount
+    amount: frontend.amount,
+    taxExempt: frontend.taxExemptFlag // true/false
 };
 
 const frontend.object = {
@@ -404,11 +406,38 @@ const frontend.object = {
 };
 ```
 
-#### Project Donation — Get Project Donation Sum (Placeholder)
+#### Project Donation — Get Payment Status
 
 ```javascript
 const response = await api.get(
-    `/project/donation/${frontend.projectId}/sum`
+    `/project/donation/payment/${frontend.id}/status`
+);
+
+const frontend.object = {
+    frontend.var: response.data.id,
+    frontend.var: response.data.billingCode,
+    frontend.var: response.data.amount,
+    frontend.var: response.data.paidAt,
+    frontend.var: response.data.status,
+    frontend.var: response.data.receiptHashId,
+    frontend.var: response.data.projectId,
+    frontend.var: response.data.projectName
+};
+```
+
+#### Project Donation — Get Project Donation Collection (Placeholder)
+
+```javascript
+const filter = {
+    startDate: frontend.startDate, // dd-MM-yyyy
+    endDate: frontend.endDate       // dd-MM-yyyy
+};
+
+const response = await api.get(
+    `/project/donation/${frontend.projectId}/collection`,
+    {
+        params: filter // Optional
+    }
 );
 
 const frontend.object = {
@@ -428,7 +457,6 @@ const response = await api.post(
 const requestBody = {
     name: frontend.name,
     slugUrl: frontend.slugUrl,
-    collectedAmount: frontend.collectedAmount,
     targetAmount: frontend.targetAmount,
     location: frontend.location,
     category: {
@@ -470,7 +498,6 @@ const response = await api.put(
 const requestBody = {
     name: frontend.name,
     slugUrl: frontend.slugUrl,
-    collectedAmount: frontend.collectedAmount,
     targetAmount: frontend.targetAmount,
     location: frontend.location,
     category: {
