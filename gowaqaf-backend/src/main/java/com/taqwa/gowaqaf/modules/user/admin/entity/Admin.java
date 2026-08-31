@@ -3,7 +3,7 @@ package com.taqwa.gowaqaf.modules.user.admin.entity;
 import java.util.Set;
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
 import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 
 import jakarta.persistence.Column;
@@ -47,6 +47,6 @@ public class Admin {
 
 	@OneToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "identity_id", nullable = true, unique = true)
-	private AccountIdentity identity;
+	private AccountInfo info;
 
 }

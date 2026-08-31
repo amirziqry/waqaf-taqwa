@@ -14,6 +14,13 @@ import com.taqwa.gowaqaf.payment.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Payment service implementation.
+ *
+ * Handles application-level payment operations and delegates communication with
+ * the NexGen Payment API to NexGenPaymentClient.
+ */
+
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -22,8 +29,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public String createPaymentCollection(CollectionCreateRequest request) {
-		NexGenCreateCollectionRequest dto = new NexGenCreateCollectionRequest();
 
+		NexGenCreateCollectionRequest dto = new NexGenCreateCollectionRequest();
 		dto.setFieldName(request.getName());
 		dto.setFieldDescription(request.getDescription());
 		dto.setFieldStatus(request.getStatus().toString().toLowerCase());
@@ -38,18 +45,18 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public PaymentUrlResponse createPaymentBill(PaymentRequest request) {
+
 		NexGenCreateBillingRequest billingRequest = new NexGenCreateBillingRequest();
 		billingRequest.setFieldName(request.getName());
 		billingRequest.setFieldAmount(request.getAmount());
 		billingRequest.setFieldRedirectUrl(request.getRedirectUrl());
 		billingRequest.setFieldCallbackUrl(request.getCallbackUrl());
 
+		// TODO: API Integration
 		NexGenBillingResponse billingResponse = nexGenPaymentClient.createBilling(request.getCollectionCode(),
 				billingRequest);
 
-		// TODO: API Integration
 		PaymentUrlResponse paymentUrlResponse = new PaymentUrlResponse();
-
 		paymentUrlResponse.setBillingCode(billingResponse.getCode());
 		paymentUrlResponse.setStatus(billingResponse.getStatus().toUpperCase());
 		paymentUrlResponse.setPaymentUrl(billingResponse.getPaymentUrl());

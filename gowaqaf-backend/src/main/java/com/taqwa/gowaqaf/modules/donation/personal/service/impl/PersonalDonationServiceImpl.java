@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationRequest;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSum;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSumFilter;
 import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.mapper.PersonalDonationMapper;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;

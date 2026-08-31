@@ -10,29 +10,29 @@ import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
-import com.taqwa.gowaqaf.modules.agent.component.AgentType;
-import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.donation.agent.entity.RakanQrDonation;
-import com.taqwa.gowaqaf.modules.donation.agent.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.merchant.entity.MerchantDonation;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
-import com.taqwa.gowaqaf.modules.organization.campaign.entity.Campaign;
-import com.taqwa.gowaqaf.modules.organization.campaign.repository.CampaignRepository;
-import com.taqwa.gowaqaf.modules.organization.news.entity.News;
-import com.taqwa.gowaqaf.modules.organization.news.repository.NewsRepository;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.entity.RakanQrDonation;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.entity.Campaign;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
+import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
+import com.taqwa.gowaqaf.modules.organization.content.news.entity.News;
+import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
+import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
+import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
-import com.taqwa.gowaqaf.modules.organization.project.entity.Project;
-import com.taqwa.gowaqaf.modules.organization.project.entity.Status;
-import com.taqwa.gowaqaf.modules.organization.project.repository.ProjectRepository;
-import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
 import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
@@ -44,49 +44,47 @@ import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
 public class CommonClass {
 
 	// Mock admin user.
-	public static Admin createMockAdmin(AdminRepository repository, AccountIdentityRepository identityRepository,
+	public static Admin createMockAdmin(AdminRepository repository, AccountInfoRepository identityRepository,
 			PasswordEncoder passwordEncoder, String username, String email, Set<Role> roles) {
 		Admin test = new Admin();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		test.setUsername(username);
 		test.setPassword(passwordEncoder.encode("0000"));
 		test.setRoles(roles);
 
-		identity.setEmail(email);
-		test.setIdentity(identityRepository.save(identity));
+		info.setEmail(email);
+		test.setInfo(identityRepository.save(info));
 
 		return repository.save(test);
 	}
 
 	// Mock merchant user.
-	public static Merchant createMockMerchant(MerchantRepository repository,
-			AccountIdentityRepository identityRepository, PasswordEncoder passwordEncoder, String username,
-			String email) {
+	public static Merchant createMockMerchant(MerchantRepository repository, AccountInfoRepository identityRepository,
+			PasswordEncoder passwordEncoder, String username, String email) {
 		Merchant test = new Merchant();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		test.setUsername(username);
-		test.setIdentity(identityRepository.save(identity));
+		test.setInfo(identityRepository.save(info));
 
-		identity.setEmail(email);
+		info.setEmail(email);
 		test.setPassword(passwordEncoder.encode("0000"));
 
 		return repository.save(test);
 	}
 
 	// Mock personal user.
-	public static Personal createMockPersonal(PersonalRepository repository,
-			AccountIdentityRepository identityRepository, PasswordEncoder passwordEncoder, String username,
-			String email) {
+	public static Personal createMockPersonal(PersonalRepository repository, AccountInfoRepository identityRepository,
+			PasswordEncoder passwordEncoder, String username, String email) {
 		Personal test = new Personal();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		test.setUsername(username);
 		test.setPassword(passwordEncoder.encode("0000"));
 
-		identity.setEmail(email);
-		test.setIdentity(identityRepository.save(identity));
+		info.setEmail(email);
+		test.setInfo(identityRepository.save(info));
 
 		return repository.save(test);
 	}
@@ -105,7 +103,7 @@ public class CommonClass {
 		donationRepository.save(donation);
 	}
 
-	// Mock merchant donation.
+	// Mock personal donation.
 	public static void createMockPersonalDonation(PersonalDonationRepository donationRepository, Personal personal,
 			BigDecimal amount, DonationType type, PaymentStatus status, LocalDateTime paidAt) {
 		PersonalDonation donation = new PersonalDonation();
@@ -120,14 +118,29 @@ public class CommonClass {
 		donationRepository.save(donation);
 	}
 
+	// Mock project donation.
+	public static PersonalDonation createMockProjectDonation(PersonalDonationRepository donationRepository,
+			Personal personal, Project project, BigDecimal amount, PaymentStatus status, LocalDateTime paidAt) {
+		PersonalDonation donation = new PersonalDonation();
+		donation.setPersonal(personal);
+		donation.setProject(project);
+		donation.setBillingCode(UUID.randomUUID().toString());
+		donation.setAmount(amount);
+		donation.setStatus(status);
+		donation.setPaidAt(paidAt);
+		donation.setDonationType(DonationType.PROJECT);
+		donation.setTaxExempt(false);
+
+		return donationRepository.save(donation);
+	}
+
 	// Mock project.
-	public static void createMockProject(ProjectRepository repository, String name, BigDecimal targetAmount,
-			Status status) {
+	public static Project createMockProject(ProjectRepository repository, String name, BigDecimal targetAmount,
+			ContentStatus status) {
 		Project test = new Project();
 
 		test.setName(name);
 		test.setSlugUrl("slug-url");
-		test.setCollectedAmount(new BigDecimal("10000.00"));
 		test.setTargetAmount(targetAmount);
 		test.setLocation("location");
 		test.setCategory(null);
@@ -138,11 +151,11 @@ public class CommonClass {
 		test.setImages(new ArrayList<>());
 		test.setPaymentCollectionCode(UUID.randomUUID().toString());
 
-		repository.save(test);
+		return repository.save(test);
 	}
 
 	// Mock news.
-	public static void createMockNews(NewsRepository repository, String title, Status status) {
+	public static void createMockNews(NewsRepository repository, String title, ContentStatus status) {
 		News test = new News();
 
 		test.setTitle(title);
@@ -160,7 +173,7 @@ public class CommonClass {
 	}
 
 	// Mock campaign.
-	public static void createMockCampaign(CampaignRepository repository, String name, Status status) {
+	public static void createMockCampaign(CampaignRepository repository, String name, ContentStatus status) {
 		Campaign test = new Campaign();
 
 		test.setName(name);
@@ -199,8 +212,8 @@ public class CommonClass {
 	}
 
 	// Mock merchant rakanqr.
-	public static RakanQr createMockRakanQr(RakanQrRepository agentRepository, Merchant merchant, AgentType type,
-			AgentStatus status) {
+	public static RakanQr createMockRakanQr(RakanQrRepository agentRepository, Merchant merchant, RakanQrType type,
+			RakanQrStatus status) {
 		RakanQr agent = new RakanQr();
 
 		agent.setType(type);
@@ -211,8 +224,8 @@ public class CommonClass {
 	}
 
 	// Mock personal rakanqr.
-	public static RakanQr createMockRakanQr(RakanQrRepository agentRepository, Personal personal, AgentType type,
-			AgentStatus status) {
+	public static RakanQr createMockRakanQr(RakanQrRepository agentRepository, Personal personal, RakanQrType type,
+			RakanQrStatus status) {
 		RakanQr agent = new RakanQr();
 
 		agent.setType(type);

@@ -2,7 +2,7 @@ package com.taqwa.gowaqaf.modules.user.personal.entity;
 
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +38,6 @@ public class Personal {
 
 	@OneToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "identity_id", nullable = true, unique = true)
-	private AccountIdentity identity;
+	private AccountInfo info;
 
 }

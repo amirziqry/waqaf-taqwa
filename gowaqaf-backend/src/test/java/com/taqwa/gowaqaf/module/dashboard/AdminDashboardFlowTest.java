@@ -21,22 +21,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.common.CommonClass;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
-import com.taqwa.gowaqaf.modules.agent.component.AgentType;
-import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.donation.agent.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
-import com.taqwa.gowaqaf.modules.organization.campaign.repository.CampaignRepository;
-import com.taqwa.gowaqaf.modules.organization.news.repository.NewsRepository;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
+import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
+import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
+import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
-import com.taqwa.gowaqaf.modules.organization.project.entity.Status;
-import com.taqwa.gowaqaf.modules.organization.project.repository.ProjectRepository;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -60,7 +60,7 @@ public class AdminDashboardFlowTest {
 	private final PersonalRepository personalRepository;
 	private final MerchantRepository merchantRepository;
 	private final RakanQrRepository agentRepository;
-	private final AccountIdentityRepository identityRepository;
+	private final AccountInfoRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	private final PersonalDonationRepository personalDonationRepository;
@@ -75,12 +75,12 @@ public class AdminDashboardFlowTest {
 	@BeforeEach
 	void setup() {
 		CommonClass.createMockProfile(profileRepository);
-		CommonClass.createMockProject(projectRepository, "project1", new BigDecimal("10000"), Status.PUBLISHED);
-		CommonClass.createMockProject(projectRepository, "project2", new BigDecimal("10000"), Status.PUBLISHED);
-		CommonClass.createMockProject(projectRepository, "project3", new BigDecimal("10000"), Status.PUBLISHED);
-		CommonClass.createMockNews(newsRepository, "news1", Status.PUBLISHED);
-		CommonClass.createMockNews(newsRepository, "news2", Status.PUBLISHED);
-		CommonClass.createMockCampaign(campaignRepository, "campaign1", Status.PUBLISHED);
+		CommonClass.createMockProject(projectRepository, "project1", new BigDecimal("10000"), ContentStatus.PUBLISHED);
+		CommonClass.createMockProject(projectRepository, "project2", new BigDecimal("10000"), ContentStatus.PUBLISHED);
+		CommonClass.createMockProject(projectRepository, "project3", new BigDecimal("10000"), ContentStatus.PUBLISHED);
+		CommonClass.createMockNews(newsRepository, "news1", ContentStatus.PUBLISHED);
+		CommonClass.createMockNews(newsRepository, "news2", ContentStatus.PUBLISHED);
+		CommonClass.createMockCampaign(campaignRepository, "campaign1", ContentStatus.PUBLISHED);
 
 		Personal p1 = CommonClass.createMockPersonal(personalRepository, identityRepository, passwordEncoder,
 				"donator1", "test@gmail.com");
@@ -128,8 +128,8 @@ public class AdminDashboardFlowTest {
 
 		// Rakan QR
 
-		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, AgentType.PERSONAL, AgentStatus.ACTIVE);
-		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, AgentType.MERCHANT, AgentStatus.ACTIVE);
+		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
+		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
 
 		CommonClass.createMockRakanQrDonation(agentDonationRepository, r1, new BigDecimal("150.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 3, 11, 0, 0));

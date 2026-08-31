@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
-import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalRegisterCredentials;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalRegisterResponse;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -20,19 +21,20 @@ import lombok.RequiredArgsConstructor;
 public class PersonalServiceImpl implements PersonalService {
 
 	private final PersonalRepository personalRepository;
+	private final AccountInfoRepository infoRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public PersonalRegisterResponse createPersonal(PersonalRegisterCredentials dto) {
 		Personal user = new Personal();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		user.setUsername(dto.getUsername());
 		user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-		identity.setEmail(dto.getEmail());
-		identity.setPhone(dto.getPhone());
-		user.setIdentity(identity);
+		info.setEmail(dto.getEmail());
+		info.setPhone(dto.getPhone());
+		user.setInfo(infoRepository.save(info));
 
 		Personal saved = personalRepository.save(user);
 

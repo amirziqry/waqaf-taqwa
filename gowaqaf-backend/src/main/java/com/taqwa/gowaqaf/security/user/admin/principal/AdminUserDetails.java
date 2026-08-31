@@ -68,12 +68,4 @@ public class AdminUserDetails implements AccountUserDetails {
 		return AccountType.ADMIN;
 	}
 
-	public String getEmail() {
-		return admin.getIdentity().getEmail();
-	}
-
-	public String getPhone() {
-		return admin.getIdentity().getEmail();
-	}
-
 }

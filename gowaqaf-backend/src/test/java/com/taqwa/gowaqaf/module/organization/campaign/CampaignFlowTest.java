@@ -39,14 +39,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.category.entity.CampaignCategory;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.category.repository.CampaignCategoryRepository;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.image.CampaignImageKey;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.image.CampaignImageUrl;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.tag.entity.CampaignTag;
-import com.taqwa.gowaqaf.modules.organization.campaign.component.tag.repository.CampaignTagRepository;
-import com.taqwa.gowaqaf.modules.organization.campaign.dto.CampaignUploadResponse;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.dto.CampaignImageKey;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.dto.CampaignImageUrl;
+import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignUploadResponse;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.repository.ContentCategoryRepository;
+import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.repository.ContentTagRepository;
 import com.taqwa.gowaqaf.storage.dto.UploadUrl;
 
 import lombok.RequiredArgsConstructor;
@@ -66,14 +67,14 @@ public class CampaignFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 	private final S3Client s3Client;
-	private final CampaignCategoryRepository categoryRepository;
-	private final CampaignTagRepository tagRepository;
+	private final ContentCategoryRepository categoryRepository;
+	private final ContentTagRepository tagRepository;
 
 	@Value("${storage.bucket}")
 	private String bucket;
 
-	CampaignCategory c1, c2;
-	CampaignTag t1, t2, t3, t4;
+	ContentCategory c1, c2;
+	ContentTag t1, t2, t3, t4;
 
 	@BeforeEach
 	void setup() {
@@ -86,16 +87,18 @@ public class CampaignFlowTest {
 		this.t4 = creatMockTag("Berkala");
 	}
 
-	private CampaignCategory creatMockCategory(String name) {
-		CampaignCategory category = new CampaignCategory();
+	private ContentCategory creatMockCategory(String name) {
+		ContentCategory category = new ContentCategory();
 		category.setName(name);
+		category.setType(ContentType.CAMPAIGN);
 
 		return categoryRepository.save(category);
 	}
 
-	private CampaignTag creatMockTag(String name) {
-		CampaignTag tag = new CampaignTag();
+	private ContentTag creatMockTag(String name) {
+		ContentTag tag = new ContentTag();
 		tag.setName(name);
+		tag.setType(ContentType.CAMPAIGN);
 
 		return tagRepository.save(tag);
 	}
@@ -215,7 +218,9 @@ public class CampaignFlowTest {
 		mockMvc.perform(put("/api/organization/campaign/" + campaignId + "/image-keys/upload")
 				.contentType(MediaType.APPLICATION_JSON).content(imagesJson)).andExpect(status().isOk());
 
-		result = mockMvc.perform(get("/api/organization/campaign/" + campaignId + "/get").contentType(MediaType.APPLICATION_JSON))
+		result = mockMvc
+				.perform(get("/api/organization/campaign/" + campaignId + "/get")
+						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.id").value(campaignId.toString()))
 				.andExpect(jsonPath("$.name").value("Wakaf Korporat & Padanan Sumbangan"))
 				.andExpect(jsonPath("$.slugUrl").value("wakaf-korporat-padanan-sumbangan"))

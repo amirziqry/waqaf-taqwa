@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
-import com.taqwa.gowaqaf.modules.user.account.entity.AccountIdentity;
+import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminInfo;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterCredentials;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterResponse;
@@ -28,21 +29,22 @@ import lombok.RequiredArgsConstructor;
 public class AdminServiceImpl implements AdminService {
 
 	private final AdminRepository adminRepository;
+	private final AccountInfoRepository accountRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public AdminRegisterResponse createEditor(AdminRegisterCredentials dto) {
 		Admin user = new Admin();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		user.setUsername(dto.getUsername());
 		user.setPassword(passwordEncoder.encode(dto.getPassword()));
 		user.setRoles(Set.of(Role.EDITOR));
 
-		identity.setEmail(dto.getEmail());
-		identity.setPhone(dto.getPhone());
-		identity.setModMesra(dto.getModMesra());
-		user.setIdentity(identity);
+		info.setEmail(dto.getEmail());
+		info.setPhone(dto.getPhone());
+		info.setModMesra(dto.getModMesra());
+		user.setInfo(accountRepository.save(info));
 
 		Admin saved = adminRepository.save(user);
 
@@ -52,16 +54,16 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	public AdminRegisterResponse createAdmin(AdminRegisterCredentials dto) {
 		Admin user = new Admin();
-		AccountIdentity identity = new AccountIdentity();
+		AccountInfo info = new AccountInfo();
 
 		user.setUsername(dto.getUsername());
 		user.setPassword(passwordEncoder.encode(dto.getPassword()));
 		user.setRoles(Set.of(Role.ADMIN));
 
-		identity.setEmail(dto.getEmail());
-		identity.setPhone(dto.getPhone());
-		identity.setModMesra(dto.getModMesra());
-		user.setIdentity(identity);
+		info.setEmail(dto.getEmail());
+		info.setPhone(dto.getPhone());
+		info.setModMesra(dto.getModMesra());
+		user.setInfo(accountRepository.save(info));
 
 		Admin saved = adminRepository.save(user);
 

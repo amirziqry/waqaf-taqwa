@@ -45,6 +45,9 @@ public enum ErrorCode {
 
 	// Category
 	CAT001("Category not found"),
+	
+	// Tag
+	TAG001("Tag not found"),
 
 	// Organization
 	O001("Organization not found"),

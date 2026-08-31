@@ -74,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			}
 
 		} catch (JwtException | IllegalArgumentException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json");
 			response.getWriter().write("""
@@ -86,7 +86,6 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 
 		filterChain.doFilter(request, response);
-
 	}
 
 	private String getTokenFromCookie(HttpServletRequest request) {

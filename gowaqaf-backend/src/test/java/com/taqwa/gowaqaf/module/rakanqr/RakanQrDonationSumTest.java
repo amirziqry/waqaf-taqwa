@@ -23,17 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.common.CommonClass;
-import com.taqwa.gowaqaf.mockuser.donator.WithMockPersonal;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.mockuser.vendor.WithMockMerchant;
-import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
-import com.taqwa.gowaqaf.modules.agent.component.AgentType;
-import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.donation.agent.dto.RakanQrDonationSum;
-import com.taqwa.gowaqaf.modules.donation.agent.repository.RakanQrDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.mockuser.merchant.WithMockMerchant;
+import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationSum;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -53,7 +53,7 @@ public class RakanQrDonationSumTest {
 	private final MockMvc mockMvc;
 	private final MerchantRepository merchantRepository;
 	private final PersonalRepository personalRepository;
-	private final AccountIdentityRepository identityRepository;
+	private final AccountInfoRepository identityRepository;
 	private final RakanQrRepository agentRepository;
 	private final RakanQrDonationRepository donationRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -69,10 +69,10 @@ public class RakanQrDonationSumTest {
 		Personal p2 = CommonClass.createMockPersonal(personalRepository, identityRepository, passwordEncoder,
 				"personal2", "personal2@gmail.com");
 
-		RakanQr mr1 = CommonClass.createMockRakanQr(agentRepository, m1, AgentType.MERCHANT, AgentStatus.ACTIVE);
-		RakanQr mr2 = CommonClass.createMockRakanQr(agentRepository, m2, AgentType.MERCHANT, AgentStatus.ACTIVE);
-		RakanQr pr1 = CommonClass.createMockRakanQr(agentRepository, p1, AgentType.PERSONAL, AgentStatus.ACTIVE);
-		RakanQr pr2 = CommonClass.createMockRakanQr(agentRepository, p2, AgentType.PERSONAL, AgentStatus.ACTIVE);
+		RakanQr mr1 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
+		RakanQr mr2 = CommonClass.createMockRakanQr(agentRepository, m2, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
+		RakanQr pr1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
+		RakanQr pr2 = CommonClass.createMockRakanQr(agentRepository, p2, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
 
 		CommonClass.createMockRakanQrDonation(donationRepository, mr1, new BigDecimal("200.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 1, 10, 0, 0));
@@ -97,7 +97,7 @@ public class RakanQrDonationSumTest {
 	void merchantAgentSummaryFlowTest() throws Exception {
 		Merchant mock = merchantRepository.findByUsername("merchantmock").get();
 
-		RakanQr agent = CommonClass.createMockRakanQr(agentRepository, mock, AgentType.MERCHANT, AgentStatus.ACTIVE);
+		RakanQr agent = CommonClass.createMockRakanQr(agentRepository, mock, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
 
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("100.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 1, 10, 0, 0));
@@ -135,7 +135,7 @@ public class RakanQrDonationSumTest {
 	void personalAgentSummaryFlowTest() throws Exception {
 		Personal mock = personalRepository.findByUsername("personalmock").get();
 
-		RakanQr agent = CommonClass.createMockRakanQr(agentRepository, mock, AgentType.PERSONAL, AgentStatus.ACTIVE);
+		RakanQr agent = CommonClass.createMockRakanQr(agentRepository, mock, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
 
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("100.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 1, 10, 0, 0));

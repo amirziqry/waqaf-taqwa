@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

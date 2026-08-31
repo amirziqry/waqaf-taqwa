@@ -21,8 +21,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.common.CommonClass;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.admin.enums.Role;
 import com.taqwa.gowaqaf.modules.user.admin.repository.AdminRepository;
 
@@ -38,7 +38,7 @@ public class AdminFlowTest {
 
 	private final MockMvc mockMvc;
 	private final AdminRepository adminRepository;
-	private final AccountIdentityRepository identityRepository;
+	private final AccountInfoRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@BeforeEach

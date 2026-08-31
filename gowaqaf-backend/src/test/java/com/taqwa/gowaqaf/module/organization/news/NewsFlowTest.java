@@ -33,14 +33,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.organization.news.component.category.NewsCategory;
-import com.taqwa.gowaqaf.modules.organization.news.component.category.NewsCategoryRepository;
-import com.taqwa.gowaqaf.modules.organization.news.component.image.dto.NewsImageKey;
-import com.taqwa.gowaqaf.modules.organization.news.component.image.dto.NewsImageUrl;
-import com.taqwa.gowaqaf.modules.organization.news.component.tag.NewsTag;
-import com.taqwa.gowaqaf.modules.organization.news.component.tag.NewsTagRepository;
-import com.taqwa.gowaqaf.modules.organization.news.dto.NewsUploadResponse;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.repository.ContentCategoryRepository;
+import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.repository.ContentTagRepository;
+import com.taqwa.gowaqaf.modules.organization.content.news.component.image.dto.NewsImageKey;
+import com.taqwa.gowaqaf.modules.organization.content.news.component.image.dto.NewsImageUrl;
+import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsUploadResponse;
 import com.taqwa.gowaqaf.storage.dto.UploadUrl;
 
 import lombok.RequiredArgsConstructor;
@@ -60,14 +61,14 @@ public class NewsFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 	private final S3Client s3Client;
-	private final NewsCategoryRepository categoryRepository;
-	private final NewsTagRepository tagRepository;
+	private final ContentCategoryRepository categoryRepository;
+	private final ContentTagRepository tagRepository;
 
 	@Value("${storage.bucket}")
 	private String bucket;
 
-	NewsCategory c1;
-	NewsTag t1, t2;
+	ContentCategory c1;
+	ContentTag t1, t2;
 
 	@BeforeEach
 	void setup() {
@@ -77,16 +78,18 @@ public class NewsFlowTest {
 		this.t2 = creatMockTag("Wakaf Tunai");
 	}
 
-	private NewsCategory creatMockCategory(String name) {
-		NewsCategory category = new NewsCategory();
+	private ContentCategory creatMockCategory(String name) {
+		ContentCategory category = new ContentCategory();
 		category.setName(name);
+		category.setType(ContentType.NEWS);
 
 		return categoryRepository.save(category);
 	}
 
-	private NewsTag creatMockTag(String name) {
-		NewsTag tag = new NewsTag();
+	private ContentTag creatMockTag(String name) {
+		ContentTag tag = new ContentTag();
 		tag.setName(name);
+		tag.setType(ContentType.NEWS);
 
 		return tagRepository.save(tag);
 	}
@@ -192,6 +195,7 @@ public class NewsFlowTest {
 				.andExpect(jsonPath("$.author").value("Unit Komunikasi"))
 				.andExpect(jsonPath("$.date").value("17-07-2026"))
 				.andExpect(jsonPath("$.category.name").value("Kempen")).andExpect(jsonPath("$.tags.length()").value(2))
+				.andExpect(jsonPath("$.tags.length()").value(2))
 				.andExpect(jsonPath("$.summary").value(
 						"Kempen Wakaf Tunai sepanjang Ramadan berjaya mengumpul RM120,000 hasil sumbangan jemaah Masjid At-Taqwa dan orang ramai."))
 				.andExpect(jsonPath("$.contentHtml").value(getContentHtml()))

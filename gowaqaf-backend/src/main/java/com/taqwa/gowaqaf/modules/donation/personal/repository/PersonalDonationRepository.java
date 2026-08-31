@@ -60,4 +60,15 @@ public interface PersonalDonationRepository extends JpaRepository<PersonalDonati
 
 	Optional<PersonalDonation> findByIdAndPersonalId(UUID id, UUID personalId);
 
+	@Query("""
+			SELECT COALESCE(SUM(d.amount), 0)
+			FROM PersonalDonation d
+			WHERE d.project.id = :projectId
+			  AND d.status = 'PAID'
+			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
+			  AND (:endDate IS NULL OR d.paidAt < :endDate)
+			""")
+	BigDecimal sumPaidDonationsByProjectId(@Param("projectId") UUID projectId,
+			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 }

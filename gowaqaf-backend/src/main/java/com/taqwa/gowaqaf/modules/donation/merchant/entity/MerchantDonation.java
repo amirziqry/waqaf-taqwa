@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
+import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 
 import jakarta.persistence.Column;

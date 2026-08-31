@@ -5,10 +5,10 @@ import java.time.LocalDate;
 
 import org.springframework.stereotype.Service;
 
-import com.taqwa.gowaqaf.modules.donation.agent.service.RakanQrDonationService;
 import com.taqwa.gowaqaf.modules.donation.merchant.service.MerchantDonationService;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSumFilter;
 import com.taqwa.gowaqaf.modules.organization.collection.service.OrganizationCollectionService;

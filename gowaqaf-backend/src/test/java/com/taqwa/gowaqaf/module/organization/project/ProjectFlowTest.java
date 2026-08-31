@@ -40,15 +40,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.organization.project.component.category.entity.ProjectCategory;
-import com.taqwa.gowaqaf.modules.organization.project.component.category.repository.ProjectCategoryRepository;
-import com.taqwa.gowaqaf.modules.organization.project.component.image.dto.ProjectImageKey;
-import com.taqwa.gowaqaf.modules.organization.project.component.image.dto.ProjectImageUrl;
-import com.taqwa.gowaqaf.modules.organization.project.component.tag.entity.ProjectTag;
-import com.taqwa.gowaqaf.modules.organization.project.component.tag.repository.ProjectTagRepository;
-import com.taqwa.gowaqaf.modules.organization.project.dto.ProjectUploadResponse;
-import com.taqwa.gowaqaf.modules.organization.project.repository.ProjectRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.repository.ContentCategoryRepository;
+import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.repository.ContentTagRepository;
+import com.taqwa.gowaqaf.modules.organization.content.project.component.image.dto.ProjectImageKey;
+import com.taqwa.gowaqaf.modules.organization.content.project.component.image.dto.ProjectImageUrl;
+import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectUploadResponse;
+import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 import com.taqwa.gowaqaf.storage.dto.UploadUrl;
 
 import lombok.RequiredArgsConstructor;
@@ -69,14 +70,14 @@ public class ProjectFlowTest {
 	private final MockMvc mockMvc;
 	private final S3Client s3Client;
 	private final ProjectRepository projectRepository;
-	private final ProjectCategoryRepository categoryRepository;
-	private final ProjectTagRepository tagRepository;
+	private final ContentCategoryRepository categoryRepository;
+	private final ContentTagRepository tagRepository;
 
 	@Value("${storage.bucket}")
 	private String bucket;
 
-	ProjectCategory c1, c2;
-	ProjectTag t1, t2, t3, t4, t5;
+	ContentCategory c1, c2;
+	ContentTag t1, t2, t3, t4, t5;
 
 	@BeforeEach
 	void setup() {
@@ -90,16 +91,18 @@ public class ProjectFlowTest {
 		this.t5 = creatMockTag("Kebajikan");
 	}
 
-	private ProjectCategory creatMockCategory(String name) {
-		ProjectCategory category = new ProjectCategory();
+	private ContentCategory creatMockCategory(String name) {
+		ContentCategory category = new ContentCategory();
 		category.setName(name);
+		category.setType(ContentType.PROJECT);
 
 		return categoryRepository.save(category);
 	}
 
-	private ProjectTag creatMockTag(String name) {
-		ProjectTag tag = new ProjectTag();
+	private ContentTag creatMockTag(String name) {
+		ContentTag tag = new ContentTag();
 		tag.setName(name);
+		tag.setType(ContentType.PROJECT);
 
 		return tagRepository.save(tag);
 	}
@@ -109,7 +112,6 @@ public class ProjectFlowTest {
 				{
 				  "name": "Wakaf Penghijauan Perkarangan Masjid",
 				  "slugUrl": "wakaf-penghijauan-perkarangan-masjid",
-				  "collectedAmount": 12300,
 				  "targetAmount": 80000,
 				  "location": "Taman Tun Dr Ismail, Kuala Lumpur",
 				  "category": {
@@ -151,7 +153,6 @@ public class ProjectFlowTest {
 					"id": "%s",
 					"name": "Wakaf Tunai Pembangunan Ekonomi Ummah",
 					"slugUrl": "wakaf-tunai-pembangunan-ekonomi-ummah",
-					  "collectedAmount": 58900,
 					  "targetAmount": 250000,
 					  "location": "Lembah Klang",
 					  "category": {
@@ -231,7 +232,7 @@ public class ProjectFlowTest {
 				.andExpect(status().isOk()).andExpect(jsonPath("$.id").value(projectId.toString()))
 				.andExpect(jsonPath("$.name").value("Wakaf Penghijauan Perkarangan Masjid"))
 				.andExpect(jsonPath("$.slugUrl").value("wakaf-penghijauan-perkarangan-masjid"))
-				.andExpect(jsonPath("$.collectedAmount").value(12300))
+				.andExpect(jsonPath("$.collectedAmount").value(0.0))
 				.andExpect(jsonPath("$.targetAmount").value(80000))
 				.andExpect(jsonPath("$.location").value("Taman Tun Dr Ismail, Kuala Lumpur"))
 				.andExpect(jsonPath("$.date").value(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))))
@@ -343,7 +344,7 @@ public class ProjectFlowTest {
 				.andExpect(status().isOk()).andExpect(jsonPath("$.id").value(projectId.toString()))
 				.andExpect(jsonPath("$.name").value("Wakaf Tunai Pembangunan Ekonomi Ummah"))
 				.andExpect(jsonPath("$.slugUrl").value("wakaf-tunai-pembangunan-ekonomi-ummah"))
-				.andExpect(jsonPath("$.collectedAmount").value(58900))
+				.andExpect(jsonPath("$.collectedAmount").value(0.0))
 				.andExpect(jsonPath("$.targetAmount").value(250000))
 				.andExpect(jsonPath("$.location").value("Lembah Klang"))
 				.andExpect(jsonPath("$.date").value(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))))

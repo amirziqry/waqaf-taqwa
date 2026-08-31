@@ -1,0 +1,16 @@
+package com.taqwa.gowaqaf.modules.organization.content.project.component.image.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProjectImageKey {
+
+	private Long id;
+
+	private String imageKey;
+
+}

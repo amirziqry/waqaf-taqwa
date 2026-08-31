@@ -21,18 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.common.CommonClass;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
-import com.taqwa.gowaqaf.modules.agent.component.AgentType;
-import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.donation.agent.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
+import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.DonationType;
-import com.taqwa.gowaqaf.modules.donation.personal.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -51,7 +51,7 @@ public class OrganizationCollectionSumFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final AccountIdentityRepository identityRepository;
+	private final AccountInfoRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	private final PersonalRepository personalRepository;
@@ -110,8 +110,8 @@ public class OrganizationCollectionSumFlowTest {
 
 		// Rakan QR
 
-		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, AgentType.PERSONAL, AgentStatus.ACTIVE);
-		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, AgentType.PERSONAL, AgentStatus.ACTIVE);
+		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
+		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
 
 		CommonClass.createMockRakanQrDonation(agentDonationRepository, r1, new BigDecimal("150.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 3, 11, 0, 0));

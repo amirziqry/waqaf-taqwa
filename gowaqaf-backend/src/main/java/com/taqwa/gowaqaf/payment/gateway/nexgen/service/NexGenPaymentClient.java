@@ -11,6 +11,21 @@ import com.taqwa.gowaqaf.payment.gateway.nexgen.dto.NexGenCreateCollectionReques
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * ============================================================================
+ * NexGen Payment API Integration
+ * ============================================================================
+ *
+ * This client is the integration layer for the NexGen Payment API.
+ *
+ * Replace the current mock implementations with actual API requests when NexGen
+ * integration is enabled. Payment-related services should communicate with
+ * NexGen through this client rather than calling the external API directly.
+ *
+ * Current implementation: Mock / TODO
+ * ============================================================================
+ */
+
 @Component
 @RequiredArgsConstructor
 public class NexGenPaymentClient {

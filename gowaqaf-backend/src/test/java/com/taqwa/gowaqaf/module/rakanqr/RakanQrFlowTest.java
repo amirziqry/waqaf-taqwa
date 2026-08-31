@@ -25,16 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.common.CommonClass;
-import com.taqwa.gowaqaf.mockuser.donator.WithMockPersonal;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
-import com.taqwa.gowaqaf.mockuser.vendor.WithMockMerchant;
-import com.taqwa.gowaqaf.modules.agent.component.AgentStatus;
-import com.taqwa.gowaqaf.modules.agent.component.AgentType;
-import com.taqwa.gowaqaf.modules.agent.dto.RakanQrInfo;
-import com.taqwa.gowaqaf.modules.agent.dto.RakanQrStatusRequest;
-import com.taqwa.gowaqaf.modules.agent.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.agent.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.user.account.repository.AccountIdentityRepository;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
+import com.taqwa.gowaqaf.mockuser.merchant.WithMockMerchant;
+import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.rakanqr.dto.RakanQrInfo;
+import com.taqwa.gowaqaf.modules.rakanqr.dto.RakanQrStatusRequest;
+import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
@@ -54,7 +54,7 @@ public class RakanQrFlowTest {
 	private final MockMvc mockMvc;
 	private final MerchantRepository merchantRepository;
 	private final PersonalRepository personalRepository;
-	private final AccountIdentityRepository identityRepository;
+	private final AccountInfoRepository identityRepository;
 	private final RakanQrRepository agentRepository;
 	private final PasswordEncoder passwordEncoder;
 
@@ -63,25 +63,25 @@ public class RakanQrFlowTest {
 	@BeforeEach
 	void setup() {
 		createMockAgent(CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder,
-				"merchant1", "merchant1@gmail.com"), null, AgentType.MERCHANT, AgentStatus.ACTIVE);
+				"merchant1", "merchant1@gmail.com"), null, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
 		createMockAgent(CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder,
-				"merchant2", "merchant2@gmail.com"), null, AgentType.MERCHANT, AgentStatus.ACTIVE);
+				"merchant2", "merchant2@gmail.com"), null, RakanQrType.MERCHANT, RakanQrStatus.ACTIVE);
 		createMockAgent(null, CommonClass.createMockPersonal(personalRepository, identityRepository, passwordEncoder,
-				"personal1", "personal1@gmail.com"), AgentType.PERSONAL, AgentStatus.ACTIVE);
+				"personal1", "personal1@gmail.com"), RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
 		this.test = createMockAgent(null, CommonClass.createMockPersonal(personalRepository, identityRepository,
-				passwordEncoder, "personal2", "personal2@gmail.com"), AgentType.PERSONAL, AgentStatus.PENDING);
+				passwordEncoder, "personal2", "personal2@gmail.com"), RakanQrType.PERSONAL, RakanQrStatus.PENDING);
 	}
 
-	private RakanQr createMockAgent(Merchant merchant, Personal personal, AgentType type, AgentStatus status) {
+	private RakanQr createMockAgent(Merchant merchant, Personal personal, RakanQrType type, RakanQrStatus status) {
 		RakanQr agent = new RakanQr();
 
 		agent.setType(type);
 		agent.setStatus(status);
 
-		if (type == AgentType.MERCHANT)
+		if (type == RakanQrType.MERCHANT)
 			agent.setMerchant(merchant);
 
-		if (type == AgentType.PERSONAL)
+		if (type == RakanQrType.PERSONAL)
 			agent.setPersonal(personal);
 
 		return agentRepository.save(agent);
@@ -100,8 +100,8 @@ public class RakanQrFlowTest {
 		assertNotNull(responseObject);
 		assertNotNull(responseObject.getId());
 		assertEquals("test@gmail.com", responseObject.getEmail());
-		assertEquals(AgentType.MERCHANT, responseObject.getType());
-		assertEquals(AgentStatus.PENDING, responseObject.getStatus());
+		assertEquals(RakanQrType.MERCHANT, responseObject.getType());
+		assertEquals(RakanQrStatus.PENDING, responseObject.getStatus());
 	}
 
 	@Test
@@ -116,8 +116,8 @@ public class RakanQrFlowTest {
 		assertNotNull(responseObject);
 		assertNotNull(responseObject.getId());
 		assertEquals("test@gmail.com", responseObject.getEmail());
-		assertEquals(AgentType.PERSONAL, responseObject.getType());
-		assertEquals(AgentStatus.PENDING, responseObject.getStatus());
+		assertEquals(RakanQrType.PERSONAL, responseObject.getType());
+		assertEquals(RakanQrStatus.PENDING, responseObject.getStatus());
 	}
 
 	@Test
@@ -135,9 +135,9 @@ public class RakanQrFlowTest {
 
 		assertEquals(3, agents.size());
 
-		assertTrue(agents.stream().allMatch(agent -> agent.getStatus() == AgentStatus.ACTIVE));
+		assertTrue(agents.stream().allMatch(agent -> agent.getStatus() == RakanQrStatus.ACTIVE));
 
-		RakanQrStatusRequest request = new RakanQrStatusRequest(AgentStatus.ACTIVE);
+		RakanQrStatusRequest request = new RakanQrStatusRequest(RakanQrStatus.ACTIVE);
 
 		mockMvc.perform(patch("/api/rakan-qr-agent/{id}/status", test.getId()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request))).andExpect(status().isOk());
@@ -153,7 +153,7 @@ public class RakanQrFlowTest {
 
 		assertEquals(4, agents.size());
 
-		assertTrue(agents.stream().allMatch(agent -> agent.getStatus() == AgentStatus.ACTIVE));
+		assertTrue(agents.stream().allMatch(agent -> agent.getStatus() == RakanQrStatus.ACTIVE));
 
 		result = mockMvc.perform(get("/api/rakan-qr-agent/get/all")).andExpect(status().isOk()).andReturn();
 

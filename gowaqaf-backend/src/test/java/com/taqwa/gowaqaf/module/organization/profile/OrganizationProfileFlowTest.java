@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taqwa.gowaqaf.mockuser.member.WithMockAdmin;
+import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
 import com.taqwa.gowaqaf.storage.dto.UploadUrl;
