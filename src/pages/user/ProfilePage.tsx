@@ -126,7 +126,7 @@ export const ProfilePage: React.FC = () => {
         >
           <div className="flex items-center gap-3">
             <CreditCard className="w-5 h-5 text-slate-400" />
-            <span className="text-xs font-bold text-slate-800">Sejarah Transaksi & Resit LHDN</span>
+            <span className="text-xs font-bold text-slate-800">Sejarah Transaksi</span>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400" />
         </div>

@@ -1,146 +1,50 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
-
-// Auth Pages
-import { LoginPage } from './pages/auth/LoginPage';
-import { SignUpPage } from './pages/auth/SignUpPage';
-
-// User Pages
 import { HomePage } from './pages/user/HomePage';
 import { ProjectsExplorePage } from './pages/user/ProjectsExplorePage';
-import { CampaignDetailPage } from './pages/user/CampaignDetailPage';
 import { ScanDonatePage } from './pages/user/ScanDonatePage';
+import { VendorPosPage } from './pages/user/VendorPosPage';
+import { ApplyTijarahPage } from './pages/user/ApplyTijarahPage';
 import { AutoWaqafPage } from './pages/user/AutoWaqafPage';
 import { TransactionHistoryPage } from './pages/user/TransactionHistoryPage';
-import { ReceiptPage } from './pages/user/ReceiptPage';
 import { ProfilePage } from './pages/user/ProfilePage';
-import { VendorPosPage } from './pages/user/VendorPosPage';
-import { RakanQrPage } from './pages/user/RakanQrPage';
-
-// Admin Pages
-import { AdminLayout } from './pages/admin/AdminLayout';
+import { ReceiptPage } from './pages/user/ReceiptPage';
+import { CampaignDetailPage } from './pages/user/CampaignDetailPage';
+import { LoginPage } from './pages/auth/LoginPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminCampaignsPage } from './pages/admin/AdminCampaignsPage';
+import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminVendorsPage } from './pages/admin/AdminVendorsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
-
 export const App: React.FC = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith('/auth');
+
   return (
-    <Routes>
-      {/* Auth Pages (No App Navbar) */}
-      <Route
-        path="/auth"
-        element={
-          <AppLayout hideNav>
-            <SignUpPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/auth/login"
-        element={
-          <AppLayout hideNav>
-            <LoginPage />
-          </AppLayout>
-        }
-      />
-
-      {/* User / Public Routes */}
-      <Route
-        path="/"
-        element={
-          <AppLayout>
-            <HomePage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/projek"
-        element={
-          <AppLayout>
-            <ProjectsExplorePage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/projek/:id"
-        element={
-          <AppLayout>
-            <CampaignDetailPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/imbas"
-        element={
-          <AppLayout>
-            <ScanDonatePage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/auto-waqaf"
-        element={
-          <AppLayout>
-            <AutoWaqafPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/transaksi"
-        element={
-          <AppLayout>
-            <TransactionHistoryPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/resit/:id"
-        element={
-          <AppLayout>
-            <ReceiptPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/profil"
-        element={
-          <AppLayout>
-            <ProfilePage />
-          </AppLayout>
-        }
-      />
-      <Route
-  path="/pos"
-  element={
-    <AppLayout>
-      <VendorPosPage />
+    <AppLayout hideNav={isAuthPage}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/projek" element={<ProjectsExplorePage />} />
+        <Route path="/projek/:id" element={<CampaignDetailPage />} />
+        <Route path="/imbas" element={<ScanDonatePage />} />
+        <Route path="/transaksi" element={<TransactionHistoryPage />} />
+        <Route path="/resit/:id" element={<ReceiptPage />} />
+        <Route path="/profil" element={<ProfilePage />} />
+        <Route path="/rakan-qr" element={<VendorPosPage />} />
+        <Route path="/pos" element={<VendorPosPage />} />
+        <Route path="/apply-tijarah" element={<ApplyTijarahPage />} />
+        <Route path="/auto-waqaf" element={<AutoWaqafPage />} />
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/campaigns" element={<AdminCampaignsPage />} />
+        <Route path="/admin/layout" element={<AdminLayout />} />
+        <Route path="/admin/vendors" element={<AdminVendorsPage />} />
+        <Route path="/admin/settings" element={<AdminSettingsPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth" element={<LoginPage />} />
+      </Routes>
     </AppLayout>
-  }
-/>
-      <Route path="/rakan-qr" element={<RakanQrPage />} />
-
-      {/* Admin Subsystem Routes */}
-      <Route
-        path="/admin"
-        element={
-          <AppLayout>
-            <AdminLayout />
-          </AppLayout>
-        }
-      >
-        <Route index element={<AdminDashboardPage />} />
-        <Route path="kempen" element={<AdminCampaignsPage />} />
-        <Route path="peniaga" element={<AdminVendorsPage />} />
-        <Route path="transaksi" element={<TransactionHistoryPage />} />
-        <Route path="tetapan" element={<AdminSettingsPage />} />
-      </Route>
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
   );
 };
 

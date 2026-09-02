@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, Store, Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, User, Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import api from '../../api/client';
 
-type RoleType = 'donator' | 'vendor' | 'member';
+type RoleType = 'donator' | 'member';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,17 +19,14 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setErrorMessage('');
 
-    let endpoint = '/donator/auth/login';
-    if (role === 'vendor') endpoint = '/vendor/auth/login';
-    if (role === 'member') endpoint = '/member/auth/login';
+    const endpoint = role === 'member' ? '/member/auth/login' : '/donator/auth/login';
 
     try {
       await api.post(endpoint, { username, password });
       
       // Store current user metadata locally
-      // Inside handleLogin on LoginPage.tsx:
-        localStorage.setItem('wt_user_role', role);
-        localStorage.setItem('wt_user_name', username); // <--- saves your actual username  
+      localStorage.setItem('wt_user_role', role);
+      localStorage.setItem('wt_user_name', username);
       
       if (role === 'member') {
         navigate('/admin');
@@ -51,12 +48,12 @@ export const LoginPage: React.FC = () => {
         <p className="text-xs text-slate-500">Pilih peranan akaun anda untuk meneruskan</p>
       </div>
 
-      {/* Role Switcher Tabs */}
-      <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+      {/* Role Switcher Tabs (Pewakaf vs Admin) */}
+      <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
         <button
           type="button"
           onClick={() => { setRole('donator'); setErrorMessage(''); }}
-          className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
             role === 'donator' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
@@ -64,17 +61,8 @@ export const LoginPage: React.FC = () => {
         </button>
         <button
           type="button"
-          onClick={() => { setRole('vendor'); setErrorMessage(''); }}
-          className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-            role === 'vendor' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Store className="w-3.5 h-3.5" /> Peniaga
-        </button>
-        <button
-          type="button"
           onClick={() => { setRole('member'); setErrorMessage(''); }}
-          className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
             role === 'member' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
           }`}
         >

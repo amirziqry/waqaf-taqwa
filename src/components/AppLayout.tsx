@@ -17,7 +17,7 @@ export const AppLayout: React.FC<LayoutProps> = ({ children, hideNav = false }) 
   const navItems = [
     { label: 'Utama', icon: Home, path: '/' },
     { label: 'Projek', icon: LayoutGrid, path: '/projek' },
-    { label: 'Imbas QR', icon: QrCode, path: '/imbas' },
+    { label: 'Waqaf', icon: QrCode, path: '/imbas' },
     { label: 'Transaksi', icon: ReceiptText, path: '/transaksi' },
     { label: 'Profil', icon: User, path: '/profil' },
   ];
