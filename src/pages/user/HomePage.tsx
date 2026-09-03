@@ -101,7 +101,7 @@ export const HomePage: React.FC = () => {
 
         <div className="hidden sm:flex items-center gap-2">
           <span className="text-[11px] font-extrabold px-3.5 py-1.5 bg-emerald-50 text-[#1A8C4E] rounded-full border border-emerald-100">
-            Patuh Syariah & LHDN
+            Patuh Syariah
           </span>
         </div>
       </div>
