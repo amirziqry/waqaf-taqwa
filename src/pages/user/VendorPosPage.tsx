@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  QrCode, 
-  Sparkles, 
+  QrCode,  
   CheckCircle2, 
   ArrowRight, 
   Coins, 
-  Download, 
-  MapPin, 
+  Download,  
   Share2, 
   TrendingUp,
   Percent,
-  Building2,
   Package
 } from 'lucide-react';
 import api from '../../api/client';

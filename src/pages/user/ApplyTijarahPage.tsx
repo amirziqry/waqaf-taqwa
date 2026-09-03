@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, ShieldCheck, ArrowLeft, Send, CheckCircle2, FileText } from 'lucide-react';
+import { Store, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 import api from '../../api/client';
 
 export const ApplyTijarahPage: React.FC = () => {

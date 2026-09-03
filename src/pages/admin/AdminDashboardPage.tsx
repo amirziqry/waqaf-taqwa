@@ -134,7 +134,7 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
 ];
 
 export const AdminDashboardPage: React.FC = () => {
-  const navigate = useNavigate();
+  
   const [activeTab, setActiveTab] = useState<'campaigns' | 'tijarah' | 'rakanqr' | 'admins'>('campaigns');
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);

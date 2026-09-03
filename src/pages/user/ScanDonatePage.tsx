@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   QrCode, 
   ShieldCheck, 
-  CheckCircle2, 
-  ArrowRight, 
+  CheckCircle2,  
   Building2, 
   ExternalLink,
   CreditCard,
@@ -18,11 +17,11 @@ export const ScanDonatePage: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'amount' | 'gateway_redirect' | 'processing' | 'success'>('amount');
   const [amount, setAmount] = useState<string>('20');
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous] = useState(false);
   const [akadAgreed, setAkadAgreed] = useState(true);
   const [campaignId] = useState('1');
   const [transactionData, setTransactionData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   // Third-party Gateway Modal States
   const [selectedGatewayMethod, setSelectedGatewayMethod] = useState<'fpx' | 'duitnow' | 'card'>('fpx');

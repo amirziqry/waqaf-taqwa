@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Zap, 
-  RefreshCw, 
-  TrendingUp, 
+  RefreshCw,  
   Building2, 
   Store, 
   QrCode,
