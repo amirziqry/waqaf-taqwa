@@ -29,10 +29,10 @@ import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationSum;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
-import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
@@ -106,7 +106,7 @@ public class RakanQrDonationSumTest {
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("25.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 15, 18, 0, 0));
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("100.00"),
-				PaymentStatus.PENDING, LocalDateTime.of(2026, 8, 20, 12, 0, 0));
+				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 20, 12, 0, 0));
 
 		MvcResult result = mockMvc.perform(get("/api/rakan-qr-agent/donation/sum")).andExpect(status().isOk())
 				.andReturn();
@@ -144,7 +144,7 @@ public class RakanQrDonationSumTest {
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("25.00"), PaymentStatus.PAID,
 				LocalDateTime.of(2026, 8, 15, 18, 0, 0));
 		CommonClass.createMockRakanQrDonation(donationRepository, agent, new BigDecimal("100.00"),
-				PaymentStatus.PENDING, LocalDateTime.of(2026, 8, 20, 12, 0, 0));
+				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 20, 12, 0, 0));
 
 		MvcResult result = mockMvc.perform(get("/api/rakan-qr-agent/donation/sum")).andExpect(status().isOk())
 				.andReturn();

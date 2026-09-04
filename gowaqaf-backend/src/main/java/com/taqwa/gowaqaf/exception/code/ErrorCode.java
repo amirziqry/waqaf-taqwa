@@ -45,7 +45,7 @@ public enum ErrorCode {
 
 	// Category
 	CAT001("Category not found"),
-	
+
 	// Tag
 	TAG001("Tag not found"),
 
@@ -53,7 +53,10 @@ public enum ErrorCode {
 	O001("Organization not found"),
 
 	// Collection Gateway
-	COL001("Collection creation fail");
+	COL001("Collection creation fail"),
+
+	// Webhook
+	WHK001("Webhook token invalid"), WHK002("Billing Code not match"), WHK003("Amount not match");
 
 	private final String defaultMessage;
 

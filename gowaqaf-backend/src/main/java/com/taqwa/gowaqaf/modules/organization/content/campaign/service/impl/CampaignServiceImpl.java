@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.service.StorageService;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.dto.CampaignImageKey;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.dto.CampaignImageUrl;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.entity.CampaignImage;
@@ -27,9 +30,6 @@ import com.taqwa.gowaqaf.modules.organization.content.component.category.service
 import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
 import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
 import com.taqwa.gowaqaf.modules.organization.content.component.tag.service.ContentTagService;
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
-import com.taqwa.gowaqaf.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -77,7 +77,33 @@ public class CampaignServiceImpl implements CampaignService {
 
 	@Override
 	public CampaignUploadResponse updateCampaignById(UUID id, CampaignUploadRequest dto) {
-		return null;
+		Campaign campaign = campaignRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.CPG001, String.format("Campaign %s not found", id)));
+
+		campaign.setName(dto.getName());
+		campaign.setSlugUrl(dto.getSlugUrl());
+		campaign.setDateStart(dto.getDateStart());
+		campaign.setDateEnd(dto.getDateEnd());
+
+		if (dto.getCategory() != null)
+			campaign.setCategory(categoryService.getCategoryById(ContentType.CAMPAIGN, dto.getCategory().getId()));
+
+		if (dto.getTags() != null) {
+			Set<Long> tagIds = dto.getTags().stream().map(tag -> tag.getId()).collect(Collectors.toSet());
+			Set<ContentTag> tags = new HashSet<>(tagService.getAllTagById(ContentType.CAMPAIGN, tagIds));
+
+			campaign.setTags(tags);
+		}
+
+		campaign.setSummary(dto.getSummary());
+		campaign.setContentHtml(dto.getContentHtml());
+		campaign.setStatus(dto.getStatus());
+
+		Campaign saved = campaignRepository.save(campaign);
+
+		List<UploadUrl> uploadUrls = generateImageUploadUrls(saved.getId(), dto.getImageUploadRequests());
+
+		return new CampaignUploadResponse(saved.getId(), uploadUrls);
 	}
 
 	private List<UploadUrl> generateImageUploadUrls(UUID id, List<FileUploadRequest> files) {
@@ -174,12 +200,16 @@ public class CampaignServiceImpl implements CampaignService {
 
 	@Override
 	public void deleteCampaignById(UUID id) {
-		if (!campaignRepository.existsById(id))
-			throw new ResourceNotFoundException(ErrorCode.CPG001, String.format("Campaign %s not found", id));
+		Campaign campaign = campaignRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.CPG001, String.format("Campaign %s not found", id)));
 
-		campaignRepository.deleteById(id);
+		// Delete image files from object storage
+		for (CampaignImage image : campaign.getImages()) {
+			storageService.deleteFile(image.getImageKey());
+		}
 
-		return;
+		// Delete project and its ProjectImage records
+		campaignRepository.delete(campaign);
 	}
 
 }

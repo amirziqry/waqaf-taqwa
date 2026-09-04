@@ -22,9 +22,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
-import com.taqwa.gowaqaf.storage.service.StorageService;
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.S3Client;

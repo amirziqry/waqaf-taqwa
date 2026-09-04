@@ -49,11 +49,14 @@ public class PersonalDonation {
 	@Column
 	private String name;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = true, unique = true)
 	private String billingCode;
 
 	@Column(nullable = false, precision = 19, scale = 2)
 	private BigDecimal amount;
+
+	@Column(nullable = true)
+	private String transactionId;
 
 	@Column
 	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
@@ -72,5 +75,8 @@ public class PersonalDonation {
 
 	@Column(unique = true, nullable = true)
 	private String receiptHashId;
+
+	@Column(nullable = true, unique = true)
+	private String webhookToken;
 
 }

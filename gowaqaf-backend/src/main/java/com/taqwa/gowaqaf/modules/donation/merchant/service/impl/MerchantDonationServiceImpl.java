@@ -7,10 +7,10 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.taqwa.gowaqaf.external.payment.service.PaymentService;
 import com.taqwa.gowaqaf.modules.donation.merchant.dto.MerchantDonationSum;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.merchant.service.MerchantDonationService;
-import com.taqwa.gowaqaf.payment.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 

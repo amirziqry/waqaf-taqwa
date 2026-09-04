@@ -1,6 +1,6 @@
 package com.taqwa.gowaqaf.modules.organization.profile.dto;
 
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

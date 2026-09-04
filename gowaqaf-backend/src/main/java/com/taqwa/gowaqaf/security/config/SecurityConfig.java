@@ -33,10 +33,11 @@ public class SecurityConfig {
 						.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
 				.authorizeHttpRequests(auth -> auth
 
-						.requestMatchers("/api/public/**").permitAll()
+						.requestMatchers("/api/public/**", "/api/webhook/**").permitAll()
 
-						.requestMatchers("/api/personal/auth/login", "/api/personal/register",
-								"/api/merchant/auth/login", "/api/merchant/register", "/api/admin/auth/login",
+						.requestMatchers("/api/personal/auth/login", "/api/personal/auth/logout",
+								"/api/personal/register", "/api/merchant/auth/login", "/api/merchant/auth/logout",
+								"/api/merchant/register", "/api/admin/auth/login", "/api/admin/auth/logout",
 								"/api/admin/register-admin", "/api/admin/register-editor")
 						.permitAll()
 

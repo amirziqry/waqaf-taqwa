@@ -2,9 +2,9 @@ package com.taqwa.gowaqaf.modules.verification.service;
 
 import org.springframework.stereotype.Service;
 
-import com.taqwa.gowaqaf.verification.ekyc.EkycService;
-import com.taqwa.gowaqaf.verification.faceid.FaceIdService;
-import com.taqwa.gowaqaf.verification.otp.service.OtpService;
+import com.taqwa.gowaqaf.external.verification.ekyc.EkycService;
+import com.taqwa.gowaqaf.external.verification.faceid.FaceIdService;
+import com.taqwa.gowaqaf.external.verification.otp.service.OtpService;
 
 import lombok.RequiredArgsConstructor;
 

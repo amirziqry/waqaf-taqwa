@@ -30,10 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.S3Client;

@@ -1,13 +1,19 @@
 package com.taqwa.gowaqaf.common;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Assertions;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
@@ -18,8 +24,17 @@ import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.entity.RakanQrDonation;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.entity.Campaign;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
+import com.taqwa.gowaqaf.modules.organization.content.component.category.repository.ContentCategoryRepository;
+import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
+import com.taqwa.gowaqaf.modules.organization.content.component.tag.repository.ContentTagRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.news.entity.News;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
@@ -27,10 +42,6 @@ import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
-import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
@@ -40,6 +51,9 @@ import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.repository.PersonalRepository;
+
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 public class CommonClass {
 
@@ -134,6 +148,25 @@ public class CommonClass {
 		return donationRepository.save(donation);
 	}
 
+	// Mock category.
+	public static ContentCategory createMockCategory(ContentCategoryRepository repository, String name,
+			ContentType type) {
+		ContentCategory category = new ContentCategory();
+		category.setName(name);
+		category.setType(type);
+
+		return repository.save(category);
+	}
+
+	// Mock tag.
+	public static ContentTag createMockTag(ContentTagRepository repository, String name, ContentType type) {
+		ContentTag tag = new ContentTag();
+		tag.setName(name);
+		tag.setType(type);
+
+		return repository.save(tag);
+	}
+
 	// Mock project.
 	public static Project createMockProject(ProjectRepository repository, String name, BigDecimal targetAmount,
 			ContentStatus status) {
@@ -149,7 +182,6 @@ public class CommonClass {
 		test.setContentHtml("content");
 		test.setStatus(status);
 		test.setImages(new ArrayList<>());
-		test.setPaymentCollectionCode(UUID.randomUUID().toString());
 
 		return repository.save(test);
 	}
@@ -247,6 +279,52 @@ public class CommonClass {
 		donation.setPaidAt(paidAt);
 
 		return donationRepository.save(donation);
+	}
+
+	// Object Storage
+
+	// Test save file
+	public static void testSaveFileToStorage(HttpClient httpClient, String url, byte[] fileBytes) throws Exception {
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).header("Content-Type", "image/jpeg")
+				.PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes)).build();
+
+		HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+		Assertions.assertEquals(200, response.statusCode());
+	}
+
+	// Test get images (list)
+	public static void testGetImagesFromStorage(HttpClient httpClient, List<String> urls) throws Exception {
+		urls.forEach(url -> {
+			try {
+				testGetImageFromStorage(httpClient, url);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	// Test get image
+	public static void testGetImageFromStorage(HttpClient httpClient, String url) throws Exception {
+		HttpRequest getRequest = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+
+		HttpResponse<byte[]> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofByteArray());
+
+		Assertions.assertEquals(200, getResponse.statusCode());
+	}
+
+	// Test delete file
+	public static void deleteFileFromStorage(String fileKey, S3Client s3Client, String bucket) {
+		s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(fileKey).build());
+	}
+
+	// Test get deleted file
+	public static void testDeletedImageFromStorage(HttpClient httpClient, String url) throws Exception {
+		HttpRequest getRequest = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+
+		HttpResponse<byte[]> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofByteArray());
+
+		Assertions.assertEquals(404, getResponse.statusCode());
 	}
 
 }

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.service.StorageService;
 import com.taqwa.gowaqaf.modules.organization.content.component.category.service.ContentCategoryService;
 import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
 import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
@@ -27,9 +30,6 @@ import com.taqwa.gowaqaf.modules.organization.content.news.entity.News;
 import com.taqwa.gowaqaf.modules.organization.content.news.mapper.NewsMapper;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
 import com.taqwa.gowaqaf.modules.organization.content.news.service.NewsService;
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
-import com.taqwa.gowaqaf.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -86,11 +86,11 @@ public class NewsServiceImpl implements NewsService {
 		news.setDate(dto.getDate());
 
 		if (dto.getCategory() != null)
-			news.setCategory(categoryService.getCategoryById(ContentType.PROJECT, dto.getCategory().getId()));
+			news.setCategory(categoryService.getCategoryById(ContentType.NEWS, dto.getCategory().getId()));
 
 		if (dto.getTags() != null) {
 			Set<Long> tagIds = dto.getTags().stream().map(tag -> tag.getId()).collect(Collectors.toSet());
-			Set<ContentTag> tags = new HashSet<>(tagService.getAllTagById(ContentType.PROJECT, tagIds));
+			Set<ContentTag> tags = new HashSet<>(tagService.getAllTagById(ContentType.NEWS, tagIds));
 
 			news.setTags(tags);
 		}
@@ -197,12 +197,16 @@ public class NewsServiceImpl implements NewsService {
 
 	@Override
 	public void deleteNewsById(UUID id) {
-		if (!newsRepository.existsById(id))
-			throw new BadRequestException(ErrorCode.A001, "No news found.");
+		News news = newsRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.A001, String.format("News ID: %s not found.", id)));
 
-		newsRepository.deleteById(id);
+		// Delete image files from object storage
+		for (NewsImage image : news.getImages()) {
+			storageService.deleteFile(image.getFileKey());
+		}
 
-		return;
+		// Delete project and its ProjectImage records
+		newsRepository.delete(news);
 	}
 
 }

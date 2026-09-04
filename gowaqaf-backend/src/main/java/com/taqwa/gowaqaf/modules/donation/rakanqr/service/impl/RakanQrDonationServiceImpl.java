@@ -15,8 +15,8 @@ import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationFilter;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationSum;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
-import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.security.account.AccountType;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 

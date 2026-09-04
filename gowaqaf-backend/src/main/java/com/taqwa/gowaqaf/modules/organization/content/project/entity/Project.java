@@ -83,7 +83,4 @@ public class Project {
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProjectImage> images;
 
-	@Column(nullable = false, unique = true)
-	private String paymentCollectionCode;
-
 }

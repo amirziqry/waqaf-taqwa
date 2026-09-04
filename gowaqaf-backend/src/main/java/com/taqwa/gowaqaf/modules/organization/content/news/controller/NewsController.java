@@ -44,12 +44,13 @@ public class NewsController {
 			@RequestBody NewsUploadRequest request) {
 		NewsUploadResponse response = newsService.updateNewsById(id, request);
 
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PutMapping("/{id}/images/upload")
+	@PutMapping("/{id}/image-keys/upload")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
-	public ResponseEntity<Void> updateNewsImageKeysById(@PathVariable UUID id, @RequestBody List<NewsImageKey> request) {
+	public ResponseEntity<Void> updateNewsImageKeysById(@PathVariable UUID id,
+			@RequestBody List<NewsImageKey> request) {
 		newsService.uploadNewsImageKeysById(id, request);
 
 		return new ResponseEntity<>(HttpStatus.OK);

@@ -5,6 +5,45 @@
 Install:
 
 - Docker Desktop
+- ngrok — required for payment gateway callbacks/webhooks
+
+## Clone Repository
+- After pulling/cloning the project, navigate to the project root
+
+- The project root should contain the docker-compose.yml and a .env.example file.
+
+## Create the Environment File
+- Create .env file in the project root.
+
+- Open .env and fill in the values based on .env.example.
+
+```bash
+NEXGEN_API_KEY=PLACE_API_KEY_HERE
+NEXGEN_API_SECRET=PLACE_API_SECRET_HERE
+WEBHOOK_BASE_URL=PLACE_NGROK_URL_HERE
+```
+
+Important: Do not commit the .env to Git as it contains environment-specific configuration and secrets. The .env.example file should be used as the template instead.
+
+## Install ngrok
+Ngrok is needed for routing localhost to a live domain, which is needed for NexGen API to communicate with our webhooks, so the backend can update the payment information.
+
+- ngrok can be installed through the Microsoft Store.
+- Create an ngrok account and log in.
+- Open the ngrok dashboard and find your Auth Token.
+
+### Configure ngrok in CMD
+
+```bash
+ngrok config add-authtoken YOUR_AUTH_TOKEN
+ngrok http 8080 
+```
+
+ngrok will display something similar to:
+
+Forwarding    https://example-1234.ngrok-free.app -> http://localhost:8080
+
+Paste the ngrok URL to WEBHOOK_BASE_URL in .env.
 
 ## Start Application
 
@@ -253,21 +292,57 @@ const frontend.object = {
 ### Personal — Register
 
 ```javascript
+const requestBody = {
+    username: frontend.username, 
+    password: frontend.password, 
+    email: frontend.email, 
+    phone: frontend.phone, // Optional
+    modMesra: frontend.modMesra // Optional, Boolean
+};
+
 const response = await api.post(
     "/personal/register",
     requestBody
 );
 
-const requestBody = {
-    username: frontend.username,
-    email: frontend.email,
-    password: frontend.password
-};
-
 const frontend.object = {
     frontend.var: response.data.username,
-    frontend.var: response.data.email
+    frontend.var: response.data.email,
+    frontend.var: response.data.phone
 };
+```
+
+### Personal — Update Account Info
+Include unmodified values in the request.
+
+```javascript
+const requestBody = {
+    accountHolderName: frontend.accountHolderName, 
+    phone: frontend.phone, 
+    email: frontend.email, 
+    modMesra: frontend.modMesra
+};
+
+const response = await api.put( 
+    "/personal/account/update", 
+    requestBody 
+);
+```
+
+### Personal — Get Account Info
+
+```javascript
+const response = await api.get( 
+    "/personal/account/get" 
+); 
+
+const frontend.object = { 
+    id: response.data.id, 
+    username: response.data.username, 
+    accountHolderName: response.data.accountHolderName, 
+    email: response.data.email, 
+    phone: response.data.phone, 
+    modMesra: response.data.modMesra };
 ```
 
 ### Personal — Login
@@ -289,7 +364,7 @@ const frontend.object = {
 };
 ```
 
-### Personal — Get Current User Auth Status
+### Personal — Get Current User Auth Status (200 OK)
 
 ```javascript
 const response = await api.get(
@@ -297,24 +372,29 @@ const response = await api.get(
 );
 ```
 
-### Personal — Request Payment Gateway URL (Placeholder)
+### Personal — Request Payment Gateway URL (Beta)
+Direct donations only, not included project donations.
+User accountHolderName, email, phone is required for payment request.
+Update user account first before requesting.
 
 ```javascript
+const requestBody = { 
+    amount: frontend.amount, 
+    taxExempt: frontend.taxExempt, // Boolean
+    redirectUrl: frontend.redirectUrl // Optional, redirect to UI after payment (non localhost)
+};
+
 const response = await api.post(
     "/personal/donation/payment/request-gateway-url",
     requestBody
 );
 
-const requestBody = {
-    amount: frontend.amount,
-    taxExempt: frontend.taxExemptFlag // true/false
-};
-
 const frontend.object = {
-    frontend.var: response.data.id,
+    frontend.var: response.data.id, // Donation id
     frontend.var: response.data.billingCode,
+    frontend.var: response.data.amount,
     frontend.var: response.data.status,
-    frontend.var: response.data.paymentUrl
+    frontend.var: response.data.paymentUrl // NexGen payment page.
 };
 ```
 
@@ -324,11 +404,12 @@ Frontend needs to poll this request at least every +1s since web socket is not u
 ```javascript
 const response = await api.get(
     `/personal/donation/payment/${frontend.id}/status`
-); // Donation/transaction id
+); // Donation id
 
 const frontend.object = {
     frontend.var: response.data.id,
     frontend.var: response.data.billingCode,
+    frontend.var: response.data.transactionId,
     frontend.var: response.data.amount,
     frontend.var: response.data.paidAt, // dd-MM-yyyy
     frontend.var: response.data.status,
@@ -353,6 +434,40 @@ const response = await api.get(
 
 const frontend.object = {
     frontend.var: response.data.total
+};
+```
+
+### Personal — Get All Donations by User
+This response returns Pagination.
+
+```javascript
+const filter = {
+    page: frontend.page, 
+    size: frontend.size, // Default 10
+    sort: frontend.sort // Default paidAt,DESC
+};
+
+const response = await api.get(
+    "/personal/donation/get/all", 
+    { 
+        params: filter // Optional
+    } 
+);
+
+const frontend.object = { 
+    frontend.list: response.data.content.map(donation => ({ 
+        frontend.var: donation.id, 
+        frontend.var: donation.billingCode, 
+        frontend.var: donation.transactionId, 
+        frontend.var: donation.amount, 
+        frontend.var: donation.paidAt, 
+        frontend.var: donation.status, 
+        frontend.var: donation.receiptHashId 
+    })),
+    frontend.var: response.data.totalElements, // Total elements available.
+    frontend.var: response.data.totalPages, 
+    frontend.var: response.data.size, 
+    frontend.var: response.data.number // Current page index.
 };
 ```
 

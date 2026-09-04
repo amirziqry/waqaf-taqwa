@@ -34,14 +34,14 @@ public class AdminController {
 	public ResponseEntity<AdminRegisterResponse> registerEditor(@RequestBody AdminRegisterCredentials request) {
 		AdminRegisterResponse response = adminService.createEditor(request);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PostMapping("/register-admin")
 	public ResponseEntity<AdminRegisterResponse> registerAdmin(@RequestBody AdminRegisterCredentials request) {
 		AdminRegisterResponse response = adminService.createAdmin(request);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/get/{username}")

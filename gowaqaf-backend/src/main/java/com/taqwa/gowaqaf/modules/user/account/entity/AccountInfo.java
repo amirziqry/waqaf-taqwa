@@ -25,6 +25,9 @@ public class AccountInfo {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
+	@Column(unique = false, nullable = true)
+	private String accountHolderName;
+
 	@Column(unique = true, nullable = true)
 	private String phone;
 

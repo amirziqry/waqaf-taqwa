@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationRequest;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSumFilter;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
-import com.taqwa.gowaqaf.payment.dto.PaymentUrlResponse;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 import lombok.RequiredArgsConstructor;

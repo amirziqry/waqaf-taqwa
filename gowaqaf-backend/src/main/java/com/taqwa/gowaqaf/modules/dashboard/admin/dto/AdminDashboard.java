@@ -2,12 +2,12 @@ package com.taqwa.gowaqaf.modules.dashboard.admin.dto;
 
 import java.util.List;
 
+import com.taqwa.gowaqaf.modules.feature.rakanqr.dto.RakanQrWithSum;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileDetails;
-import com.taqwa.gowaqaf.modules.rakanqr.dto.RakanQrWithSum;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

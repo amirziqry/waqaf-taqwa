@@ -3,7 +3,7 @@ package com.taqwa.gowaqaf.modules.organization.content.news.dto;
 import java.util.List;
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

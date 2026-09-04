@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.modules.dashboard.admin.dto.AdminDashboard;
 import com.taqwa.gowaqaf.modules.dashboard.admin.service.AdminDashboardService;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.dto.RakanQrWithSum;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
 import com.taqwa.gowaqaf.modules.organization.collection.service.OrganizationCollectionService;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
@@ -17,8 +19,6 @@ import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails
 import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileDetails;
 import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
-import com.taqwa.gowaqaf.modules.rakanqr.dto.RakanQrWithSum;
-import com.taqwa.gowaqaf.modules.rakanqr.service.RakanQrService;
 
 import lombok.RequiredArgsConstructor;
 

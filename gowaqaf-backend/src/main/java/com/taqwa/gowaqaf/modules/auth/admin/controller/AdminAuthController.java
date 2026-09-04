@@ -46,6 +46,16 @@ public class AdminAuthController {
 		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}
 
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(HttpServletResponse response) {
+
+		ResponseCookie cookie = authCookieManager.clearAccessTokenCookie();
+
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@GetMapping("/me")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<?> me(Authentication authentication) {

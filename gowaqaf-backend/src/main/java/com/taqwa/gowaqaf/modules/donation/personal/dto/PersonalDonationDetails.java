@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
@@ -19,8 +20,11 @@ public class PersonalDonationDetails {
 
 	private String billingCode;
 
+	private String transactionId;
+
 	private BigDecimal amount;
 
+	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
 	private LocalDateTime paidAt;
 
 	private PaymentStatus status;

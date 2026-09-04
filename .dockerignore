@@ -22,3 +22,5 @@ gowaqaf-backend/HELP.md
 
 # Logs
 gowaqaf-backend/*.log
+
+.env

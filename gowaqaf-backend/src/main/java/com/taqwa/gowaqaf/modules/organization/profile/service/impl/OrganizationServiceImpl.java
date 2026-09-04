@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.service.StorageService;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationImagesRequest;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileDetails;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUpload;
@@ -12,9 +15,6 @@ import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile
 import com.taqwa.gowaqaf.modules.organization.profile.mapper.OrganizationMapper;
 import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
 import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
-import com.taqwa.gowaqaf.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 

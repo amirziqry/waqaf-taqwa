@@ -27,11 +27,11 @@ import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.rakanqr.component.RakanQrType;
-import com.taqwa.gowaqaf.modules.rakanqr.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
@@ -89,7 +89,7 @@ public class OrganizationCollectionSumFlowTest {
 		
 		// Personal - should NOT be included
 		CommonClass.createMockPersonalDonation(personalDonationRepository, p1, new BigDecimal("100.00"),
-				DonationType.DIRECT, PaymentStatus.PENDING, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
+				DonationType.DIRECT, PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
 
 		Merchant m1 = CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder, "vendor1",
 				"test@gmail.com");
@@ -106,7 +106,7 @@ public class OrganizationCollectionSumFlowTest {
 
 		// Merchant - should NOT be included
 		CommonClass.createMockMerchantDonation(merchantDonationRepository, m1, new BigDecimal("100.00"),
-				PaymentStatus.PENDING, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
+				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
 
 		// Rakan QR
 
@@ -122,7 +122,7 @@ public class OrganizationCollectionSumFlowTest {
 
 		// Rakan QR - should NOT be included
 		CommonClass.createMockRakanQrDonation(agentDonationRepository, r2, new BigDecimal("100.00"),
-				PaymentStatus.PENDING, LocalDateTime.of(2026, 8, 25, 19, 0, 0));
+				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 19, 0, 0));
 	}
 
 	@Test

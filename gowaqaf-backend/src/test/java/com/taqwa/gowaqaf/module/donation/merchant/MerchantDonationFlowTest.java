@@ -68,7 +68,7 @@ public class MerchantDonationFlowTest {
 		CommonClass.createMockMerchantDonation(merchantDonationRepository, mock, new BigDecimal("3.00"),
 				PaymentStatus.PAID, LocalDateTime.now());
 		CommonClass.createMockMerchantDonation(merchantDonationRepository, mock, new BigDecimal("2.50"),
-				PaymentStatus.PENDING, LocalDateTime.now());
+				PaymentStatus.UNPAID, LocalDateTime.now());
 
 		MvcResult result = mockMvc.perform(get("/api/merchant/donation/sum")).andExpect(status().isOk()).andReturn();
 

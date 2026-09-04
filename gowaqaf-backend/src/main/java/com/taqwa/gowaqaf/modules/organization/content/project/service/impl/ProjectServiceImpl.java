@@ -12,8 +12,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
-import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
+import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
+import com.taqwa.gowaqaf.external.storage.service.StorageService;
 import com.taqwa.gowaqaf.modules.organization.content.component.category.service.ContentCategoryService;
 import com.taqwa.gowaqaf.modules.organization.content.component.enums.ContentType;
 import com.taqwa.gowaqaf.modules.organization.content.component.tag.entity.ContentTag;
@@ -29,12 +31,6 @@ import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.mapper.ProjectMapper;
 import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
-import com.taqwa.gowaqaf.payment.dto.CollectionCreateRequest;
-import com.taqwa.gowaqaf.payment.dto.CollectionStatus;
-import com.taqwa.gowaqaf.payment.service.PaymentService;
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
-import com.taqwa.gowaqaf.storage.dto.UploadUrl;
-import com.taqwa.gowaqaf.storage.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,7 +42,6 @@ public class ProjectServiceImpl implements ProjectService {
 	private final ContentCategoryService categoryService;
 	private final ContentTagService tagService;
 	private final StorageService storageService;
-	private final PaymentService paymentService;
 
 	@Override
 	public ProjectUploadResponse createProject(ProjectUploadRequest dto) {
@@ -72,7 +67,6 @@ public class ProjectServiceImpl implements ProjectService {
 		project.setContentHtml(dto.getContentHtml());
 		project.setStatus(dto.getStatus());
 		project.setImages(new ArrayList<>());
-		project.setPaymentCollectionCode(generatePaymentCollectionCode(dto));
 
 		Project saved = projectRepository.save(project);
 
@@ -81,21 +75,6 @@ public class ProjectServiceImpl implements ProjectService {
 			uploadUrls = generateImageUploadUrls(saved.getId(), dto.getImageUploadRequests());
 
 		return new ProjectUploadResponse(saved.getId(), uploadUrls);
-	}
-
-	private String generatePaymentCollectionCode(ProjectUploadRequest dto) {
-		CollectionCreateRequest request = new CollectionCreateRequest();
-
-		request.setName(dto.getName());
-		request.setDescription(dto.getName() + "Payment Gateway Collection Record.");
-		request.setStatus(CollectionStatus.ACTIVE);
-
-		String collectionCode = paymentService.createPaymentCollection(request);
-
-		if (collectionCode == null)
-			throw new BadRequestException(ErrorCode.COL001, "Fail to create project collection.");
-
-		return collectionCode;
 	}
 
 	@Override
@@ -227,10 +206,16 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void deleteProjectById(UUID id) {
-		if (!projectRepository.existsById(id))
-			throw new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id));
+		Project project = projectRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
 
-		projectRepository.deleteById(id);
+		// Delete image files from object storage
+		for (ProjectImage image : project.getImages()) {
+			storageService.deleteFile(image.getImageKey());
+		}
+
+		// Delete project and its ProjectImage records
+		projectRepository.delete(project);
 	}
 
 }

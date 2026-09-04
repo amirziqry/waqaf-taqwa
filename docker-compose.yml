@@ -41,6 +41,9 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      NEXGEN_API_KEY: ${NEXGEN_API_KEY}
+      NEXGEN_API_SECRET: ${NEXGEN_API_SECRET}
+      WEBHOOK_BASE_URL: ${WEBHOOK_BASE_URL}
     depends_on:
       postgres:
         condition: service_started

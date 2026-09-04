@@ -10,9 +10,11 @@ public class PersonalDonationMapper {
 
 		dto.setId(donation.getId());
 		dto.setBillingCode(donation.getBillingCode());
+		dto.setTransactionId(donation.getTransactionId());
 		dto.setAmount(donation.getAmount());
 		dto.setPaidAt(donation.getPaidAt());
 		dto.setStatus(donation.getStatus());
+		dto.setReceiptHashId(donation.getReceiptHashId());
 
 		return dto;
 	}

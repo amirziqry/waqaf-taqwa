@@ -5,10 +5,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
+import com.taqwa.gowaqaf.external.payment.dto.PaymentRequest;
+import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
+import com.taqwa.gowaqaf.external.payment.service.PaymentService;
+import com.taqwa.gowaqaf.external.payment.webhook.service.WebhookService;
 import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationRequest;
@@ -23,9 +28,6 @@ import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.service.PersonalService;
-import com.taqwa.gowaqaf.payment.dto.PaymentRequest;
-import com.taqwa.gowaqaf.payment.dto.PaymentUrlResponse;
-import com.taqwa.gowaqaf.payment.service.PaymentService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,10 @@ public class ProjectDonationServiceImpl implements ProjectDonationService {
 	private final PersonalService userService;
 	private final ProjectService projectService;
 	private final PaymentService paymentService;
+	private final WebhookService webhookService;
+
+	@Value("${nexgen.collection.project}")
+	private String collectionCode;
 
 	@Override
 	public PaymentUrlResponse createDonationByProjectId(AccountUserDetails principal, UUID projectId,
@@ -45,10 +51,16 @@ public class ProjectDonationServiceImpl implements ProjectDonationService {
 		Personal personal = userService.getPersonalByUsername(principal.getUsername());
 		Project project = projectService.getProjectById(projectId);
 
-		// Get name from principal.
+		// Generate webhook token.
+		String webhookToken = webhookService.generateWebhookToken();
+		String callbackUrl = webhookService.buildWebhookUrl("project", webhookToken);
+
+		// Build payment request dto.
 		PaymentRequest paymentRequest = new PaymentRequest();
 		paymentRequest.setName(null);
 		paymentRequest.setAmount(dto.getAmount());
+		paymentRequest.setCallbackUrl(callbackUrl);
+		paymentRequest.setCollectionCode(collectionCode);
 
 		// TODO: Pass collection code
 		PaymentUrlResponse response = paymentService.createPaymentBill(paymentRequest);
@@ -56,6 +68,7 @@ public class ProjectDonationServiceImpl implements ProjectDonationService {
 		PersonalDonation donation = new PersonalDonation();
 		donation.setPersonal(personal);
 		donation.setName(null); // TODO: User or payer name
+		donation.setAmount(response.getAmount());
 		donation.setBillingCode(response.getBillingCode());
 		donation.setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
 		donation.setDonationType(DonationType.PROJECT);

@@ -31,7 +31,9 @@ public class WithMockPersonalSecurityContextFactory implements WithSecurityConte
 		personal.setUsername(annotation.username());
 		personal.setPassword(passwordEncoder.encode("0000"));
 
+		info.setAccountHolderName("Jane Doe");
 		info.setEmail("test@gmail.com");
+		info.setPhone("60123456789");
 		personal.setInfo(identityRepository.save(info));
 
 		Personal mock = personalRepository.save(personal);

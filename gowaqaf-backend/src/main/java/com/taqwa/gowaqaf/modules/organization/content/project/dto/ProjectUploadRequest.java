@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
 import com.taqwa.gowaqaf.modules.organization.content.component.category.dto.ContentCategoryDto;
 import com.taqwa.gowaqaf.modules.organization.content.component.tag.dto.ContentTagDto;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
-import com.taqwa.gowaqaf.storage.dto.FileUploadRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
