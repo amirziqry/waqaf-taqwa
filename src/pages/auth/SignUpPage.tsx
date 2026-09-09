@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Store, Shield, Lock, Mail, ArrowRight, } from 'lucide-react';
+import { User, Shield, Lock, Mail, ArrowRight, Phone } from 'lucide-react';
 import api from '../../api/client';
 
 export const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
-  const [accountType, setAccountType] = useState<'personal' | 'merchant' | 'admin'>('admin');
+  const [accountType, setAccountType] = useState<'personal' | 'admin'>('personal');
   const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,18 +19,18 @@ export const SignUpPage: React.FC = () => {
     setLoading(true);
     setErrorMsg('');
 
-    let endpoint = '/donator/register';
-    if (accountType === 'merchant') endpoint = '/vendor/register';
-    if (accountType === 'admin') endpoint = '/member/register-admin';
+    const endpoint = accountType === 'admin' ? '/member/auth/register' : '/personal/register';
 
     try {
       await api.post(endpoint, {
         username,
         email,
+        phone,
         password,
+        modMesra: false,
       });
 
-      localStorage.setItem('wt_user_role', accountType === 'admin' ? 'member' : accountType === 'merchant' ? 'vendor' : 'donator');
+      localStorage.setItem('wt_user_role', accountType === 'admin' ? 'member' : 'donator');
       localStorage.setItem('wt_user_name', username);
       navigate('/auth/login');
     } catch (err: any) {
@@ -51,10 +53,10 @@ export const SignUpPage: React.FC = () => {
         </div>
       )}
 
-      {/* Account Type Selection */}
+      {/* Account Type Selection (Pewakaf & Admin only) */}
       <div className="space-y-2">
         <label className="text-xs font-extrabold text-[#0F2028]">Pilih Jenis Akaun</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <div
             onClick={() => setAccountType('personal')}
             className={`p-3 rounded-2xl border-2 cursor-pointer transition text-center ${
@@ -63,16 +65,6 @@ export const SignUpPage: React.FC = () => {
           >
             <User className="w-4 h-4 mx-auto mb-1 text-[#1A8C4E]" />
             <h4 className="font-extrabold text-[11px] text-[#0F2028]">Pewakaf</h4>
-          </div>
-
-          <div
-            onClick={() => setAccountType('merchant')}
-            className={`p-3 rounded-2xl border-2 cursor-pointer transition text-center ${
-              accountType === 'merchant' ? 'border-[#1A8C4E] bg-emerald-50/40' : 'border-slate-200 bg-white'
-            }`}
-          >
-            <Store className="w-4 h-4 mx-auto mb-1 text-slate-700" />
-            <h4 className="font-extrabold text-[11px] text-[#0F2028]">Peniaga</h4>
           </div>
 
           <div
@@ -90,6 +82,21 @@ export const SignUpPage: React.FC = () => {
       {/* Account Details Form */}
       <form onSubmit={handleRegister} className="space-y-4">
         <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">Nama Penuh (Account Holder Name)</label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <User className="w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ahmad bin Abdullah"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
           <label className="text-xs font-extrabold text-[#0F2028]">Nama Pengguna (Username)</label>
           <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
             <User className="w-4 h-4 text-slate-400" />
@@ -98,7 +105,22 @@ export const SignUpPage: React.FC = () => {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin_baru"
+              placeholder="ahmad99"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">No. Telefon (Phone Number)</label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <Phone className="w-4 h-4 text-slate-400" />
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+60123456789"
               className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
             />
           </div>
@@ -113,7 +135,7 @@ export const SignUpPage: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@taqwa.com"
+              placeholder="ahmad@example.com"
               className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
             />
           </div>

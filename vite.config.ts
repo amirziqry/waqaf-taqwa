@@ -23,6 +23,9 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
+        cookieDomainRewrite: {
+          '*': '', // Strips domain constraints so cookie attaches strictly to localhost
+        },
       },
     },
   },

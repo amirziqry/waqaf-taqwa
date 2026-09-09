@@ -19,12 +19,12 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setErrorMessage('');
 
-    const endpoint = role === 'member' ? '/member/auth/login' : '/donator/auth/login';
+    // Updated to match ApiBasePath.PERSONAL:
+    const endpoint = role === 'member' ? '/member/auth/login' : '/personal/auth/login';
 
     try {
       await api.post(endpoint, { username, password });
       
-      // Store current user metadata locally
       localStorage.setItem('wt_user_role', role);
       localStorage.setItem('wt_user_name', username);
       
@@ -125,13 +125,16 @@ export const LoginPage: React.FC = () => {
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
       </form>
-
-      <div className="text-center pt-2">
+<div className="text-center pt-2">
         <p className="text-xs text-slate-500">
           Belum mempunyai akaun?{' '}
-          <Link to="/auth" className="text-[#1A8C4E] font-bold hover:underline">
+          <button
+            type="button"
+            onClick={() => navigate('/auth/signup')}
+            className="text-[#1A8C4E] font-bold hover:underline cursor-pointer ml-1 inline-block"
+          >
             Daftar Sekarang
-          </Link>
+          </button>
         </p>
       </div>
     </div>
