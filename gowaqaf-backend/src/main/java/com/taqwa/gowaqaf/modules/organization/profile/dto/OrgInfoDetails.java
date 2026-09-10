@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationProfileDetails {
+public class OrgInfoDetails {
 
 	private UUID id;
 	private String name;

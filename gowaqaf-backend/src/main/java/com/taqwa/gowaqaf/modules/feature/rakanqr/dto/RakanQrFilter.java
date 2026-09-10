@@ -1,7 +1,7 @@
 package com.taqwa.gowaqaf.modules.feature.rakanqr.dto;
 
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +14,6 @@ public class RakanQrFilter {
 
 	private RakanQrType type;
 
-	private RakanQrStatus status;;
+	private RakanQrStatus status;
 
 }

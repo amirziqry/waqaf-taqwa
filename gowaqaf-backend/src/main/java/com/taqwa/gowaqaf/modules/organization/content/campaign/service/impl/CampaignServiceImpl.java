@@ -8,10 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
-import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
 import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
@@ -153,11 +154,7 @@ public class CampaignServiceImpl implements CampaignService {
 		campaignRepository.save(campaign);
 	}
 
-	@Override
-	public CampaignDetails getCampaignDetailsById(UUID id) {
-		Campaign campaign = campaignRepository.findById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.CPG001, String.format("Campaign %s not found", id)));
-
+	private CampaignDetails mapToCampaignDetails(Campaign campaign) {
 		CampaignDetails dto = CampaignMapper.mapToCampaignDetails(campaign);
 
 		if (campaign.getImages() != null) {
@@ -175,27 +172,29 @@ public class CampaignServiceImpl implements CampaignService {
 	}
 
 	@Override
-	public List<CampaignDetails> getAllCampaigns() {
-		List<Campaign> campaigns = campaignRepository.findAll();
-		if (campaigns.size() == 0)
-			throw new BadRequestException(ErrorCode.CPG001, String.format("Campaign not found"));
+	public CampaignDetails getCampaignDetailsById(UUID id) {
+		Campaign campaign = campaignRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.CPG001, String.format("Campaign %s not found", id)));
 
-		List<CampaignDetails> dtos = campaigns.stream().map(n -> {
-			CampaignDetails dto = CampaignMapper.mapToCampaignDetails(n);
+		CampaignDetails dto = mapToCampaignDetails(campaign);
 
-			dto.setImages(n.getImages().stream().map(image -> {
-				CampaignImageUrl imageUrl = new CampaignImageUrl();
+		return dto;
+	}
 
-				imageUrl.setId(image.getId());
-				imageUrl.setUrl(storageService.generateAccessUrl(image.getImageKey()));
+	@Override
+	public List<CampaignDetails> getCampaignsList(Pageable pageable) {
+		List<Campaign> campaigns = campaignRepository.findAllBy(pageable);
 
-				return imageUrl;
-			}).toList());
-
-			return dto;
-		}).toList();
+		List<CampaignDetails> dtos = campaigns.stream().map(campaign -> mapToCampaignDetails(campaign)).toList();
 
 		return dtos;
+	}
+
+	@Override
+	public Page<CampaignDetails> getAllCampaigns(Pageable pageable) {
+		Page<Campaign> campaigns = campaignRepository.findAll(pageable);
+
+		return campaigns.map(CampaignMapper::mapToCampaignDetails);
 	}
 
 	@Override

@@ -1,8 +1,7 @@
 package com.taqwa.gowaqaf.modules.donation.personal.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -22,13 +21,14 @@ public interface PersonalDonationService {
 
 	PersonalDonationDetails getPaymentStatus(UUID donationId, UUID personalId);
 
-	Page<PersonalDonationDetails> getAllDonationDetailsByUser(UUID personalId, Pageable pageable);
-
 	PersonalDonationSum getDonationSumByUser(UUID id, PersonalDonationSumFilter filter);
+
+	PersonalDonationSum getDonationSumByUser(UUID id, LocalDate startDate, LocalDate endDate);
 
 	PersonalCollectionSum getCollectionSum(LocalDate startDate, LocalDate endDate);
 
-	void processWebhook(String token, String code, String status, BigDecimal amount, String transactionId,
-			String orderId, LocalDateTime transactionDate);
+	Page<PersonalDonationDetails> getAllDonationDetailsByUser(UUID personalId, Pageable pageable);
+
+	List<PersonalDonationDetails> getDonationDetailsListByUser(UUID personalId, Pageable pageable);
 
 }

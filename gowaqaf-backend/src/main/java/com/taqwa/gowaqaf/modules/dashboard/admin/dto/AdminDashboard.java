@@ -2,12 +2,12 @@ package com.taqwa.gowaqaf.modules.dashboard.admin.dto;
 
 import java.util.List;
 
-import com.taqwa.gowaqaf.modules.feature.rakanqr.dto.RakanQrWithSum;
-import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.dto.RakanQrInfo;
+import com.taqwa.gowaqaf.modules.organization.collection.dto.OrgCollectionInfo;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileDetails;
+import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AdminDashboard {
 
-	private OrganizationCollectionSum collectionSum;
+	private OrgCollectionInfo collections;
+
+	private OrgInfoDetails orgAbout;
 
 	private List<ProjectDetails> projects;
 
@@ -26,8 +28,6 @@ public class AdminDashboard {
 
 	private List<CampaignDetails> campaigns;
 
-	private OrganizationProfileDetails organizationProfile;
-
-	private List<RakanQrWithSum> rakanQrSummary;
+	private List<RakanQrInfo> rakanQrs;
 
 }

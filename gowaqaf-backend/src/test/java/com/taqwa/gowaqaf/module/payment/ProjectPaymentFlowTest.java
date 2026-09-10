@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,14 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taqwa.gowaqaf.common.CommonClass;
+import com.taqwa.gowaqaf.common.CommonEndpoints;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
 import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
+import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
+import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
+import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,19 +40,25 @@ import lombok.RequiredArgsConstructor;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RequiredArgsConstructor
-public class PaymentFlowTest {
+public class ProjectPaymentFlowTest {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
+	private final ProjectRepository projectRepository;
+
+	Project p1;
+
 	@BeforeEach
 	void setup() {
-
+		this.p1 = CommonClass.createMockProject(projectRepository, "Project1", new BigDecimal("10000"),
+				ContentStatus.PUBLISHED);
+		CommonClass.createMockProject(projectRepository, "Project2", new BigDecimal("10000"), ContentStatus.PUBLISHED);
 	}
 
 	@Test
 	@WithMockPersonal(username = "personalmock")
-	void personalPaymentFlowTest() throws Exception {
+	void projectPaymentFlowTest() throws Exception {
 
 		String requestJson = """
 				{
@@ -55,17 +67,16 @@ public class PaymentFlowTest {
 				}
 				""";
 
-		MvcResult donationResult = mockMvc
-				.perform(post("/api/personal/donation/payment/request-gateway-url")
+		MvcResult result = mockMvc
+				.perform(post(CommonEndpoints.projectDonationRequest, p1.getId().toString())
 						.contentType(MediaType.APPLICATION_JSON).content(requestJson))
 				.andExpect(status().isCreated()).andExpect(jsonPath("$.id").isNotEmpty())
 				.andExpect(jsonPath("$.billingCode").isNotEmpty()).andExpect(jsonPath("$.amount").value(10.0))
 				.andExpect(jsonPath("$.status").value(PaymentStatus.UNPAID.toString()))
 				.andExpect(jsonPath("$.paymentUrl").isNotEmpty()).andReturn();
 
-		String donationResponse = donationResult.getResponse().getContentAsString();
-
-		PaymentUrlResponse paymentResponse = objectMapper.readValue(donationResponse, PaymentUrlResponse.class);
+		String response = result.getResponse().getContentAsString();
+		PaymentUrlResponse paymentResponse = objectMapper.readValue(response, PaymentUrlResponse.class);
 
 		assertNotNull(paymentResponse);
 		assertNotNull(paymentResponse.getId());
@@ -86,13 +97,12 @@ public class PaymentFlowTest {
 
 		new BufferedReader(new InputStreamReader(System.in)).readLine();
 
-		MvcResult statusResult = mockMvc
-				.perform(get("/api/personal/donation/payment/{id}/status", paymentResponse.getId())).andDo(print())
+		result = mockMvc.perform(get(CommonEndpoints.projectGetDonationDetails, paymentResponse.getId())).andDo(print())
 				.andReturn();
 
-		String statusResponse = statusResult.getResponse().getContentAsString();
+		response = result.getResponse().getContentAsString();
 
-		JsonNode json = objectMapper.readTree(statusResponse);
+		JsonNode json = objectMapper.readTree(response);
 
 		assertNotNull(json.get("id"));
 		assertNotNull(json.get("billingCode"));
@@ -100,6 +110,8 @@ public class PaymentFlowTest {
 		assertNotNull(json.get("amount"));
 		assertNotNull(json.get("paidAt"));
 		assertNotNull(json.get("status"));
+		assertNotNull(json.get("projectId"));
+		assertNotNull(json.get("projectName"));
 
 		assertEquals(PaymentStatus.PAID.toString(), json.get("status").asText());
 
@@ -113,7 +125,12 @@ public class PaymentFlowTest {
 		System.out.println("Paid At:         " + json.get("paidAt").asText());
 		System.out.println("Status:          " + json.get("status").asText());
 		System.out.println("Receipt Hash ID: " + json.get("receiptHashId").asText());
+		System.out.println("Project ID:      " + json.get("projectId").asText());
+		System.out.println("Project Name:    " + json.get("projectName").asText());
 		System.out.println("========================================");
+
+		Project project = projectRepository.findById(p1.getId()).orElseThrow();
+		assertEquals(new BigDecimal("10.00"), project.getCollectedAmount());
 
 	}
 

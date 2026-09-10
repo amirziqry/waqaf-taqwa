@@ -31,7 +31,9 @@ public class WithMockMerchantSecurityContextFactory implements WithSecurityConte
 		merchant.setUsername(annotation.username());
 		merchant.setPassword(passwordEncoder.encode("0000"));
 
+		info.setAccountHolderName("Jane Doe");
 		info.setEmail("test@gmail.com");
+		info.setPhone("60123456789");
 		merchant.setInfo(identityRepository.save(info));
 
 		Merchant mock = merchantRepository.save(merchant);

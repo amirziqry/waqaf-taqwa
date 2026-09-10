@@ -28,10 +28,10 @@ public class AccountInfo {
 	@Column(unique = false, nullable = true)
 	private String accountHolderName;
 
-	@Column(unique = true, nullable = true)
+	@Column(unique = false, nullable = true)
 	private String phone;
 
-	@Column(nullable = true)
+	@Column(unique = false, nullable = true)
 	private String email;
 
 	@Column(nullable = true)

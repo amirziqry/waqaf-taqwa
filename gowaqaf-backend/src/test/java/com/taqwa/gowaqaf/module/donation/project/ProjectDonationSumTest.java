@@ -20,12 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.common.CommonClass;
 import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSum;
+import com.taqwa.gowaqaf.modules.donation.project.repository.ProjectDonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
@@ -47,7 +49,8 @@ public class ProjectDonationSumTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final PersonalDonationRepository personalDonationRepository;
+	private final DonationRepository donationRepository;
+	private final ProjectDonationRepository projectDonationRepository;
 
 	private final ProjectRepository projectRepository;
 
@@ -70,14 +73,14 @@ public class ProjectDonationSumTest {
 		this.d2 = CommonClass.createMockProject(projectRepository, "Project2", new BigDecimal("10000.00"),
 				ContentStatus.PUBLISHED);
 
-		CommonClass.createMockProjectDonation(personalDonationRepository, p1, d1, new BigDecimal("100.00"),
-				PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(personalDonationRepository, p2, d1, new BigDecimal("150.00"),
-				PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(personalDonationRepository, p1, d2, new BigDecimal("100.00"),
-				PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(personalDonationRepository, p2, d2, new BigDecimal("200.00"),
-				PaymentStatus.PAID, LocalDateTime.now());
+		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, d1,
+				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.now());
+		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p2, d1,
+				new BigDecimal("150.00"), PaymentStatus.PAID, LocalDateTime.now());
+		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, d2,
+				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.now());
+		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p2, d2,
+				new BigDecimal("200.00"), PaymentStatus.PAID, LocalDateTime.now());
 	}
 
 	@Test
@@ -107,12 +110,15 @@ public class ProjectDonationSumTest {
 	@Test
 	@WithMockAdmin(username = "mock_member", roles = { "ADMIN" })
 	void getAllProjectWithCollectionFlowTest() throws Exception {
+
 		MvcResult result = mockMvc.perform(get("/api/organization/project/all/get")).andExpect(status().isOk())
 				.andReturn();
 
 		String response = result.getResponse().getContentAsString();
 
-		List<ProjectDetails> projects = objectMapper.readValue(response,
+		JsonNode json = objectMapper.readTree(response);
+
+		List<ProjectDetails> projects = objectMapper.readValue(json.get("content").toString(),
 				objectMapper.getTypeFactory().constructCollectionType(List.class, ProjectDetails.class));
 
 		assertEquals(2, projects.size());
@@ -123,9 +129,11 @@ public class ProjectDonationSumTest {
 		ProjectDetails project2 = projects.stream().filter(project -> project.getName().equals("Project2")).findFirst()
 				.orElseThrow();
 
-		assertEquals(new BigDecimal("250.00"), project1.getCollectedAmount());
-		assertEquals(new BigDecimal("300.00"), project2.getCollectedAmount());
+		assertEquals(0, new BigDecimal("250.00").compareTo(project1.getCollectedAmount()));
+		assertEquals(0, new BigDecimal("300.00").compareTo(project2.getCollectedAmount()));
 
+		assertEquals(2, json.get("page").get("totalElements").asInt());
+		assertEquals(1, json.get("page").get("totalPages").asInt());
 	}
 
 }

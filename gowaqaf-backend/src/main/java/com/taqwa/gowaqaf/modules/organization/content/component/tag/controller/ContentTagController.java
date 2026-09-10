@@ -27,7 +27,7 @@ public class ContentTagController {
 
 	private final ContentTagService service;
 
-	@PostMapping("/{type}/tag/create")
+	@PostMapping("/{type}/tag")
 	public ResponseEntity<ContentTagDto> createTag(@PathVariable String type,
 			@RequestBody ContentTagUploadRequest request) {
 		ContentTagDto response = service.createTag(ContentType.valueOf(type.toUpperCase()), request);
@@ -35,7 +35,7 @@ public class ContentTagController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/{type}/tag/{id}/update")
+	@PutMapping("/{type}/tag/{id}")
 	public ResponseEntity<ContentTagDto> updateTag(@PathVariable String type, @PathVariable Long id,
 			@RequestBody ContentTagUploadRequest request) {
 		ContentTagDto response = service.updateTag(ContentType.valueOf(type.toUpperCase()), id, request);
@@ -50,14 +50,14 @@ public class ContentTagController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/tag/all/get")
+	@GetMapping("/{type}/tag")
 	public ResponseEntity<List<ContentTagDto>> getTagList(@PathVariable String type) {
 		List<ContentTagDto> response = service.getAllTagDto(ContentType.valueOf(type.toUpperCase()));
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{type}/tag/{id}/delete")
+	@DeleteMapping("/{type}/tag/{id}")
 	public ResponseEntity<Void> deleteTag(@PathVariable String type, @PathVariable Long id) {
 		service.deleteTag(ContentType.valueOf(type.toUpperCase()), id);
 

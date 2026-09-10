@@ -22,18 +22,30 @@ import lombok.NoArgsConstructor;
 public class ProjectDetails {
 
 	private UUID id;
+
 	private String name;
+
 	private String slugUrl;
+
 	private BigDecimal collectedAmount;
+
 	private BigDecimal targetAmount;
+
 	private String location;
+
 	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate date;
+
 	private ContentCategoryDto category;
+
 	private Set<ContentTagDto> tags;
+
 	private String summary;
+
 	private String contentHtml;
+
 	private ContentStatus status;
+
 	private List<ProjectImageUrl> images;
 
 }

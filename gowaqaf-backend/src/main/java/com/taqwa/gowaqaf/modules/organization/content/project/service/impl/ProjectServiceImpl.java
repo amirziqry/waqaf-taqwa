@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.organization.content.project.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +10,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
@@ -26,7 +30,6 @@ import com.taqwa.gowaqaf.modules.organization.content.project.component.image.en
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectUploadRequest;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectUploadResponse;
-import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectWithCollection;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.mapper.ProjectMapper;
 import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
@@ -49,6 +52,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		project.setName(dto.getName());
 		project.setSlugUrl(dto.getSlugUrl());
+		project.setCollectedAmount(new BigDecimal("0.00"));
 		project.setTargetAmount(dto.getTargetAmount());
 		project.setLocation(dto.getLocation());
 		project.setDate(LocalDate.now());
@@ -164,32 +168,33 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ProjectDetails getProjectDetailsById(UUID id) {
-		ProjectWithCollection projectWithCollection = projectRepository.findWithCollectionById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.PRJ001, String.format("Project %s not found", id)));
+		Project project = getProjectById(id);
 
-		ProjectDetails dto = mapToProjectDetails(projectWithCollection);
+		ProjectDetails dto = mapToProjectDetails(project);
 
 		return dto;
 	}
 
 	@Override
-	public List<ProjectDetails> getAllProjectsDetails() {
-		List<ProjectWithCollection> projectsWithCollection = projectRepository.findAllWithCollection();
-		if (projectsWithCollection.isEmpty())
-			return List.of();
+	public List<ProjectDetails> getProjectsDetailsList(Pageable pageable) {
+		List<Project> projects = projectRepository.findAllBy(pageable);
 
-		List<ProjectDetails> dtos = projectsWithCollection.stream().map(project -> mapToProjectDetails(project))
-				.toList();
+		List<ProjectDetails> dtos = projects.stream().map(project -> mapToProjectDetails(project)).toList();
 
 		return dtos;
 	}
 
-	private ProjectDetails mapToProjectDetails(ProjectWithCollection projectWithCollection) {
-		Project project = projectWithCollection.getProject();
+	@Override
+	public Page<ProjectDetails> getAllProjectsDetails(Pageable pageable) {
+		Page<Project> projects = projectRepository.findAll(pageable);
 
+		Page<ProjectDetails> dtos = projects.map(project -> mapToProjectDetails(project));
+
+		return dtos;
+	}
+
+	private ProjectDetails mapToProjectDetails(Project project) {
 		ProjectDetails dto = ProjectMapper.mapToProjectDetails(project);
-
-		dto.setCollectedAmount(projectWithCollection.getCollectedAmount());
 
 		dto.setImages(project.getImages().stream().map(image -> {
 
@@ -216,6 +221,12 @@ public class ProjectServiceImpl implements ProjectService {
 
 		// Delete project and its ProjectImage records
 		projectRepository.delete(project);
+	}
+
+	@Override
+	@Transactional
+	public void updateProjectCollectedAmountById(UUID id, BigDecimal amount) {
+		projectRepository.incrementCollectedAmountById(id, amount);
 	}
 
 }

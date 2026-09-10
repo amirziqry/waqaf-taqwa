@@ -8,7 +8,7 @@ import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 import com.taqwa.gowaqaf.external.storage.service.StorageService;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationImagesRequest;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileDetails;
+import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUpload;
 import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
 import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
@@ -90,10 +90,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
-	public OrganizationProfileDetails getProfile() {
+	public OrgInfoDetails getProfile() {
 		OrganizationProfile org = organizationRepository.findFirstBy().orElse(new OrganizationProfile());
 
-		OrganizationProfileDetails dto = OrganizationMapper.mapToOrganizationProfileDetails(org);
+		OrgInfoDetails dto = OrganizationMapper.mapToOrganizationProfileDetails(org);
 
 		if (org.getLogoKey() != null)
 			dto.setLogoUrl(storageService.generateAccessUrl(org.getLogoKey()));

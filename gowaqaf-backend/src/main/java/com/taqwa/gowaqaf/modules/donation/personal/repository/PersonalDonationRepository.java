@@ -2,6 +2,7 @@ package com.taqwa.gowaqaf.modules.donation.personal.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,66 +16,56 @@ import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
 
 public interface PersonalDonationRepository extends JpaRepository<PersonalDonation, UUID> {
+	Optional<PersonalDonation> findByIdAndPersonalId(UUID id, UUID personalId);
+
+	Page<PersonalDonation> findByPersonalId(UUID personalId, Pageable pageable);
+
+	List<PersonalDonation> findAllByPersonalId(UUID personalId, Pageable pageable);
 
 	@Query("""
-			SELECT COALESCE(SUM(d.amount), 0)
+			SELECT COALESCE(SUM(d.donation.amount), 0)
 			FROM PersonalDonation d
-			WHERE d.status = 'PAID'
-			AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			AND (:endDate IS NULL OR d.paidAt < :endDate)
+			WHERE d.donation.status = 'PAID'
+			  AND (:startDate IS NULL OR d.donation.paidAt >= :startDate)
+			  AND (:endDate IS NULL OR d.donation.paidAt < :endDate)
 			""")
 	BigDecimal sumAllPaidDonations(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
 
 	@Query("""
 			SELECT new com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalCollectionSum(
-			    COALESCE(SUM(CASE WHEN d.donationType = 'DIRECT' THEN d.amount ELSE 0 END), 0),
-			    COALESCE(SUM(CASE WHEN d.donationType = 'RECURRING' THEN d.amount ELSE 0 END), 0),
-			    COALESCE(SUM(CASE WHEN d.donationType = 'PROJECT' THEN d.amount ELSE 0 END), 0)
+			    COALESCE(SUM(CASE WHEN d.donation.donationType = 'DIRECT' THEN d.donation.amount ELSE 0 END), 0),
+			    COALESCE(SUM(CASE WHEN d.donation.donationType = 'RECURRING' THEN d.donation.amount ELSE 0 END), 0),
+			    COALESCE(SUM(CASE WHEN d.donation.donationType = 'PROJECT' THEN d.donation.amount ELSE 0 END), 0)
 			)
 			FROM PersonalDonation d
-			WHERE d.status = 'PAID'
-			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.paidAt < :endDate)
+			WHERE d.donation.status = 'PAID'
+			  AND (:startDate IS NULL OR d.donation.paidAt >= :startDate)
+			  AND (:endDate IS NULL OR d.donation.paidAt < :endDate)
 			""")
 	PersonalCollectionSum sumPaidDonationsByType(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
 
 	@Query("""
-			SELECT COALESCE(SUM(d.amount), 0)
-			FROM PersonalDonation d
-			WHERE d.personal.id = :personalId
-			  AND d.status = 'PAID'
-			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.paidAt < :endDate)
+			SELECT SUM(amount)
+			FROM (
+			    SELECT pd.donation.amount AS amount
+			    FROM PersonalDonation pd
+			    WHERE pd.personal.id = :personalId
+			      AND pd.donation.status = 'PAID'
+			      AND (:startDate IS NULL OR pd.donation.paidAt >= :startDate)
+			      AND (:endDate IS NULL OR pd.donation.paidAt < :endDate)
+
+			    UNION ALL
+
+			    SELECT pd.donation.amount AS amount
+			    FROM ProjectDonation pd
+			    WHERE pd.personal.id = :personalId
+			      AND pd.donation.status = 'PAID'
+			      AND (:startDate IS NULL OR pd.donation.paidAt >= :startDate)
+			      AND (:endDate IS NULL OR pd.donation.paidAt < :endDate)
+			)
 			""")
 	BigDecimal sumPaidDonationsByPersonalId(@Param("personalId") UUID personalId,
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-
-	@Query("""
-			SELECT COALESCE(SUM(d.amount), 0)
-			FROM PersonalDonation d
-			WHERE d.project.id = :id
-			  AND d.status = 'PAID'
-			  AND d.donationType = 'PROJECT'
-			""")
-	BigDecimal sumPaidDonationsByProjectId(@Param("id") UUID id);
-
-	Optional<PersonalDonation> findByIdAndPersonalId(UUID id, UUID personalId);
-
-	@Query("""
-			SELECT COALESCE(SUM(d.amount), 0)
-			FROM PersonalDonation d
-			WHERE d.project.id = :projectId
-			  AND d.status = 'PAID'
-			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.paidAt < :endDate)
-			""")
-	BigDecimal sumPaidDonationsByProjectId(@Param("projectId") UUID projectId,
-			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-
-	Optional<PersonalDonation> findByWebhookToken(String token);
-
-	Page<PersonalDonation> findByPersonalId(UUID personalId, Pageable pageable);
-
 }

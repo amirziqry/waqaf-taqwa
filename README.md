@@ -105,111 +105,272 @@ export default api;
 
 ## Admin (Org User Account)
 
-### Admin — Register Editor
+### Admin — Get Dashboard (200) (Testing)
+- Admin-only. Retrieve preview of monthly donation collection across all channels, organization's information, fixed amount of projects, news, campaigns, & RakanQrs records.
 
-```javascript
-const response = await api.post(
-    "/admin/register-editor",
-    requestBody
-);
-
-const requestBody = {
-    username: frontend.username,
-    email: frontend.email,
-    password: frontend.password
-};
-
-const frontend.object = {
-    frontend.var: response.data.username,
-    frontend.var: response.data.email,
-    frontend.var: response.data.roles
-};
-```
-
-### Admin — Register Admin
-
-```javascript
-const response = await api.post(
-    "/admin/register-admin",
-    requestBody
-);
-
-const requestBody = {
-    username: frontend.username,
-    email: frontend.email,
-    password: frontend.password
-};
-
-const frontend.object = {
-    frontend.var: response.data.username,
-    frontend.var: response.data.email,
-    frontend.var: response.data.roles
-};
-```
-
-### Admin — Get By Username
+- Pending: Payout report.
 
 ```javascript
 const response = await api.get(
-    `/admin/get/${frontend.username}`
+    "/admin/dashboard"
+);
+
+const frontend.object = {
+    frontend.object: { // Collection Data
+        frontend.var: response.data.collections.directTotal,
+        frontend.var: response.data.collections.recurringTotal,
+        frontend.var: response.data.collections.projectTotal,
+        frontend.var: response.data.collections.merchantTotal,
+        frontend.var: response.data.collections.rakanQrTotal
+    },
+    frontend.object: { // Org Information
+        frontend.var: response.data.orgAbout.id,
+        frontend.var: response.data.orgAbout.name,
+        frontend.var: response.data.orgAbout.phone,
+        frontend.var: response.data.orgAbout.email,
+
+        frontend.object: { // Org Address
+            frontend.var: response.data.orgAbout.address.addressLine1,
+            frontend.var: response.data.orgAbout.address.addressLine2,
+            frontend.var: response.data.orgAbout.address.addressLine3,
+            frontend.var: response.data.orgAbout.address.postcode,
+            frontend.var: response.data.orgAbout.address.city,
+            frontend.var: response.data.orgAbout.address.state,
+            frontend.var: response.data.orgAbout.address.country
+        },
+        frontend.var: response.data.orgAbout.contentHtml, // About us content.
+        frontend.var: response.data.orgAbout.logoUrl, // Image URL from storage.
+        frontend.var: response.data.orgAbout.heroUrl // Image URL from storage.
+    },
+    // Projects
+    frontend.list = response.data.projects.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.name,
+        frontend.var: object.slugUrl,
+        frontend.var: object.collectedAmount,
+        frontend.var: object.targetAmount,
+        frontend.var: object.location,
+        frontend.var: object.date, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // News
+    frontend.list : response.data.news.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.title,
+        frontend.var: object.slugUrl,
+        frontend.var: object.author,
+        frontend.var: object.date, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // Campaigns
+    frontend.list : response.data.campaigns.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.name,
+        frontend.var: object.slugUrl,
+        frontend.var: object.dateStart, // dd-MM-yyyy
+        frontend.var: object.dateEnd, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // RakanQrs
+    frontend.object: response.data.rakanQrs.map(agent => ({
+        frontend.var: agent.id, // Primary identifier.
+        frontend.var: agent.name,
+        frontend.var: agent.email,
+        frontend.var: agent.phone,
+        frontend.var: agent.code,
+        frontend.var: agent.type, // STANDARD/AMBASADDOR
+        frontend.var: agent.status, // ACTIVE/PENDING/INACTIVE
+        frontend.var: agent.collectedAmount,
+        frontend.var: agent.commission
+    }))
+};
+```
+
+### Admin — Register Admin (201) (Testing)
+- Pending third party verification
+
+```javascript
+const requestBody = {
+    username: frontend.username,
+    email: frontend.email,
+    password: frontend.password
+    phone: frontend.phone, // Optional
+    modMesra: frontend.modMesra // Optional, Boolean
+};
+
+const response = await api.post(
+    "/admin/register/admin",
+    requestBody
+);
+
+const frontend.object = {
+    frontend.var: response.data.username,
+    frontend.var: response.data.email,
+    frontend.var: response.data.phone,
+    frontend.var: response.data.roles // ADMIN/EDITOR
+};
+```
+
+### Admin — Register Editor (201) (Testing)
+- Pending third party verification
+
+```javascript
+const requestBody = {
+    username: frontend.username,
+    email: frontend.email,
+    password: frontend.password
+    phone: frontend.phone, // Optional
+    modMesra: frontend.modMesra // Optional, Boolean
+};
+
+const response = await api.post(
+    "/admin/register/editor",
+    requestBody
+);
+
+const frontend.object = {
+    frontend.var: response.data.username,
+    frontend.var: response.data.email,
+    frontend.var: response.data.phone,
+    frontend.var: response.data.roles // ADMIN/EDITOR
+};
+```
+
+### Admin — Get By Username (200)
+
+```javascript
+const response = await api.get(
+    `/admin/users/${frontend.username}`
 );
 
 const frontend.object = {
     frontend.var: response.data.id,
     frontend.var: response.data.username,
     frontend.var: response.data.email,
-    frontend.var: response.data.roles
+    frontend.var: object.phone,
+    frontend.var: object.roles,
+    frontend.var: object.modMesra, // Boolean
 };
 ```
 
-### Admin — Get All
+### Admin — Get All (200)
 
 ```javascript
 const response = await api.get(
-    "/admin/get/all"
+    "/admin/users"
 );
 
 const frontend.list = response.data.map(object => ({
     frontend.var: object.id,
     frontend.var: object.username,
     frontend.var: object.email,
-    frontend.var: object.roles
+    frontend.var: object.phone,
+    frontend.var: object.roles,
+    frontend.var: object.modMesra, // Boolean
 }));
 ```
 
-### Admin — Update Role
+### Admin — Update Role (200)
+- Switch a user from admin to editor, vice versa.
 
 ```javascript
-const response = await api.patch(
-    `/admin/update/${frontend.username}/role`,
-    requestBody
-);
-
 const requestBody = {
     role: frontend.role // "ADMIN" / "EDITOR"
 };
+
+const response = await api.patch(
+    `/admin/users/${frontend.username}/account/role`,
+    requestBody
+);
 ```
 
-### Admin — Delete
+### Admin — Update Password (200)
+- Change logged in user's password (Standard method).
+
+```javascript
+const requestBody = {
+    currentPassword: frontend.currentPassword,
+    newPassword: frontend.newPassword
+};
+
+const response = await api.patch(
+    `/admin/users/account/password`,
+    requestBody
+);
+```
+
+### Admin — Delete (200)
 
 ```javascript
 const response = await api.delete(
-    `/admin/delete/${frontend.username}`
+    `/admin/users/${frontend.username}`
 );
 ```
 
-### Admin — Login
+### Admin — Login (200)
+- Successful response will store JWT access token in browser's cookie for subsequent authenticated request.
 
 ```javascript
-const response = await api.post(
-    "/admin/login",
-    requestBody
-);
-
 const requestBody = {
     username: frontend.username,
     password: frontend.password
 };
+
+const response = await api.post(
+    "/admin/login",
+    requestBody
+);
 
 const frontend.object = {
     frontend.var: response.data.username,
@@ -218,7 +379,16 @@ const frontend.object = {
 };
 ```
 
-### Admin — Get Current User Authentication Status
+### Admin — Logout (200)
+- Clear cookie from browser's cookie.
+
+```javascript
+const response = await api.post(
+    "/admin/logout"
+);
+```
+
+### Admin — Get User Authentication Status (200)
 
 ```javascript
 const response = await api.get(
@@ -289,7 +459,145 @@ const frontend.object = {
 
 ## Personal (Donor Account)
 
-### Personal — Register
+### Personal Dashboard
+
+#### Personal — Get Dashboard (200) (Testing)
+- Personal-only. Retrieve preview of monthly donation collection across all channels, organization's information, fixed amount of projects, news, campaigns, & RakanQrs records.
+
+- Pending: Project donation and transaction inclusion.
+
+```javascript
+const response = await api.get(
+    "/personal/dashboard"
+);
+
+const frontend.object = {
+    frontend.object: { // Contributions
+        frontend.var: response.data.contributions.total
+    },
+    frontend.object: { // Account Information
+        frontend.var: response.data.accountInfo.id
+        frontend.var: response.data.accountInfo.username
+        frontend.var: response.data.accountInfo.accountHolderName
+        frontend.var: response.data.accountInfo.email
+        frontend.var: response.data.accountInfo.phone
+        frontend.var: response.data.accountInfo.modMesra
+    },
+    frontend.object: { // Org Information
+        frontend.var: response.data.orgAbout.id,
+        frontend.var: response.data.orgAbout.name,
+        frontend.var: response.data.orgAbout.phone,
+        frontend.var: response.data.orgAbout.email,
+
+        frontend.object: { // Org Address
+            frontend.var: response.data.orgAbout.address.addressLine1,
+            frontend.var: response.data.orgAbout.address.addressLine2,
+            frontend.var: response.data.orgAbout.address.addressLine3,
+            frontend.var: response.data.orgAbout.address.postcode,
+            frontend.var: response.data.orgAbout.address.city,
+            frontend.var: response.data.orgAbout.address.state,
+            frontend.var: response.data.orgAbout.address.country
+        },
+        frontend.var: response.data.orgAbout.contentHtml, // About us content.
+        frontend.var: response.data.orgAbout.logoUrl, // Image URL from storage.
+        frontend.var: response.data.orgAbout.heroUrl // Image URL from storage.
+    },
+    // Projects
+    frontend.list = response.data.projects.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.name,
+        frontend.var: object.slugUrl,
+        frontend.var: object.collectedAmount,
+        frontend.var: object.targetAmount,
+        frontend.var: object.location,
+        frontend.var: object.date, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // News
+    frontend.list : response.data.news.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.title,
+        frontend.var: object.slugUrl,
+        frontend.var: object.author,
+        frontend.var: object.date, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // Campaigns
+    frontend.list : response.data.campaigns.map(object => ({
+        frontend.var: object.id, // Primary identifier.
+        frontend.var: object.name,
+        frontend.var: object.slugUrl,
+        frontend.var: object.dateStart, // dd-MM-yyyy
+        frontend.var: object.dateEnd, // dd-MM-yyyy
+        // Category
+        frontend.var: {
+            frontend.var: object.category.id, // Primary identifier.
+            frontend.var: object.category.name
+        },
+        // Tags
+        frontend.list: object.tags.map(tag => ({
+            frontend.var: tag.id, // Primary identifier.
+            frontend.var: tag.name
+        })),
+        frontend.var: object.summary,
+        frontend.var: object.contentHtml,
+        frontend.var: object.status,
+        // Images URL
+        frontend.list: object.images.map(image => ({
+            frontend.var: image.id, // Primary identifier.
+            frontend.var: image.url // Image URL from storage.
+        }))
+    })),
+    // Donations/Transactions
+    frontend.object: response.data.donations.map(item => ({
+        frontend.var: item.id, // Primary identifier.
+        frontend.var: item.billingCode,
+        frontend.var: item.transactionId,
+        frontend.var: item.amount,
+        frontend.var: item.paidAt,
+        frontend.var: item.status,
+        frontend.var: item.receiptHashId
+    }))
+};
+```
+
+### Personal Account Management
+
+#### Personal — Register (201)
 
 ```javascript
 const requestBody = {
@@ -312,8 +620,7 @@ const frontend.object = {
 };
 ```
 
-### Personal — Update Account Info
-Include unmodified values in the request.
+#### Personal — Update Account Info (200)
 
 ```javascript
 const requestBody = {
@@ -324,16 +631,30 @@ const requestBody = {
 };
 
 const response = await api.put( 
-    "/personal/account/update", 
+    "/personal/users/account", 
     requestBody 
 );
 ```
 
-### Personal — Get Account Info
+#### Personal — Change Password (200)
+
+```javascript
+const requestBody = {
+    currentPassword: frontend.currentPassword, 
+    newPassword: frontend.newPassword
+};
+
+const response = await api.patch( 
+    "/personal/users/account/password", 
+    requestBody 
+);
+```
+
+#### Personal — Get Account Info (200)
 
 ```javascript
 const response = await api.get( 
-    "/personal/account/get" 
+    "/personal/users/account" 
 ); 
 
 const frontend.object = { 
@@ -345,18 +666,19 @@ const frontend.object = {
     modMesra: response.data.modMesra };
 ```
 
-### Personal — Login
+#### Personal — Login (200)
+- This will attached JWT accessToken to the browser's cookie for subsequent authenticated request.
 
 ```javascript
-const response = await api.post(
-    "/personal/auth/login",
-    requestBody
-);
-
 const requestBody = {
     username: frontend.username,
     password: frontend.password
 };
+
+const response = await api.post(
+    "/personal/auth/login",
+    requestBody
+);
 
 const frontend.object = {
     frontend.var: response.data.username,
@@ -364,7 +686,16 @@ const frontend.object = {
 };
 ```
 
-### Personal — Get Current User Auth Status (200 OK)
+#### Personal — Logout (200)
+- Cookie will be removed from browser.
+
+```javascript
+const response = await api.post(
+    "/personal/auth/logout"
+);
+```
+
+#### Personal — Get User Auth Status (200)
 
 ```javascript
 const response = await api.get(
@@ -372,10 +703,11 @@ const response = await api.get(
 );
 ```
 
-### Personal — Request Payment Gateway URL (Beta)
-Direct donations only, not included project donations.
-User accountHolderName, email, phone is required for payment request.
-Update user account first before requesting.
+### Personal Donation
+
+#### Personal — Request Payment URL (201) (Beta)
+- Direct donations only, not include project donations.
+User accountHolderName, email, phone is required for payment request. Update user account info first before requesting.
 
 ```javascript
 const requestBody = { 
@@ -385,7 +717,7 @@ const requestBody = {
 };
 
 const response = await api.post(
-    "/personal/donation/payment/request-gateway-url",
+    "/personal/donations/payment-request",
     requestBody
 );
 
@@ -398,13 +730,13 @@ const frontend.object = {
 };
 ```
 
-### Personal — Get Payment Status
-Frontend needs to poll this request at least every +1s since web socket is not used yet.
+#### Personal — Get Donation Details (200)
+- Frontend needs to poll this request at least every +1s since web socket is not used yet.
 
 ```javascript
 const response = await api.get(
-    `/personal/donation/payment/${frontend.id}/status`
-); // Donation id
+    `/personal/donations/${frontend.id}`
+); // Pass donation id
 
 const frontend.object = {
     frontend.var: response.data.id,
@@ -417,7 +749,10 @@ const frontend.object = {
 };
 ```
 
-### Personal — Get Donation Sum
+#### Personal — Get Contributions (200) (Testing)
+- Get total amount of donations, with optional filter for date range.
+
+- Pending: Project donation inclusion.
 
 ```javascript
 const filter = {
@@ -426,7 +761,7 @@ const filter = {
 };
 
 const response = await api.get(
-    "/personal/donation/sum",
+    "/personal/donations/contributions",
     {
         params: filter // Optional
     }
@@ -437,20 +772,22 @@ const frontend.object = {
 };
 ```
 
-### Personal — Get All Donations by User
-This response returns Pagination.
+#### Personal — Get Donations Transactions (200)
+- Returns the user's transactions. This response returns Pagination.
+
+- Pending: Project donation transactions inclusion.
 
 ```javascript
-const filter = {
-    page: frontend.page, 
-    size: frontend.size, // Default 10
-    sort: frontend.sort // Default paidAt,DESC
+const params = {
+    page: frontend.page, // 0 = First page
+    size: frontend.size, // Number of elements per page
+    // Default sorting createdAt, DESC
 };
 
 const response = await api.get(
-    "/personal/donation/get/all", 
+    "/personal/donation/get", 
     { 
-        params: filter // Optional
+        params // Optional
     } 
 );
 
@@ -464,16 +801,17 @@ const frontend.object = {
         frontend.var: donation.status, 
         frontend.var: donation.receiptHashId 
     })),
-    frontend.var: response.data.totalElements, // Total elements available.
-    frontend.var: response.data.totalPages, 
-    frontend.var: response.data.size, 
-    frontend.var: response.data.number // Current page index.
+    frontend.var: response.data.page.totalElements, // Total elements available.
+    frontend.var: response.data.page.totalPages, 
+    frontend.var: response.data.page.size, 
+    frontend.var: response.data.page.number // Current page index.
 };
 ```
 
 ## Organization
 
-### Organization — Get Collection Summary (Placeholder)
+### Organization — Get Donation Collections (200)
+- Get donation collections amount across all channels.
 
 ```javascript
 const filter = {
@@ -482,55 +820,60 @@ const filter = {
 };
 
 const response = await api.get(
-    "/organization/collection/sum",
+    "/organization/donation/collections",
     {
         params: filter // Optional
     }
 );
 
 const frontend.object = {
-    frontend.var: response.data.personalDirectSum,
-    frontend.var: response.data.personalRecurringSum,
-    frontend.var: response.data.projectSum,
-    frontend.var: response.data.merchantDirectSum,
-    frontend.var: response.data.rakanQrSum,
-    frontend.var: response.data.total
+    frontend.var: response.data.directTotal,
+    frontend.var: response.data.recurringTotal,
+    frontend.var: response.data.projectTotal,
+    frontend.var: response.data.merchantTotal,
+    frontend.var: response.data.rakanQrTotal
 };
 ```
 
 ### Project
 
-#### Project Donation — Request Payment Gateway URL (Placeholder)
+#### Project Donation
+
+##### Project Donation — Request Payment URL (201) (Beta)
 
 ```javascript
-const response = await api.post(
-    `/project/donation/${frontend.projectId}/payment/request-gateway-url`,
-    requestBody
-);
-
 const requestBody = {
     amount: frontend.amount,
-    taxExempt: frontend.taxExemptFlag // true/false
+    taxExempt: frontend.taxExemptFlag, // Boolean
+    redirectUrl: frontend.redirectUrl
 };
+
+const response = await api.post(
+    `/projects/${frontend.projectId}/donations/payment-request`,
+    requestBody
+);
 
 const frontend.object = {
     frontend.var: response.data.id,
     frontend.var: response.data.billingCode,
+    frontend.var: response.data.amount,
     frontend.var: response.data.status,
     frontend.var: response.data.paymentUrl
 };
 ```
 
-#### Project Donation — Get Payment Status
+##### Project Donation — Get Donation Details (200)
+- Donation/Payment details
 
 ```javascript
 const response = await api.get(
-    `/project/donation/payment/${frontend.id}/status`
+    `/projects/donations/${frontend.id}`
 );
 
 const frontend.object = {
     frontend.var: response.data.id,
     frontend.var: response.data.billingCode,
+    frontend.var: response.data.transactionId,
     frontend.var: response.data.amount,
     frontend.var: response.data.paidAt,
     frontend.var: response.data.status,
@@ -540,7 +883,7 @@ const frontend.object = {
 };
 ```
 
-#### Project Donation — Get Project Donation Collection (Placeholder)
+##### Project Donation — Get Donation Collection By Id (200)
 
 ```javascript
 const filter = {
@@ -549,7 +892,7 @@ const filter = {
 };
 
 const response = await api.get(
-    `/project/donation/${frontend.projectId}/collection`,
+    `/projects/${frontend.projectId}/donations/collection`,
     {
         params: filter // Optional
     }
@@ -560,12 +903,14 @@ const frontend.object = {
 };
 ```
 
-#### Project — Create
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+#### Project Management
+
+##### Project — Create (201)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const response = await api.post(
-    "/organization/project/create",
+    "/organization/projects",
     requestBody
 );
 
@@ -601,12 +946,12 @@ const frontend.object = {
 };
 ```
 
-#### Project — Update
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+##### Project — Update (200)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const response = await api.put(
-    `/organization/project/${frontend.projectId}/update`,
+    `/organization/projects/${frontend.projectId}`,
     requestBody
 );
 
@@ -642,12 +987,12 @@ const frontend.object = {
 };
 ```
 
-#### Project — Update Image Keys
-After a successful storage upload, the frontend sends the returned image keys to the backend to save them to the content record.
+##### Project — Update Image Keys (200)
+- After a successful storage upload, the frontend needs to send the returned image keys to the backend to save them to the content record.
 
 ```javascript
 const response = await api.put(
-    `/organization/project/${frontend.projectId}/image-keys/upload`,
+    `/organization/projects/${frontend.projectId}/image-keys`,
     requestBody
 );
 
@@ -657,11 +1002,11 @@ const requestBody = frontend.images.map(image => ({
 }));
 ```
 
-#### Project — Get By ID
+##### Project — Get By ID (200)
 
 ```javascript
 const response = await api.get(
-    `/organization/project/${frontend.projectId}/get`
+    `/organization/project/${frontend.projectId}`
 );
 
 const frontend.object = {
@@ -690,14 +1035,15 @@ const frontend.object = {
 };
 ```
 
-#### Project — Get All
+##### Project — Get All (200)
+- Returns pagination.
 
 ```javascript
 const response = await api.get(
-    "/organization/project/all/get"
+    "/organization/projects"
 );
 
-const frontend.list = response.data.map(object => ({
+const frontend.list = response.data.content.map(object => ({
     frontend.var: object.id,
     frontend.var: object.name,
     frontend.var: object.slugUrl,
@@ -721,24 +1067,31 @@ const frontend.list = response.data.map(object => ({
         frontend.url: image.url
     }))
 }));
+
+const frontend.object = {
+    frontend.var: response.data.page.number,
+    frontend.var: response.data.page.size,
+    frontend.var: response.data.page.totalElements,
+    frontend.var: response.data.page.totalPages
+};
 ```
 
-#### Project — Delete
+##### Project — Delete (200)
 
 ```javascript
 const response = await api.delete(
-    `/organization/project/${frontend.projectId}/delete`
+    `/organization/project/${frontend.projectId}`
 );
 ```
 
 ### News
 
-#### News — Create
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+#### News — Create (201)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const response = await api.post(
-    "/organization/news/create",
+    "/organization/news",
     requestBody
 );
 
@@ -774,12 +1127,12 @@ const frontend.object = {
 };
 ```
 
-#### News — Update
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+#### News — Update (200)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const response = await api.put(
-    `/organization/news/${frontend.newsId}/update`,
+    `/organization/news/${frontend.newsId}`,
     requestBody
 );
 
@@ -815,11 +1168,11 @@ const frontend.object = {
 };
 ```
 
-#### News — Upload Image Keys
+#### News — Upload Image Keys (200)
 
 ```javascript
 const response = await api.put(
-    `/organization/news/${frontend.newsId}/images/upload`,
+    `/organization/news/${frontend.newsId}/image-keys`,
     requestBody
 );
 
@@ -833,7 +1186,7 @@ const requestBody = frontend.images.map(image => ({
 
 ```javascript
 const response = await api.get(
-    `/organization/news/${frontend.newsId}/get`
+    `/organization/news/${frontend.newsId}`
 );
 
 const frontend.object = {
@@ -868,7 +1221,7 @@ const frontend.object = {
 
 ```javascript
 const response = await api.get(
-    "/organization/news/all/get"
+    "/organization/news"
 );
 
 const frontend.list = response.data.map(object => ({
@@ -903,14 +1256,14 @@ const frontend.list = response.data.map(object => ({
 
 ```javascript
 const response = await api.delete(
-    `/organization/news/${frontend.newsId}/delete`
+    `/organization/news/${frontend.newsId}`
 );
 ```
 
 ### Campaign
 
-#### Campaign — Create
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+#### Campaign — Create (201)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const requestBody = {
@@ -941,7 +1294,7 @@ const requestBody = {
 };
 
 const response = await api.post(
-    "/organization/campaign/create",
+    "/organization/campaigns",
     requestBody
 );
 
@@ -955,8 +1308,8 @@ const frontend.object = {
 };
 ```
 
-#### Campaign — Update
-Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
+#### Campaign — Update (200)
+- Content images are uploaded directly to storage using the upload URL provided by the backend, rather than sending the image file through the backend.
 
 ```javascript
 const requestBody = {
@@ -987,7 +1340,7 @@ const requestBody = {
 };
 
 const response = await api.put(
-    `/organization/campaign/${frontend.campaignId}/update`,
+    `/organization/campaigns/${frontend.campaignId}`,
     requestBody
 );
 
@@ -1010,7 +1363,7 @@ const requestBody = frontend.images.map(image => ({
 }));
 
 const response = await api.put(
-    `/organization/campaign/${frontend.campaignId}/image-keys/upload`,
+    `/organization/campaigns/${frontend.campaignId}/image-keys`,
     requestBody
 );
 ```
@@ -1019,7 +1372,7 @@ const response = await api.put(
 
 ```javascript
 const response = await api.get(
-    `/organization/campaign/${frontend.campaignId}/get`
+    `/organization/campaigns/${frontend.campaignId}`
 );
 
 const frontend.object = {
@@ -1054,7 +1407,7 @@ const frontend.object = {
 
 ```javascript
 const response = await api.get(
-    "/organization/campaign/all/get"
+    "/organization/campaigns"
 );
 
 const frontend.list = response.data.map(object => ({
@@ -1089,13 +1442,127 @@ const frontend.list = response.data.map(object => ({
 
 ```javascript
 const response = await api.delete(
-    `/organization/campaign/${frontend.campaignId}/delete`
+    `/organization/campaigns/${frontend.campaignId}`
 );
 ```
 
-### Profile
+### Category (Project, News, Campaign)
+- Required for Project, News, Campaign categories and tags for dropdown selection instead of text input.
 
-#### Organization Profile — Update
+- contentType: "project", "news", "campaign"
+- /organization/project/category/...
+- /organization/news/category/...
+- /organization/campaign/category/...
+
+#### Category - Create (201)
+
+```javascript
+const response = await api.post( 
+    `/organization/${contentType}/category`, 
+    requestBody   
+); 
+
+const requestBody = { 
+    name: frontend.categoryName 
+}; 
+
+const frontend.object = { 
+    frontend.categoryId: response.data.id, 
+    frontend.categoryName: response.data.name 
+};
+```
+
+#### Category - Get (200)
+
+```javascript
+const response = await api.get(
+    `/organization/${contentType}/category/${frontend.categoryId}`
+);
+
+const frontend.object = {
+    frontend.categoryId: response.data.id,
+    frontend.categoryName: response.data.name
+};
+```
+
+#### Category - Get All (200)
+
+```javascript
+const response = await api.get(
+    `/organization/${contentType}/category`
+);
+
+const frontend.list = response.data.map(object => ({
+    frontend.categoryId: object.id,
+    frontend.categoryName: object.name
+}));
+```
+
+#### Category - Delete (200)
+
+```javascript
+const response = await api.delete(
+    `/organization/${contentType}/category/${frontend.categoryId}`
+);
+```
+
+### Tag (Project, News, Campaign)
+
+#### Tag - Create (201) 
+
+```javascript
+const response = await api.post(
+    `/organization/${contentType}/tag`,
+    requestBody
+);
+
+const requestBody = {
+    name: frontend.tagName
+};
+
+const frontend.object = {
+    frontend.tagId: response.data.id,
+    frontend.tagName: response.data.name
+};
+```
+
+#### Tag - Get (200)
+
+```javascript
+const response = await api.get(
+    `/organization/${contentType}/tag/${frontend.tagId}`
+);
+
+const frontend.object = {
+    frontend.tagId: response.data.id,
+    frontend.tagName: response.data.name
+};
+```
+
+#### Get All Tags
+
+```javascript
+const response = await api.get(
+    `/organization/${contentType}/tag`
+);
+
+const frontend.list = response.data.map(object => ({
+    frontend.tagId: object.id,
+    frontend.tagName: object.name
+}));
+```
+
+#### Delete Tag
+
+```javascript
+const response = await api.delete(
+    `/organization/${contentType}/tag/${frontend.tagId}`
+);
+```
+
+### Organization About
+
+#### About — Update (200)
 
 ```javascript
 const requestBody = {
@@ -1130,7 +1597,7 @@ const requestBody = {
 };
 
 const response = await api.put(
-    "/organization/profile/update-request",
+    "/organization/about",
     requestBody
 );
 
@@ -1140,7 +1607,7 @@ const frontend.object = {
 };
 ```
 
-#### Organization Profile — Upload Image Keys
+#### About — Upload Image Keys (200)
 
 ```javascript
 const requestBody = {
@@ -1149,16 +1616,16 @@ const requestBody = {
 };
 
 const response = await api.put(
-    "/organization/profile/image-keys/upload",
+    "/organization/about/image-keys",
     requestBody
 );
 ```
 
-#### Organization Profile — Get
+#### About — Get (200)
 
 ```javascript
 const response = await api.get(
-    "/organization/profile/get"
+    "/organization/about"
 );
 
 const frontend.object = {
@@ -1183,200 +1650,169 @@ const frontend.object = {
 };
 ```
 
-### Category (Project, News, Campaign)
+## RakanQr
 
-- contentType: "project", "news", "campaign"
-- /organization/project/category/...
-- /organization/news/category/...
-- /organization/campaign/category/...
+### RakanQr Dashboard
 
-#### Create Category
-
-```javascript
-const response = await api.post( 
-    `/organization/${contentType}/category/create`, 
-    requestBody   
-); 
-
-const requestBody = { 
-    name: frontend.categoryName 
-}; 
-
-const frontend.object = { 
-    frontend.categoryId: response.data.id, 
-    frontend.categoryName: response.data.name 
-};
-```
-
-#### Get Category
+#### Rakan QR — Get Dashboard (200)
+- Personal/Merchant, Active RakanQr-only. Retrieve preview of the user's Rakan Qr details, monthly collection, and fixed amount of clients donation transactions record.
 
 ```javascript
 const response = await api.get(
-    `/organization/${contentType}/category/${frontend.categoryId}/get`
+    "/rakan-qr/dashboard"
 );
 
 const frontend.object = {
-    frontend.categoryId: response.data.id,
-    frontend.categoryName: response.data.name
+    frontend.object: { // User's rakan qr's info.
+        frontend.var: response.data.info.id, 
+        frontend.var: response.data.info.name, 
+        frontend.var: response.data.info.email, 
+        frontend.var: response.data.info.phone, 
+        frontend.var: response.data.info.code, // RakanQr Code
+        frontend.var: response.data.info.type, // STANDARD/AMBASSADOR 
+        frontend.var: response.data.info.status, // ACTIVE/PENDING/INACTIVE 
+        frontend.var: response.data.info.collectedAmount, // All time collected donations
+        frontend.var: response.data.info.commission // All time commission receive. 
+    },
+    frontend.object: { // Current month collected donations.
+        frontend.var: response.data.collectedAmount.total 
+    },
+    frontend.list: response.data.donations.map(object => ({  
+        frontend.var: object.id, 
+        frontend.var: object.billingCode, 
+        frontend.var: object.transactionId, 
+        frontend.var: object.amount, 
+        frontend.var: object.paidAt, 
+        frontend.var: object.status, 
+        frontend.var: object.rakanQrCode 
+    }))
+}
+```
+
+### RakanQr Management
+
+#### Rakan QR — Apply (201)
+- Personal & Merchant only.
+
+```javascript
+const requestBody = {
+    type: frontend.type // STANDARD/AMBASSADOR
 };
-```
 
-#### Get All Categories
-
-```javascript
-const response = await api.get(
-    `/organization/${contentType}/category/all/get`
-);
-
-const frontend.list = response.data.map(object => ({
-    frontend.categoryId: object.id,
-    frontend.categoryName: object.name
-}));
-```
-
-#### Delete Category
-
-```javascript
-const response = await api.delete(
-    `/organization/${contentType}/category/${frontend.categoryId}/delete`
-);
-```
-
-### Tag (Project, News, Campaign)
-
-#### Create Tag
-
-```javascript
 const response = await api.post(
-    `/organization/${contentType}/tag/create`,
+    "/rakan-qr/apply",
     requestBody
 );
 
+const frontend.object = {
+    frontend.var: response.data.id, // Primary identifier
+    frontend.var: response.data.name,
+    frontend.var: response.data.email,
+    frontend.var: response.data.phone,
+    frontend.var: response.data.code, // RakanQr Code
+    frontend.var: response.data.type, // STANDARD/AMBASSADOR
+    frontend.var: response.data.status // ACTIVE/PENDING/INACTIVE
+```
+
+#### Rakan QR — Update Status (200)
+- Admin-only to approve application.
+
+```javascript
 const requestBody = {
-    name: frontend.tagName
+    status: frontend.status // ACTIVE/PENDING/INACTIVE
 };
 
-const frontend.object = {
-    frontend.tagId: response.data.id,
-    frontend.tagName: response.data.name
-};
-```
-
-#### Get Tag
-
-```javascript
-const response = await api.get(
-    `/organization/${contentType}/tag/${frontend.tagId}/get`
-);
-
-const frontend.object = {
-    frontend.tagId: response.data.id,
-    frontend.tagName: response.data.name
-};
-```
-
-#### Get All Tags
-
-
-```javascript
-const response = await api.get(
-    `/organization/${contentType}/tag/all/get`
-);
-
-const frontend.list = response.data.map(object => ({
-    frontend.tagId: object.id,
-    frontend.tagName: object.name
-}));
-```
-
-#### Delete Tag
-
-```javascript
-const response = await api.delete(
-    `/organization/${contentType}/tag/${frontend.tagId}/delete`
-);
-```
-
-## RakanQr
-
-## RakanQr Management
-
-### Rakan QR Agent — Apply
-
-```javascript
-const response = await api.post(
-    "/rakan-qr-agent/apply"
-);
-
-const frontend.object = {
-    frontend.var: response.data.id,
-    frontend.var: response.data.code,
-    frontend.var: response.data.type, // PERSONAL / MERCHANT
-    frontend.var: response.data.status, // ACTIVE / PENDING / INACTIVE
-    frontend.var: response.data.email
-```
-
-### Rakan QR Agent — Get All
-
-```javascript
-const filter = {
-    type: frontend.agentType, // PERSONAL / MERCHANT
-    status: frontend.status // ACTIVE / PENDING / INACTIVE
-};
-
-const response = await api.get(
-    "/rakan-qr-agent/get/all",
-    {
-        params: filter // Optional
-    }
-);
-
-const frontend.object = response.data.map(item => ({
-    frontend.var: item.id,
-    frontend.var: item.code,
-    frontend.var: item.type,  // PERSONAL / MERCHANT
-    frontend.var: item.status // ACTIVE / PENDING / INACTIVE
-}));
-```
-
-### Rakan QR Agent — Update Status
-
-```javascript
 const response = await api.patch(
-    `/rakan-qr-agent/${frontend.id}/status`,
-    {
-        status: frontend.status // ACTIVE / PENDING / INACTIVE
-    }
+    `/rakan-qr/${frontend.rakanQrId}/status`,
+    requestBody
 );
 ```
 
-### Rakan QR — Get All Agents With Sum
+#### Rakan QR — Get All (200)
+Admin-only to get all RakanQr users, with optional filters for application request management, and type of RakanQr. NOTE: Returns a pagination.
 
 ```javascript
-const filter = {
-    startDate: frontend.startDate, // dd-MM-yyyy
-    endDate: frontend.endDate // dd-MM-yyyy
+const params = { // Each are optional
+    type: frontend.agentType, // STANDARD/AMBASSADOR
+    status: frontend.status // ACTIVE/PENDING/INACTIVE
+    page: frontend.page, // 0 (First page)
+    size: frontend.size // Number of records per page
 };
 
 const response = await api.get(
-    "/rakan-qr-agent/get/sum/all",
+    "/rakan-qr",
     {
-        params: filter // Optional
+        params // Optional
     }
 );
 
-const frontend.object = response.data.map(agent => ({
-    id: agent.id,
-    code: agent.code,
-    type: agent.type,
-    status: agent.status,
-    totalCollected: agent.totalCollected
+const frontend.list = response.data.content.map(item => ({     
+    frontend.var: item.id, // Primary identifier
+    frontend.var: item.code, 
+    frontend.var: item.name, 
+    frontend.var: item.email, 
+    frontend.var: item.phone, 
+    frontend.var: item.type, // STANDARD/AMBASSADOR
+    frontend.var: item.status,// ACTIVE/PENDING/INACTIVE
+    frontend.var: item.collectedAmount, 
+    frontend.var: item.commission 
 }));
+
+const frontend.pagination = { // Optional
+    frontend.var: response.data.page.number, 
+    frontend.var: response.data.page.size, 
+    frontend.var: response.data.page.totalElements, 
+    frontend.var: response.data.page.totalPages
+};
 ```
 
-## RakanQr Donation
+### RakanQr Donation
 
-### Rakan QR Donation — Get Sum
+#### Rakan QR (Public) — Request Payment (201)
+- For RakanQr shared payment page to handle client donations. RakanQr code is used here instead of id.
+
+```javascript
+const requestBody = { 
+    amount: frontend.amount, 
+    redirectUrl: frontend.redirectUrl // URL to redirect back to UI.
+}; 
+
+const response = await api.post( 
+    `/public/rakan-qr/${frontend.rakanQrCode}/donations/payment-request`, 
+    request 
+);
+
+const frontend.object = { 
+    frontend.var: response.data.id, // Donation ID
+    frontend.var: response.data.billingCode, 
+    frontend.var: response.data.amount, 
+    frontend.var: response.data.status, 
+    frontend.var: response.data.paymentUrl // Redirect user to this URL for payment.
+};
+```
+
+#### Rakan QR (Public) — Get Donation Details (200) (Testing)
+- For RakanQr shared payment page to retrive a payment/transaction/donation details to display payment status to client. (Needs polling)
+
+```javascript
+const response = await api.post( 
+    `/public/rakan-qr/donations/${frontend.donationId}` 
+);
+
+const frontend.object = { 
+    frontend.var: response.data.id, 
+    frontend.var: response.data.billingCode, 
+    frontend.var: response.data.transactionId,
+    frontend.var: response.data.amount, 
+    frontend.var: response.data.paidAt,
+    frontend.var: response.data.status, 
+    frontend.var: response.data.paymentUrl // Redirect user to this URL for payment
+    frontend.var: response.data.rakanQrCode
+};
+```
+
+#### Rakan QR — Get Collected Amount (200) 
+- Personal/Merchant, Active RakanQr-only to get their respective collected amount, with optional filter for date range, for dynamic amount of daily, weekly, monthly, etc. 
 
 ```javascript
 const filter = {
@@ -1385,7 +1821,7 @@ const filter = {
 };
 
 const response = await api.get(
-    "/rakan-qr-agent/donation/sum",
+    "/rakan-qr/donations/collection",
     {
         params: filter // Optional
     }
@@ -1396,6 +1832,43 @@ const frontend.object = {
 };
 ```
 
+#### Rakan QR — Get Donation Transaction Records (200) 
+- Personal/Merchant, Active RakanQr-only to get their respective donations/transactions record. Returns a pagination.
+
+```javascript
+const params = { // Optional
+    page: frontend.page, // 0 (First page)
+    size: frontend.size // Number of records per page
+    // Default sorting: createdAt, Desc
+};
+
+const response = await api.get(
+    "/rakan-qr/donations",
+    {   
+        params // Optional
+    }
+);
+
+const frontend.list = response.data.content.map(object = ({    
+    frontend.var: object.id, // Primary identifier
+    frontend.var: object.billingCode, 
+    frontend.var: object.transactionId, 
+    frontend.var: object.amount, 
+    frontend.var: object.paidAt, 
+    frontend.var: object.status, 
+    frontend.var: object.rakanQrCode 
+}));
+
+const frontend.pagination = { // Optional
+    frontend.var: response.data.page.number, 
+    frontend.var: response.data.page.size, 
+    frontend.var: response.data.page.totalElements, 
+    frontend.var: response.data.page.totalPages
+};
+```
+
+## Verification (Placeholder)
+
 ### Verification - OTP Request (Placeholder)
 
 ```javascript
@@ -1404,7 +1877,7 @@ const request = {
 };
 
 const response = await api.post(
-    "/rakan-qr-agent/register/otp/request",
+    "/rakan-qr/register/otp/request",
     request
 );
 ```
@@ -1418,7 +1891,7 @@ const request = {
 };
 
 const response = await api.post(
-    "/rakan-qr-agent/register/otp/verify",
+    "/rakan-qr/register/otp/verify",
     request
 );
 ```
@@ -1431,7 +1904,7 @@ const request = {
 };
 
 const response = await api.post(
-    "/rakan-qr-agent/register/ekyc",
+    "/rakan-qr/register/ekyc",
     request
 );
 ```
@@ -1444,137 +1917,7 @@ const request = {
 };
 
 const response = await api.post(
-    "/rakan-qr-agent/register/face-id",
+    "/rakan-qr/register/face-id",
     request
 );
 ```
-
-## Dashboard
-
-### Admin — Get
-
-```javascript
-const response = await api.get(
-    "/admin/dashboard/get"
-);
-
-const frontend.object = {
-    frontend.collectionSum: {
-        frontend.var: response.data.collectionSum.personalDirectSum,
-        frontend.var: response.data.collectionSum.personalRecurringSum,
-        frontend.var: response.data.collectionSum.projectSum,
-        frontend.var: response.data.collectionSum.merchantDirectSum,
-        frontend.var: response.data.collectionSum.rakanQrSum,
-        frontend.var: response.data.collectionSum.total
-    },
-
-    frontend.projects = response.data.projects.map(object => ({
-        frontend.var: object.id,
-        frontend.var: object.name,
-        frontend.var: object.slugUrl,
-        frontend.var: object.collectedAmount,
-        frontend.var: object.targetAmount,
-        frontend.var: object.location,
-        frontend.var: object.date,
-        frontend.var: {
-            frontend.id: response.data.category.id,
-            frontend.name: response.data.category.name
-        },
-        frontend.var: frontend.var: response.data.tags.map(tag => ({
-            frontend.id: tag.id,
-            frontend.name: tag.name
-        })),
-        frontend.var: object.summary,
-        frontend.var: object.contentHtml,
-        frontend.var: object.status,
-        frontend.var: response.data.images.map(image => ({
-            frontend.id: image.id,
-            frontend.url: image.url
-        }))
-    })),
-
-    frontend.news : response.data.news.map(object => ({
-        frontend.id: object.id,
-        frontend.title: object.title,
-        frontend.slugUrl: object.slugUrl,
-        frontend.author: object.author,
-        frontend.date: object.date,
-
-        frontend.category: {
-            frontend.id: object.category.id,
-            frontend.name: object.category.name
-        },
-
-        frontend.tags: object.tags.map(tag => ({
-            frontend.id: tag.id,
-            frontend.name: tag.name
-        })),
-
-        frontend.summary: object.summary,
-        frontend.contentHtml: object.contentHtml,
-        frontend.status: object.status,
-
-        frontend.images: object.images.map(image => ({
-            frontend.id: image.id,
-            frontend.url: image.url
-        }))
-    })),
-
-    frontend.list : response.data.campaigns.map(object => ({
-        frontend.id: object.id,
-        frontend.name: object.name,
-        frontend.slugUrl: object.slugUrl,
-        frontend.dateStart: object.dateStart,
-        frontend.dateEnd: object.dateEnd,
-
-        frontend.category: {
-            frontend.id: object.category.id,
-            frontend.name: object.category.name
-        },
-
-        frontend.tags: object.tags.map(tag => ({
-            frontend.id: tag.id,
-            frontend.name: tag.name
-        })),
-
-        frontend.summary: object.summary,
-        frontend.contentHtml: object.contentHtml,
-        frontend.status: object.status,
-
-        frontend.images: object.images.map(image => ({
-            frontend.id: image.id,
-            frontend.url: image.url
-        }))
-    })),
-
-    frontend.profile: {
-        frontend.id: response.data.organizationProfile.id,
-        frontend.name: response.data.organizationProfile.name,
-        frontend.phone: response.data.organizationProfile.phone,
-        frontend.email: response.data.organizationProfile.email,
-
-        frontend.address: {
-            frontend.addressLine1: response.data.organizationProfile.address.addressLine1,
-            frontend.addressLine2: response.data.organizationProfile.address.addressLine2,
-            frontend.addressLine3: response.data.organizationProfile.address.addressLine3,
-            frontend.postcode: response.data.organizationProfile.address.postcode,
-            frontend.city: response.data.organizationProfile.address.city,
-            frontend.state: response.data.organizationProfile.address.state,
-            frontend.country: response.data.organizationProfile.address.country
-        },
-
-        frontend.contentHtml: response.data.organizationProfile.contentHtml,
-        frontend.logoUrl: response.data.organizationProfile.logoUrl,
-        frontend.heroUrl: response.data.organizationProfile.heroUrl
-    },
-
-    frontend.rakanQrs: response.data.rakanQrSummary.map(agent => ({
-        frontend.var: agent.id,
-        frontend.var: agent.code,
-        frontend.var: agent.type,
-        frontend.var: agent.status,
-        frontend.var: agent.totalCollected
-    }))
-};
-```
-

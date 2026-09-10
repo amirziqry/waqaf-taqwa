@@ -56,7 +56,13 @@ public enum ErrorCode {
 	COL001("Collection creation fail"),
 
 	// Webhook
-	WHK001("Webhook token invalid"), WHK002("Billing Code not match"), WHK003("Amount not match");
+	WHK001("Webhook token invalid"), WHK002("Billing Code not match"), WHK003("Amount not match"),
+
+	// RakanQr
+	RQA001("RakanQr not found"), RQA002("Invalid RakanQr"),
+
+	// RakanQr Donation
+	RQD001("RakanQr donation not found");
 
 	private final String defaultMessage;
 

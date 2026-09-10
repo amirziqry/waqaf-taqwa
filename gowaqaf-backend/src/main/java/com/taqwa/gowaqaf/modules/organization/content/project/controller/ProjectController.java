@@ -3,6 +3,10 @@ package com.taqwa.gowaqaf.modules.organization.content.project.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +27,25 @@ import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectSer
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * <p>
+ * Project management end-point handler
+ * <p>
+ */
 @RestController
-@RequestMapping("/api/organization/project")
+@RequestMapping("/api/organization/projects")
 @RequiredArgsConstructor
 public class ProjectController {
 
 	private final ProjectService projectService;
 
-	@PostMapping("/create")
+	/**
+	 * Admin-only to create project.
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@PostMapping
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ProjectUploadResponse> createProject(@RequestBody ProjectUploadRequest dto) {
 		ProjectUploadResponse response = projectService.createProject(dto);
@@ -38,7 +53,14 @@ public class ProjectController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/{id}/update")
+	/**
+	 * Admin-only to update project.
+	 * 
+	 * @param id
+	 * @param dto
+	 * @return
+	 */
+	@PutMapping("/{id}")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ProjectUploadResponse> updateProjectById(@PathVariable UUID id,
 			@RequestBody ProjectUploadRequest dto) {
@@ -47,7 +69,14 @@ public class ProjectController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PutMapping("/{id}/image-keys/upload")
+	/**
+	 * Admin-only to update project image keys.
+	 * 
+	 * @param id
+	 * @param request
+	 * @return
+	 */
+	@PutMapping("/{id}/image-keys")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateProjectImageKeysById(@PathVariable UUID id,
 			@RequestBody List<ProjectImageKey> request) {
@@ -56,21 +85,40 @@ public class ProjectController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("/{id}/get")
+	/**
+	 * Authenticated-only to get specific project.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/{id}")
 	public ResponseEntity<ProjectDetails> getProjectDetailsById(@PathVariable UUID id) {
 		ProjectDetails response = projectService.getProjectDetailsById(id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/all/get")
-	public ResponseEntity<List<ProjectDetails>> getAllProjectsDetails() {
-		List<ProjectDetails> response = projectService.getAllProjectsDetails();
+	/**
+	 * Authenticated-only to get all projects.
+	 * 
+	 * @param pageable
+	 * @return
+	 */
+	@GetMapping
+	public ResponseEntity<Page<ProjectDetails>> getAllProjectsDetails(
+			@PageableDefault(size = 10, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		Page<ProjectDetails> response = projectService.getAllProjectsDetails(pageable);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{id}/delete")
+	/**
+	 * Admin-only to delete project.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@DeleteMapping("/{id}")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> deleteProjectById(@PathVariable UUID id) {
 		projectService.deleteProjectById(id);

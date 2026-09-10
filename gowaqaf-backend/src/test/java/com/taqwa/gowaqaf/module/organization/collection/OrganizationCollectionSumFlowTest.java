@@ -27,11 +27,12 @@ import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.merchant.repository.MerchantDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepository;
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
-import com.taqwa.gowaqaf.modules.organization.collection.dto.OrganizationCollectionSum;
+import com.taqwa.gowaqaf.modules.organization.collection.dto.OrgCollectionInfo;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
@@ -51,6 +52,7 @@ public class OrganizationCollectionSumFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
+	private final DonationRepository donationRepository;
 	private final AccountInfoRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
 
@@ -70,26 +72,33 @@ public class OrganizationCollectionSumFlowTest {
 				"donator2", "test@gmail.com");
 
 		// Personal - DIRECT
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p1, new BigDecimal("100.00"),
-				DonationType.DIRECT, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 1, 10, 0, 0));
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p2, new BigDecimal("50.00"),
-				DonationType.DIRECT, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 10, 14, 30, 0));
-		
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 1, 10, 0, 0));
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p2,
+				new BigDecimal("50.00"), DonationType.DIRECT, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 10, 14, 30, 0));
+
 		// Personal - RECURRING
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p1, new BigDecimal("75.00"),
-				DonationType.RECURRING, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 5, 12, 0, 0));
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p2, new BigDecimal("25.00"),
-				DonationType.RECURRING, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 15, 18, 0, 0));
-		
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+				new BigDecimal("75.00"), DonationType.RECURRING, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 5, 12, 0, 0));
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p2,
+				new BigDecimal("25.00"), DonationType.RECURRING, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 15, 18, 0, 0));
+
 		// Personal - PROJECT
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p1, new BigDecimal("200.00"),
-				DonationType.PROJECT, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 12, 15, 0, 0));
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p2, new BigDecimal("100.00"),
-				DonationType.PROJECT, PaymentStatus.PAID, LocalDateTime.of(2026, 8, 20, 16, 0, 0));
-		
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+				new BigDecimal("200.00"), DonationType.PROJECT, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 12, 15, 0, 0));
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p2,
+				new BigDecimal("100.00"), DonationType.PROJECT, PaymentStatus.PAID,
+				LocalDateTime.of(2026, 8, 20, 16, 0, 0));
+
 		// Personal - should NOT be included
-		CommonClass.createMockPersonalDonation(personalDonationRepository, p1, new BigDecimal("100.00"),
-				DonationType.DIRECT, PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
+		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.UNPAID,
+				LocalDateTime.of(2026, 8, 25, 12, 0, 0));
 
 		Merchant m1 = CommonClass.createMockMerchant(merchantRepository, identityRepository, passwordEncoder, "vendor1",
 				"test@gmail.com");
@@ -109,19 +118,18 @@ public class OrganizationCollectionSumFlowTest {
 				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 12, 0, 0));
 
 		// Rakan QR
+		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.STANDARD, RakanQrStatus.ACTIVE);
+		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.STANDARD, RakanQrStatus.ACTIVE);
 
-		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
-		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.PERSONAL, RakanQrStatus.ACTIVE);
-
-		CommonClass.createMockRakanQrDonation(agentDonationRepository, r1, new BigDecimal("150.00"), PaymentStatus.PAID,
-				LocalDateTime.of(2026, 8, 3, 11, 0, 0));
-		CommonClass.createMockRakanQrDonation(agentDonationRepository, r2, new BigDecimal("75.00"), PaymentStatus.PAID,
-				LocalDateTime.of(2026, 8, 14, 13, 30, 0));
-		CommonClass.createMockRakanQrDonation(agentDonationRepository, r1, new BigDecimal("50.00"), PaymentStatus.PAID,
-				LocalDateTime.of(2026, 8, 22, 17, 0, 0));
+		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r1, new BigDecimal("150.00"),
+				PaymentStatus.PAID, LocalDateTime.of(2026, 8, 3, 11, 0, 0));
+		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r2, new BigDecimal("75.00"),
+				PaymentStatus.PAID, LocalDateTime.of(2026, 8, 14, 13, 30, 0));
+		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r1, new BigDecimal("50.00"),
+				PaymentStatus.PAID, LocalDateTime.of(2026, 8, 22, 17, 0, 0));
 
 		// Rakan QR - should NOT be included
-		CommonClass.createMockRakanQrDonation(agentDonationRepository, r2, new BigDecimal("100.00"),
+		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r2, new BigDecimal("100.00"),
 				PaymentStatus.UNPAID, LocalDateTime.of(2026, 8, 25, 19, 0, 0));
 	}
 
@@ -133,16 +141,15 @@ public class OrganizationCollectionSumFlowTest {
 
 		String response = result.getResponse().getContentAsString();
 
-		OrganizationCollectionSum sum = objectMapper.readValue(response, OrganizationCollectionSum.class);
+		OrgCollectionInfo sum = objectMapper.readValue(response, OrgCollectionInfo.class);
 
 		assertNotNull(sum);
 
-		assertEquals(new BigDecimal("150.00"), sum.personalDirectSum());
-		assertEquals(new BigDecimal("100.00"), sum.personalRecurringSum());
-		assertEquals(new BigDecimal("300.00"), sum.projectSum());
-		assertEquals(new BigDecimal("275.00"), sum.merchantDirectSum());
-		assertEquals(new BigDecimal("275.00"), sum.rakanQrSum());
-		assertEquals(new BigDecimal("1100.00"), sum.total());
+		assertEquals(new BigDecimal("150.00"), sum.directTotal());
+		assertEquals(new BigDecimal("100.00"), sum.recurringTotal());
+		assertEquals(new BigDecimal("300.00"), sum.projectTotal());
+		assertEquals(new BigDecimal("275.00"), sum.merchantTotal());
+		assertEquals(new BigDecimal("275.00"), sum.rakanQrTotal());
 	}
 
 	@Test
@@ -154,16 +161,15 @@ public class OrganizationCollectionSumFlowTest {
 
 		String response = result.getResponse().getContentAsString();
 
-		OrganizationCollectionSum sum = objectMapper.readValue(response, OrganizationCollectionSum.class);
+		OrgCollectionInfo sum = objectMapper.readValue(response, OrgCollectionInfo.class);
 
 		assertNotNull(sum);
 
-		assertEquals(new BigDecimal("50.00"), sum.personalDirectSum());
-		assertEquals(new BigDecimal("100.00"), sum.personalRecurringSum());
-		assertEquals(new BigDecimal("200.00"), sum.projectSum());
-		assertEquals(new BigDecimal("250.00"), sum.merchantDirectSum());
-		assertEquals(new BigDecimal("75.00"), sum.rakanQrSum());
-		assertEquals(new BigDecimal("675.00"), sum.total());
+		assertEquals(new BigDecimal("50.00"), sum.directTotal());
+		assertEquals(new BigDecimal("100.00"), sum.recurringTotal());
+		assertEquals(new BigDecimal("200.00"), sum.projectTotal());
+		assertEquals(new BigDecimal("250.00"), sum.merchantTotal());
+		assertEquals(new BigDecimal("75.00"), sum.rakanQrTotal());
 	}
 
 }

@@ -1,23 +1,17 @@
 package com.taqwa.gowaqaf.modules.donation.rakanqr.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "rakan_qr_donation_table")
+@Table(name = "rakanqr_donation_table")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,28 +27,14 @@ import lombok.Setter;
 public class RakanQrDonation {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, optional = false)
+	@JoinColumn(name = "id")
+	private Donation donation;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "rakan_qr_id", nullable = false)
 	private RakanQr rakanQr;
-
-	@Column(nullable = false, unique = true)
-	private String billingCode;
-
-	@Column(nullable = false, precision = 19, scale = 2)
-	private BigDecimal amount;
-
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private PaymentStatus status;
-
-	@Column
-	@JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-	private LocalDateTime paidAt;
-
-	@Column(nullable = true)
-	private String payerName;
 
 }

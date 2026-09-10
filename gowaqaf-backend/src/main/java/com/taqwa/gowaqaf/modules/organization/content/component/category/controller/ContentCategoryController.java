@@ -27,7 +27,7 @@ public class ContentCategoryController {
 
 	private final ContentCategoryService service;
 
-	@PostMapping("/{type}/category/create") // project / news / campaign
+	@PostMapping("/{type}/category") // project / news / campaign
 	public ResponseEntity<ContentCategoryDto> createCategory(@PathVariable String type,
 			@RequestBody ContentCategoryUploadRequest request) {
 		ContentCategoryDto response = service.createCategory(ContentType.valueOf(type.toUpperCase()), request);
@@ -35,7 +35,7 @@ public class ContentCategoryController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/{type}/category/{id}/update/")
+	@PutMapping("/{type}/category/{id}")
 	public ResponseEntity<ContentCategoryDto> updateCategory(@PathVariable String type, @PathVariable Long id,
 			@RequestBody ContentCategoryUploadRequest request) {
 		ContentCategoryDto response = service.updateCategory(ContentType.valueOf(type.toUpperCase()), id, request);
@@ -43,21 +43,21 @@ public class ContentCategoryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/category/{id}/get")
+	@GetMapping("/{type}/category/{id}")
 	public ResponseEntity<ContentCategoryDto> getCategory(@PathVariable String type, @PathVariable Long id) {
 		ContentCategoryDto response = service.getCategoryDtoById(ContentType.valueOf(type.toUpperCase()), id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/category/all/get")
+	@GetMapping("/{type}/category")
 	public ResponseEntity<List<ContentCategoryDto>> getCategoryList(@PathVariable String type) {
 		List<ContentCategoryDto> response = service.getCategoryDtoList(ContentType.valueOf(type.toUpperCase()));
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{type}/category/{id}/delete")
+	@DeleteMapping("/{type}/category/{id}")
 	public ResponseEntity<Void> deleteCategory(@PathVariable String type, @PathVariable Long id) {
 		service.deleteCategory(ContentType.valueOf(type.toUpperCase()), id);
 

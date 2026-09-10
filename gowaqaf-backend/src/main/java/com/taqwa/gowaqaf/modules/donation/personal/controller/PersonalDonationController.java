@@ -31,28 +31,26 @@ import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(ApiBasePath.PERSONAL + "/donation")
+@RequestMapping(ApiBasePath.PERSONAL + "/donations")
 @RequiredArgsConstructor
 public class PersonalDonationController {
 
 	private final PersonalDonationService donationService;
 
-	@PostMapping("/payment/request-gateway-url")
+	@PostMapping("/payment-request")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<PaymentUrlResponse> requestPaymentGatewayUrl(Authentication authentication,
 			@RequestBody PersonalDonationRequest request) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
-		if (principal == null)
-			throw new UsernameNotFoundException("Invalid Username or Password");
 
 		PaymentUrlResponse response = donationService.createDonation(principal, request);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@GetMapping("/payment/{id}/status")
+	@GetMapping("/{id}")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
-	public ResponseEntity<PersonalDonationDetails> getPaymentStatus(Authentication authentication,
+	public ResponseEntity<PersonalDonationDetails> getDonationDetailsById(Authentication authentication,
 			@PathVariable UUID id) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
@@ -61,7 +59,7 @@ public class PersonalDonationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/sum")
+	@GetMapping("/contributions")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<PersonalDonationSum> getDonationSum(Authentication authentication,
 			@ModelAttribute PersonalDonationSumFilter filter) {
@@ -74,10 +72,10 @@ public class PersonalDonationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/get/all")
+	@GetMapping
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<Page<PersonalDonationDetails>> getAllDonationDetailsByUser(Authentication authentication,
-			@PageableDefault(size = 10, sort = "paidAt", direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 		if (principal == null)
 			throw new UsernameNotFoundException("Invalid Username or Password");

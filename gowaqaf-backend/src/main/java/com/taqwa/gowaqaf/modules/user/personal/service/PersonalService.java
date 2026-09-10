@@ -1,5 +1,6 @@
 package com.taqwa.gowaqaf.modules.user.personal.service;
 
+import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.personal.dto.AccountUploadFields;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalAccountInfo;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalRegisterCredentials;
@@ -16,5 +17,7 @@ public interface PersonalService {
 	void updateAccountByUser(AccountUserDetails principal, AccountUploadFields request);
 
 	PersonalAccountInfo getAccountByUser(AccountUserDetails principal);
+
+	void changePasswordByUsername(AccountUserDetails principal, ChangePasswordRequest request);
 
 }

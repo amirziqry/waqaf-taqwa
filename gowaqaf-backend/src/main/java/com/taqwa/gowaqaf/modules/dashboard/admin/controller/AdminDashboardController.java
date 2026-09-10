@@ -14,13 +14,17 @@ import com.taqwa.gowaqaf.modules.dashboard.admin.service.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(ApiBasePath.ADMIN + "/dashboard")
+@RequestMapping(ApiBasePath.ADMIN)
 @RequiredArgsConstructor
 public class AdminDashboardController {
 
 	private final AdminDashboardService dashboardService;
 
-	@GetMapping("/get")
+	/**
+	 * Pending payout report, and transaction record.
+	 * @return
+	 */
+	@GetMapping("/dashboard")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication) && hasRole('ADMIN')")
 	public ResponseEntity<AdminDashboard> getDashboard() {
 		AdminDashboard response = dashboardService.getDashboard();

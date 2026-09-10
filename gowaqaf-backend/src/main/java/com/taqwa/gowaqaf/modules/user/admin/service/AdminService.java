@@ -5,7 +5,9 @@ import java.util.List;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminInfo;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterCredentials;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterResponse;
+import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.admin.dto.UpdateAdminRoleRequest;
+import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 public interface AdminService {
 
@@ -20,5 +22,7 @@ public interface AdminService {
 	void updateAdminRole(String username, UpdateAdminRoleRequest dto);
 
 	void deleteAdminByUsername(String username);
+
+	void changePasswordByUsername(AccountUserDetails principal, ChangePasswordRequest request);
 
 }

@@ -1,9 +1,10 @@
 package com.taqwa.gowaqaf.modules.feature.rakanqr.dto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrStatus;
-import com.taqwa.gowaqaf.modules.feature.rakanqr.component.RakanQrType;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
+import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,12 +17,20 @@ public class RakanQrInfo {
 
 	private UUID id;
 
+	private String name;
+
+	private String email;
+
+	private String phone;
+
 	private String code;
 
 	private RakanQrType type;
 
 	private RakanQrStatus status;
 
-	private String email;
+	private BigDecimal collectedAmount;
+
+	private BigDecimal commission;
 
 }

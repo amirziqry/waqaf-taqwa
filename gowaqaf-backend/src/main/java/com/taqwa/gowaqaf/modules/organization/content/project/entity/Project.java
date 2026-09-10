@@ -2,9 +2,14 @@ package com.taqwa.gowaqaf.modules.organization.content.project.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
@@ -15,6 +20,7 @@ import com.taqwa.gowaqaf.modules.organization.content.project.component.image.en
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -34,6 +40,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "project_table")
 @Getter
 @Setter
@@ -50,6 +57,9 @@ public class Project {
 
 	@Column
 	private String slugUrl;
+
+	@Column(nullable = true, precision = 19, scale = 2)
+	private BigDecimal collectedAmount;
 
 	@Column(nullable = true, precision = 19, scale = 2)
 	private BigDecimal targetAmount;
@@ -82,5 +92,13 @@ public class Project {
 
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProjectImage> images;
+
+	@CreatedDate
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
 
 }

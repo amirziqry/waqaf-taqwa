@@ -8,10 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
-import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
 import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
@@ -152,35 +153,11 @@ public class NewsServiceImpl implements NewsService {
 		newsRepository.save(news);
 	}
 
-	@Override
-	public NewsDetails getNewsDetailsById(UUID id) {
-		News news = newsRepository.findById(id).orElseThrow(
-				() -> new ResourceNotFoundException(ErrorCode.A001, String.format("News ID: %s not found.", id)));
-
+	private NewsDetails mapToNewsDetails(News news) {
 		NewsDetails dto = NewsMapper.mapToNewsDetails(news);
 
-		dto.setImages(news.getImages().stream().map(image -> {
-			NewsImageUrl imageUrl = new NewsImageUrl();
-
-			imageUrl.setId(image.getId());
-			imageUrl.setUrl(storageService.generateAccessUrl(image.getFileKey()));
-
-			return imageUrl;
-		}).toList());
-
-		return dto;
-	}
-
-	@Override
-	public List<NewsDetails> getAllNews() {
-		List<News> news = newsRepository.findAll();
-		if (news.size() == 0)
-			throw new BadRequestException(ErrorCode.A001, "No news found.");
-
-		List<NewsDetails> dtos = news.stream().map(n -> {
-			NewsDetails dto = NewsMapper.mapToNewsDetails(n);
-
-			dto.setImages(n.getImages().stream().map(image -> {
+		if (news.getImages() != null) {
+			dto.setImages(news.getImages().stream().map(image -> {
 				NewsImageUrl imageUrl = new NewsImageUrl();
 
 				imageUrl.setId(image.getId());
@@ -188,11 +165,35 @@ public class NewsServiceImpl implements NewsService {
 
 				return imageUrl;
 			}).toList());
+		}
 
-			return dto;
-		}).toList();
+		return dto;
+	}
+
+	@Override
+	public NewsDetails getNewsDetailsById(UUID id) {
+		News news = newsRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.A001, String.format("News ID: %s not found.", id)));
+
+		NewsDetails dto = mapToNewsDetails(news);
+
+		return dto;
+	}
+
+	@Override
+	public List<NewsDetails> getNewsList(Pageable pageable) {
+		List<News> news = newsRepository.findAllBy(pageable);
+
+		List<NewsDetails> dtos = news.stream().map(n -> mapToNewsDetails(n)).toList();
 
 		return dtos;
+	}
+
+	@Override
+	public Page<NewsDetails> getAllNews(Pageable pageable) {
+		Page<News> news = newsRepository.findAll(pageable);
+
+		return news.map(NewsMapper::mapToNewsDetails);
 	}
 
 	@Override

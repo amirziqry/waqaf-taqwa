@@ -1,6 +1,7 @@
 package com.taqwa.gowaqaf.module.auth;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.common.CommonClass;
+import com.taqwa.gowaqaf.common.CommonEndpoints;
 import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.mockuser.merchant.WithMockMerchant;
 import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
@@ -48,11 +50,6 @@ public class AdminAuthFlowTest {
 	private final AccountInfoRepository accountRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	public static String registerAdminEndpoint = "/api/admin/register-admin";
-	public static String registerEditorEndpoint = "/api/admin/register-editor";
-	public static String loginEndpoint = "/api/admin/auth/login";
-	public static String meEndpoint = "/api/admin/auth/me";
-
 	@BeforeEach
 	void setup() {
 		CommonClass.createMockAdmin(adminRepository, accountRepository, passwordEncoder, "member_test",
@@ -70,8 +67,9 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(registerAdminEndpoint).contentType(MediaType.APPLICATION_JSON).content(jsonPost1))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("member1"));
+		mockMvc.perform(
+				post(CommonEndpoints.adminRegisterAdmin).contentType(MediaType.APPLICATION_JSON).content(jsonPost1))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.username").value("member1"));
 
 		String jsonPost2 = """
 						{
@@ -80,7 +78,7 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(jsonPost2))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(jsonPost2))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("member1"))
 				.andExpect(jsonPath("$.roles", Matchers.hasItem("ROLE_ADMIN")));
 	}
@@ -96,8 +94,9 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(registerEditorEndpoint).contentType(MediaType.APPLICATION_JSON).content(jsonPost1))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("member2"));
+		mockMvc.perform(
+				post(CommonEndpoints.adminRegisterEditor).contentType(MediaType.APPLICATION_JSON).content(jsonPost1))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.username").value("member2"));
 
 		String jsonPost2 = """
 						{
@@ -106,7 +105,7 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(jsonPost2))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(jsonPost2))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("member2"))
 				.andExpect(jsonPath("$.roles", Matchers.hasItem("ROLE_EDITOR")))
 				.andExpect(jsonPath("$.roles", Matchers.not(Matchers.hasItem("ROLE_ADMIN"))));
@@ -121,7 +120,7 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("member_test"))
 				.andExpect(jsonPath("$.roles", Matchers.hasItem("ROLE_ADMIN")));
 	}
@@ -135,7 +134,7 @@ public class AdminAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
 
@@ -149,13 +148,13 @@ public class AdminAuthFlowTest {
 				""";
 
 		MvcResult loginResult = mockMvc
-				.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+				.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
 		Cookie tokenCookie = loginResult.getResponse().getCookie("accessToken");
 		assertNotNull(tokenCookie);
 
-		mockMvc.perform(MockMvcRequestBuilders.get(meEndpoint).cookie(tokenCookie))
+		mockMvc.perform(MockMvcRequestBuilders.get(CommonEndpoints.adminMe).cookie(tokenCookie))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 	}
 
@@ -167,30 +166,29 @@ public class AdminAuthFlowTest {
 		assertNotNull(admin);
 		assertNotNull(admin.getId());
 
-		mockMvc.perform(get(meEndpoint)).andExpect(status().isOk());
+		mockMvc.perform(get(CommonEndpoints.adminMe)).andExpect(status().isOk());
 	}
 
 	@Test
 	@WithMockAdmin(username = "member_mock", roles = { "EDITOR" })
 	void editorToAdminEndpointShouldFail() throws Exception {
-		mockMvc.perform(get("/api/admin/get/all")).andExpect(status().isForbidden());
+		mockMvc.perform(delete(CommonEndpoints.adminDelete, "member_test")).andExpect(status().isForbidden());
 	}
 
-	////////////////////////////////
+	///////////////////////////////
 	// Cross account authentication test.
-	////////////////////////////////
+	///////////////////////////////
 
 	@Test
 	void merchantToAdminLoginShouldFail() throws Exception {
 		String requestBody = """
 					{
 				        "username": "vendor_test",
-				        "email": "-",
 				        "password": "0000"
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
@@ -199,25 +197,24 @@ public class AdminAuthFlowTest {
 		String requestBody = """
 					{
 				        "username": "donator_test",
-				        "email": "-",
 				        "password": "0000"
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(post(CommonEndpoints.adminLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	@WithMockMerchant(username = "vendor_mock")
 	void merchantToAdminEndpointShouldFail() throws Exception {
-		mockMvc.perform(get(meEndpoint)).andExpect(status().isForbidden());
+		mockMvc.perform(get(CommonEndpoints.adminMe)).andExpect(status().isForbidden());
 	}
 
 	@Test
 	@WithMockPersonal(username = "donator_mock")
 	void personalToAdminEndpointShouldFail() throws Exception {
-		mockMvc.perform(get(meEndpoint)).andExpect(status().isForbidden());
+		mockMvc.perform(get(CommonEndpoints.adminMe)).andExpect(status().isForbidden());
 	}
 
 }

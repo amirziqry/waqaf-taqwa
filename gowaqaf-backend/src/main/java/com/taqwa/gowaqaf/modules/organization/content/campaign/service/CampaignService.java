@@ -3,6 +3,9 @@ package com.taqwa.gowaqaf.modules.organization.content.campaign.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.taqwa.gowaqaf.modules.organization.content.campaign.component.image.dto.CampaignImageKey;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignUploadRequest;
@@ -18,8 +21,10 @@ public interface CampaignService {
 
 	CampaignDetails getCampaignDetailsById(UUID id);
 
-	List<CampaignDetails> getAllCampaigns();
+	List<CampaignDetails> getCampaignsList(Pageable pageable);
 
 	void deleteCampaignById(UUID id);
+
+	Page<CampaignDetails> getAllCampaigns(Pageable pageable);
 
 }

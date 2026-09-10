@@ -6,19 +6,19 @@ import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 
 public class PersonalMapper {
 
-	public static PersonalRegisterResponse mapToRegisterResponse(Personal personal) {
-		return new PersonalRegisterResponse(personal.getUsername(), personal.getInfo().getEmail(),
-				personal.getInfo().getPhone());
+	public static PersonalRegisterResponse mapToRegisterResponse(Personal user) {
+		return new PersonalRegisterResponse(user.getUsername(), user.getInfo().getEmail(),
+				user.getInfo().getPhone());
 	}
 
-	public static PersonalAccountInfo mapToAccountInfo(Personal personal) {
+	public static PersonalAccountInfo mapToAccountInfo(Personal user) {
 		PersonalAccountInfo dto = new PersonalAccountInfo();
-		dto.setId(personal.getId());
-		dto.setUsername(personal.getUsername());
-		dto.setAccountHolderName(personal.getInfo().getAccountHolderName());
-		dto.setEmail(personal.getInfo().getEmail());
-		dto.setPhone(personal.getInfo().getPhone());
-		dto.setModMesra(personal.getInfo().getModMesra());
+		dto.setId(user.getId());
+		dto.setUsername(user.getUsername());
+		dto.setAccountHolderName(user.getInfo().getAccountHolderName());
+		dto.setEmail(user.getInfo().getEmail());
+		dto.setPhone(user.getInfo().getPhone());
+		dto.setModMesra(user.getInfo().getModMesra());
 
 		return dto;
 	}

@@ -11,12 +11,12 @@ import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 public class ProjectMapper {
 
 	public static ProjectDetails mapToProjectDetails(Project entity) {
-
 		ProjectDetails dto = new ProjectDetails();
 
 		dto.setId(entity.getId());
 		dto.setName(entity.getName());
 		dto.setSlugUrl(entity.getSlugUrl());
+		dto.setCollectedAmount(entity.getCollectedAmount());
 		dto.setTargetAmount(entity.getTargetAmount());
 		dto.setLocation(entity.getLocation());
 		dto.setDate(entity.getDate());

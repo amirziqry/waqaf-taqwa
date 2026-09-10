@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taqwa.gowaqaf.common.ApiBasePath;
+import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.personal.dto.AccountUploadFields;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalAccountInfo;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalRegisterCredentials;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PersonalController {
 
-	private final PersonalService personalService;
+	private final PersonalService service;
 
 	/**
 	 * Personal account registration end-point.
@@ -37,45 +38,52 @@ public class PersonalController {
 	 */
 	@PostMapping("/register")
 	public ResponseEntity<PersonalRegisterResponse> register(@RequestBody PersonalRegisterCredentials request) {
-		PersonalRegisterResponse response = personalService.createPersonal(request);
+		PersonalRegisterResponse response = service.createPersonal(request);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	/**
-	 * Personal account update end-point.
+	 * FINAL Personal account update end-point.
 	 * 
 	 * @param authentication
 	 * @param request
 	 * @return
 	 */
-	@PutMapping("/account/update")
+	@PutMapping("/users/account")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<Void> updateAccountByUser(Authentication authentication,
 			@RequestBody AccountUploadFields request) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
-		if (principal == null)
-			throw new UsernameNotFoundException("Invalid username or password");
 
-		personalService.updateAccountByUser(principal, request);
+		service.updateAccountByUser(principal, request);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@PatchMapping("/users/account/password")
+	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
+	public ResponseEntity<Void> changePassword(Authentication authentication,
+			@RequestBody ChangePasswordRequest request) {
+		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
+
+		service.changePasswordByUsername(principal, request);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/**
-	 * Personal account get end-point.
+	 * FINAL Personal account get end-point.
 	 * 
 	 * @param authentication
 	 * @return
 	 */
-	@GetMapping("/account/get")
+	@GetMapping("/users/account")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
-	public ResponseEntity<PersonalAccountInfo> getProfileByUser(Authentication authentication) {
+	public ResponseEntity<PersonalAccountInfo> getAccountByUser(Authentication authentication) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
-		if (principal == null)
-			throw new UsernameNotFoundException("Invalid username or password");
 
-		PersonalAccountInfo response = personalService.getAccountByUser(principal);
+		PersonalAccountInfo response = service.getAccountByUser(principal);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

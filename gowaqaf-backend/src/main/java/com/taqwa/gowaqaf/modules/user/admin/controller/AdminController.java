@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,8 +19,10 @@ import com.taqwa.gowaqaf.common.ApiBasePath;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminInfo;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterCredentials;
 import com.taqwa.gowaqaf.modules.user.admin.dto.AdminRegisterResponse;
+import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.admin.dto.UpdateAdminRoleRequest;
 import com.taqwa.gowaqaf.modules.user.admin.service.AdminService;
+import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,48 +31,85 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
 
-	private final AdminService adminService;
+	private final AdminService service;
 
-	@PostMapping("/register-editor")
-	public ResponseEntity<AdminRegisterResponse> registerEditor(@RequestBody AdminRegisterCredentials request) {
-		AdminRegisterResponse response = adminService.createEditor(request);
-
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
-	@PostMapping("/register-admin")
+	/**
+	 * Register admin.
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/register/admin")
 	public ResponseEntity<AdminRegisterResponse> registerAdmin(@RequestBody AdminRegisterCredentials request) {
-		AdminRegisterResponse response = adminService.createAdmin(request);
+		AdminRegisterResponse response = service.createAdmin(request);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@GetMapping("/get/{username}")
-	public ResponseEntity<AdminInfo> getMemberByUsername(@PathVariable String username) {
-		AdminInfo response = adminService.getAdminByUsername(username);
+	@PostMapping("/register/editor")
+	public ResponseEntity<AdminRegisterResponse> registerEditor(@RequestBody AdminRegisterCredentials request) {
+		AdminRegisterResponse response = service.createEditor(request);
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	/**
+	 * Get by username
+	 * 
+	 * @param username
+	 * @return
+	 */
+	@GetMapping("/users/{username}")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<AdminInfo> getAdminByUsername(@PathVariable String username) {
+		AdminInfo response = service.getAdminByUsername(username);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/get/all")
-	@PreAuthorize("@accountSecurity.isAdmin(authentication) && hasRole('ADMIN')")
-	public ResponseEntity<List<AdminInfo>> getAllMember() {
-		List<AdminInfo> response = adminService.getAllAdmins();
+	/**
+	 * Get all admins
+	 * 
+	 * @return
+	 */
+	@GetMapping("/users")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<List<AdminInfo>> getAllAdmin() {
+		List<AdminInfo> response = service.getAllAdmins();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PatchMapping("/update/{username}/role")
-	public ResponseEntity<Void> updateMemberRole(@PathVariable String username,
+	/**
+	 * Update role.
+	 * 
+	 * @param username
+	 * @param request
+	 * @return
+	 */
+	@PatchMapping("/users/{username}/account/role")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)  && hasRole('ADMIN')")
+	public ResponseEntity<Void> updateAdminRole(@PathVariable String username,
 			@RequestBody UpdateAdminRoleRequest request) {
-		adminService.updateAdminRole(username, request);
+		service.updateAdminRole(username, request);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/delete/{username}")
-	public ResponseEntity<Void> deleteMemberByUsername(@PathVariable String username) {
-		adminService.deleteAdminByUsername(username);
+	@PatchMapping("/users/account/password")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<Void> changePassword(Authentication authentication,
+			@RequestBody ChangePasswordRequest request) {
+		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
+
+		service.changePasswordByUsername(principal, request);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@DeleteMapping("/users/{username}")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication) && hasRole('ADMIN')")
+	public ResponseEntity<Void> deleteAdminByUsername(@PathVariable String username) {
+		service.deleteAdminByUsername(username);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

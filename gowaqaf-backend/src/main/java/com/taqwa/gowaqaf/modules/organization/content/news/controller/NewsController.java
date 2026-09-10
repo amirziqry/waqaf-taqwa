@@ -3,6 +3,10 @@ package com.taqwa.gowaqaf.modules.organization.content.news.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +34,7 @@ public class NewsController {
 
 	private final NewsService newsService;
 
-	@PostMapping("/create")
+	@PostMapping
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<NewsUploadResponse> createNews(@RequestBody NewsUploadRequest request) {
 		NewsUploadResponse response = newsService.createNews(request);
@@ -38,7 +42,7 @@ public class NewsController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/{id}/update")
+	@PutMapping("/{id}")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<NewsUploadResponse> updateNewsById(@PathVariable UUID id,
 			@RequestBody NewsUploadRequest request) {
@@ -47,7 +51,7 @@ public class NewsController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PutMapping("/{id}/image-keys/upload")
+	@PutMapping("/{id}/image-keys")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateNewsImageKeysById(@PathVariable UUID id,
 			@RequestBody List<NewsImageKey> request) {
@@ -56,21 +60,22 @@ public class NewsController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("/{id}/get")
+	@GetMapping("/{id}")
 	public ResponseEntity<NewsDetails> getNewsDetailsById(@PathVariable UUID id) {
 		NewsDetails response = newsService.getNewsDetailsById(id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/all/get")
-	public ResponseEntity<List<NewsDetails>> getAllNewsDetails() {
-		List<NewsDetails> response = newsService.getAllNews();
+	@GetMapping
+	public ResponseEntity<Page<NewsDetails>> getAllNewsDetails(
+			@PageableDefault(size = 10, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		Page<NewsDetails> response = newsService.getAllNews(pageable);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{id}/delete")
+	@DeleteMapping("/{id}")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> deleteNewsById(@PathVariable UUID id) {
 		newsService.deleteNewsById(id);

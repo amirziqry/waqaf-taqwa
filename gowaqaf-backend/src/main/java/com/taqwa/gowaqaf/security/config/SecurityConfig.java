@@ -38,7 +38,7 @@ public class SecurityConfig {
 						.requestMatchers("/api/personal/auth/login", "/api/personal/auth/logout",
 								"/api/personal/register", "/api/merchant/auth/login", "/api/merchant/auth/logout",
 								"/api/merchant/register", "/api/admin/auth/login", "/api/admin/auth/logout",
-								"/api/admin/register-admin", "/api/admin/register-editor")
+								"/api/admin/register/**")
 						.permitAll()
 
 						.anyRequest().authenticated())

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.common.CommonClass;
+import com.taqwa.gowaqaf.common.CommonEndpoints;
 import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.mockuser.merchant.WithMockMerchant;
 import com.taqwa.gowaqaf.mockuser.personal.WithMockPersonal;
@@ -50,10 +51,6 @@ public class PersonalAuthFlowTest {
 				"test@gmail.com");
 	}
 
-	public static String loginEndpoint = "/api/personal/auth/login";
-	public static String registerEndpoint = "/api/personal/register";
-	public static String meEndpoint = "/api/personal/auth/me";
-
 	@Test
 	void donatorRegisterShouldSuccess() throws Exception {
 		String requestBody = """
@@ -64,8 +61,9 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(registerEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("donator2"));
+		mockMvc.perform(
+				post(CommonEndpoints.personalRegister).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.username").value("donator2"));
 
 		requestBody = """
 						{
@@ -74,7 +72,8 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("donator2"));
 	}
 
@@ -87,7 +86,8 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.username").value("donator_test"));
 	}
 
@@ -100,7 +100,8 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
@@ -113,14 +114,14 @@ public class PersonalAuthFlowTest {
 				}
 				""";
 
-		MvcResult response = mockMvc
-				.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		MvcResult response = mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isOk()).andReturn();
 
 		Cookie tokenCookie = response.getResponse().getCookie("accessToken");
 		assertNotNull(tokenCookie);
 
-		mockMvc.perform(get(meEndpoint).cookie(tokenCookie)).andExpect(status().isOk());
+		mockMvc.perform(get(CommonEndpoints.personalMe).cookie(tokenCookie)).andExpect(status().isOk());
 	}
 
 	@Test
@@ -131,12 +132,12 @@ public class PersonalAuthFlowTest {
 		assertNotNull(personal);
 		assertNotNull(personal.getId());
 
-		mockMvc.perform(get(meEndpoint)).andExpect(status().isOk());
+		mockMvc.perform(get(CommonEndpoints.personalMe)).andExpect(status().isOk());
 	}
 
-	//////////////////////////////
+	////////////////////////////
 	// Cross account authentication test.
-	//////////////////////////////
+	////////////////////////////
 
 	@Test
 	void merchantToPersonalLoginShouldFail() throws Exception {
@@ -148,7 +149,8 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
@@ -162,20 +164,22 @@ public class PersonalAuthFlowTest {
 				    }
 				""";
 
-		mockMvc.perform(post(loginEndpoint).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+		mockMvc.perform(
+				post(CommonEndpoints.personalLogin).contentType(MediaType.APPLICATION_JSON).content(requestBody))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	@WithMockAdmin(username = "member_mock", roles = { "ADMIN" })
 	void adminToPersonalEndpointShouldFail() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get(meEndpoint)).andExpect(MockMvcResultMatchers.status().isForbidden());
+		mockMvc.perform(MockMvcRequestBuilders.get(CommonEndpoints.personalMe))
+				.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
 
 	@Test
 	@WithMockMerchant(username = "vendor_mock")
 	void merchantToPersonalEndpointShouldFail() throws Exception {
-		mockMvc.perform(get(meEndpoint)).andExpect(status().isForbidden());
+		mockMvc.perform(get(CommonEndpoints.personalMe)).andExpect(status().isForbidden());
 	}
 
 }

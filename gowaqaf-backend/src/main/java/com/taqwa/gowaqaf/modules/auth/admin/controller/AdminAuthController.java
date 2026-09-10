@@ -60,7 +60,6 @@ public class AdminAuthController {
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<?> me(Authentication authentication) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
-
 		if (principal == null)
 			throw new UsernameNotFoundException("Invalid username or password");
 

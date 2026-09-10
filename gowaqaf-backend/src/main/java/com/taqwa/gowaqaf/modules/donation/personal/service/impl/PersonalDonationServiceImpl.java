@@ -3,15 +3,16 @@ package com.taqwa.gowaqaf.modules.donation.personal.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
-import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentRequest;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
@@ -28,6 +29,8 @@ import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
 import com.taqwa.gowaqaf.modules.donation.personal.mapper.PersonalDonationMapper;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.service.PersonalService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
@@ -38,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PersonalDonationServiceImpl implements PersonalDonationService {
 
+	private final DonationRepository donationRepository;
 	private final PersonalDonationRepository personalDonationRepository;
 	private final PersonalService userService;
 	private final WebhookService webhookService;
@@ -46,6 +50,7 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 	@Value("${nexgen.collection.personal}")
 	private String collectionCode;
 
+	@Transactional
 	@Override
 	public PaymentUrlResponse createDonation(AccountUserDetails principal, PersonalDonationRequest dto) {
 		// Get account.
@@ -67,39 +72,48 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 		response.setId(donation.getId());
 
 		// Update donation object.
-		donation.setBillingCode(response.getBillingCode());
-		donation.setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
-		personalDonationRepository.save(donation);
+		donation.getDonation().setBillingCode(response.getBillingCode());
+		donation.getDonation().setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
 
 		return response;
 	}
 
 	private PersonalDonation buildDonationDetails(Personal personal, PersonalDonationRequest dto, String webhookToken) {
-		PersonalDonation donation = new PersonalDonation();
+		Donation donation = new Donation();
+		PersonalDonation personalDonation = new PersonalDonation();
 
-		donation.setPersonal(personal);
-		donation.setName(personal.getInfo().getAccountHolderName());
+		// Parent donation
 		donation.setAmount(dto.getAmount());
 		donation.setStatus(PaymentStatus.UNPAID);
 		donation.setDonationType(DonationType.DIRECT);
-		donation.setTaxExempt(dto.getTaxExempt());
 		donation.setWebhookToken(webhookToken);
 
-		PersonalDonation saved = personalDonationRepository.save(donation);
+		donation = donationRepository.saveAndFlush(donation);
 
-		return saved;
+		// Personal donation
+		personalDonation.setId(donation.getId());
+		personalDonation.setDonation(donation);
+		personalDonation.setPersonal(personal);
+		personalDonation.setTaxExempt(dto.getTaxExempt());
+
+		return personalDonationRepository.saveAndFlush(personalDonation);
 	}
 
 	private PaymentRequest buildPaymentRequest(String collectionCode, Personal personal, PersonalDonation donation,
 			String redirectUrl, String callbackUrl) {
 		PaymentRequest paymentRequest = new PaymentRequest();
 
-		paymentRequest.setCollectionCode(collectionCode);
+		// Set identity details.
 		paymentRequest.setName(personal.getInfo().getAccountHolderName());
 		paymentRequest.setEmail(personal.getInfo().getEmail());
 		paymentRequest.setPhone(personal.getInfo().getPhone());
-		paymentRequest.setAmount(donation.getAmount());
+
+		// Set payment details.
+		paymentRequest.setAmount(donation.getDonation().getAmount());
 		paymentRequest.setDescription("Personal direct donation.");
+
+		// Set external API details.
+		paymentRequest.setCollectionCode(collectionCode);
 		paymentRequest.setRedirectUrl(redirectUrl);
 		paymentRequest.setCallbackUrl(callbackUrl);
 
@@ -115,6 +129,13 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 	}
 
 	@Override
+	public List<PersonalDonationDetails> getDonationDetailsListByUser(UUID personalId, Pageable pageable) {
+		List<PersonalDonation> donations = personalDonationRepository.findAllByPersonalId(personalId, pageable);
+
+		return donations.stream().map(PersonalDonationMapper::mapToDetails).toList();
+	}
+
+	@Override
 	public Page<PersonalDonationDetails> getAllDonationDetailsByUser(UUID personalId, Pageable pageable) {
 		Page<PersonalDonation> donations = personalDonationRepository.findByPersonalId(personalId, pageable);
 
@@ -123,8 +144,13 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 
 	@Override
 	public PersonalDonationSum getDonationSumByUser(UUID id, PersonalDonationSumFilter filter) {
-		LocalDateTime startDateTime = filter.getStartDate() != null ? filter.getStartDate().atStartOfDay() : null;
-		LocalDateTime endDateTime = filter.getEndDate() != null ? filter.getEndDate().plusDays(1).atStartOfDay() : null;
+		return getDonationSumByUser(id, filter.getStartDate(), filter.getEndDate());
+	}
+
+	@Override
+	public PersonalDonationSum getDonationSumByUser(UUID id, LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+		LocalDateTime endDateTime = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
 		BigDecimal total = personalDonationRepository.sumPaidDonationsByPersonalId(id, startDateTime, endDateTime);
 
@@ -144,33 +170,6 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 	@SuppressWarnings("unused")
 	private void generateReceiptHashId() {
 		// TODO
-	}
-
-	@Override
-	public void processWebhook(String token, String code, String status, BigDecimal amount, String transactionId,
-			String orderId, LocalDateTime transactionDate) {
-		PersonalDonation donation = personalDonationRepository.findByWebhookToken(token)
-				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Webhook endpoint not found"));
-
-		if (!donation.getBillingCode().equals(code))
-			throw new BadRequestException(ErrorCode.WHK002, "Billing code does not match");
-
-		if (donation.getAmount().compareTo(amount) != 0)
-			throw new BadRequestException(ErrorCode.WHK003, "Amount does not match");
-
-		switch (status.toLowerCase()) {
-		case "paid" -> donation.setStatus(PaymentStatus.PAID);
-		case "unpaid" -> donation.setStatus(PaymentStatus.UNPAID);
-		default -> donation.setStatus(PaymentStatus.EXPIRED);
-		}
-
-		if (donation.getStatus() == PaymentStatus.PAID) {
-			donation.setTransactionId(transactionId != null ? transactionId : orderId);
-			donation.setPaidAt(transactionDate);
-			donation.setWebhookToken(null);
-		}
-
-		personalDonationRepository.save(donation);
 	}
 
 }
