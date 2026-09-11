@@ -19,13 +19,16 @@ export const SignUpPage: React.FC = () => {
     setLoading(true);
     setErrorMsg('');
 
-    const endpoint = accountType === 'admin' ? '/member/auth/register' : '/personal/register';
+    const endpoint = accountType === 'admin' ? '/admin/register-admin' : '/personal/register';
 
     try {
       await api.post(endpoint, {
+        name,         // Include name in the payload
+        nama: name,   // Fallback alias in case DTO expects BM property name
         username,
         email,
         phone,
+        phoneNumber: phone, // Fallback alias
         password,
         modMesra: false,
       });
