@@ -25,8 +25,8 @@ public interface RakanQrDonationRepository extends JpaRepository<RakanQrDonation
 			FROM RakanQrDonation d
 			WHERE d.rakanQr.id = :id
 			  AND d.donation.status = 'PAID'
-			  AND (:startDate IS NULL OR d.donation.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.donation.paidAt <= :endDate)
+			  AND (CAST(:startDate AS timestamp) IS NULL OR d.donation.paidAt >= :startDate)
+			  AND (CAST(:endDate AS timestamp) IS NULL OR d.donation.paidAt <= :endDate)
 			""")
 	BigDecimal sumAllPaidDonationsByUser(@Param("id") UUID rakanQrId, @Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
@@ -35,12 +35,14 @@ public interface RakanQrDonationRepository extends JpaRepository<RakanQrDonation
 			SELECT COALESCE(SUM(d.donation.amount), 0)
 			FROM RakanQrDonation d
 			WHERE d.donation.status = 'PAID'
-			  AND (:startDate IS NULL OR d.donation.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.donation.paidAt < :endDate)
+			  AND (CAST(:startDate AS timestamp) IS NULL OR d.donation.paidAt >= :startDate)
+			  AND (CAST(:endDate AS timestamp) IS NULL OR d.donation.paidAt < :endDate)
 			""")
 	BigDecimal sumAllPaidDonations(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
 
 	List<RakanQrDonation> findAllByRakanQr_Id(UUID rakanQrId, Pageable pageable);
+
+	Optional<RakanQrDonation> findByDonation_BillingCode(String billingCode);
 
 }

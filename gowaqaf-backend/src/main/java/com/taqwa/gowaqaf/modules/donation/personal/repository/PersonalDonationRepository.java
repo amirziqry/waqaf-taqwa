@@ -18,6 +18,12 @@ import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
 public interface PersonalDonationRepository extends JpaRepository<PersonalDonation, UUID> {
 	Optional<PersonalDonation> findByIdAndPersonalId(UUID id, UUID personalId);
 
+	Optional<PersonalDonation> findByDonation_WebhookToken(String token);
+
+	Optional<PersonalDonation> findByDonation_BillingCode(String billingCode);
+
+	Optional<PersonalDonation> findByPersonal_IdAndDonation_BillingCode(UUID personalId, String billingCode);
+
 	Page<PersonalDonation> findByPersonalId(UUID personalId, Pageable pageable);
 
 	List<PersonalDonation> findAllByPersonalId(UUID personalId, Pageable pageable);
@@ -47,14 +53,14 @@ public interface PersonalDonationRepository extends JpaRepository<PersonalDonati
 			@Param("endDate") LocalDateTime endDate);
 
 	@Query("""
-			SELECT SUM(amount)
+			SELECT COALESCE(SUM(amount), 0)
 			FROM (
 			    SELECT pd.donation.amount AS amount
 			    FROM PersonalDonation pd
 			    WHERE pd.personal.id = :personalId
 			      AND pd.donation.status = 'PAID'
-			      AND (:startDate IS NULL OR pd.donation.paidAt >= :startDate)
-			      AND (:endDate IS NULL OR pd.donation.paidAt < :endDate)
+			      AND (CAST(:startDate AS timestamp) IS NULL OR pd.donation.paidAt >= :startDate)
+			      AND (CAST(:endDate AS timestamp) IS NULL OR pd.donation.paidAt < :endDate)
 
 			    UNION ALL
 
@@ -62,10 +68,11 @@ public interface PersonalDonationRepository extends JpaRepository<PersonalDonati
 			    FROM ProjectDonation pd
 			    WHERE pd.personal.id = :personalId
 			      AND pd.donation.status = 'PAID'
-			      AND (:startDate IS NULL OR pd.donation.paidAt >= :startDate)
-			      AND (:endDate IS NULL OR pd.donation.paidAt < :endDate)
+			      AND (CAST(:startDate AS timestamp) IS NULL OR pd.donation.paidAt >= :startDate)
+			      AND (CAST(:endDate AS timestamp) IS NULL OR pd.donation.paidAt < :endDate)
 			)
 			""")
 	BigDecimal sumPaidDonationsByPersonalId(@Param("personalId") UUID personalId,
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 }

@@ -11,7 +11,6 @@ public class BadRequestException extends BaseException {
 
 	public BadRequestException(ErrorCode errorCode) {
 		super(errorCode);
-		// TODO Auto-generated constructor stub
 	}
 
 	public BadRequestException(ErrorCode errorCode, String message) {

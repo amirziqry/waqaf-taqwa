@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.organization.profile.controller;
+package com.taqwa.gowaqaf.modules.organization.about.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,25 +9,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationImagesRequest;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUpload;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
-import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationAboutUpload;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationAboutUploadUrlsResponse;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationImagesRequest;
+import com.taqwa.gowaqaf.modules.organization.about.service.OrganizationAboutService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/organization/about")
 @RequiredArgsConstructor
-public class OrganizationProfileController {
+public class OrganizationAboutController {
 
-	private final OrganizationService organizationService;
+	private final OrganizationAboutService service;
 
 	@PutMapping
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
-	public ResponseEntity<OrganizationProfileUploadUrlsResponse> updateProfile(@RequestBody OrganizationProfileUpload dto) {
-		OrganizationProfileUploadUrlsResponse response = organizationService.updateProfile(dto);
+	public ResponseEntity<OrganizationAboutUploadUrlsResponse> updateAbout(@RequestBody OrganizationAboutUpload dto) {
+		OrganizationAboutUploadUrlsResponse response = service.updateAbout(dto);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -35,14 +35,14 @@ public class OrganizationProfileController {
 	@PutMapping("/image-keys")
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<Void> updateImageKeys(@RequestBody OrganizationImagesRequest request) {
-		organizationService.uploadImageKeys(request);
+		service.uploadImageKeys(request);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping
-	public ResponseEntity<OrgInfoDetails> getProfile() {
-		OrgInfoDetails dto = organizationService.getProfile();
+	public ResponseEntity<OrgAboutDetails> getAbout() {
+		OrgAboutDetails dto = service.getAbout();
 
 		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}

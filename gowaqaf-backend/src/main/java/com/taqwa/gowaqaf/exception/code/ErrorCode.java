@@ -62,7 +62,10 @@ public enum ErrorCode {
 	RQA001("RakanQr not found"), RQA002("Invalid RakanQr"),
 
 	// RakanQr Donation
-	RQD001("RakanQr donation not found");
+	RQD001("RakanQr donation not found"),
+
+	// Payment
+	NPP001("Payment provider error"), WHK017("Ref label error"), WHK018("Ref value error");
 
 	private final String defaultMessage;
 

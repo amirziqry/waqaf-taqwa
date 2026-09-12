@@ -11,7 +11,6 @@ public class ResourceNotFoundException extends BaseException {
 
 	public ResourceNotFoundException(ErrorCode errorCode) {
 		super(errorCode);
-		// TODO Auto-generated constructor stub
 	}
 
 	public ResourceNotFoundException(ErrorCode errorCode, String message) {

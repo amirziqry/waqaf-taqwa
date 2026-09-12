@@ -34,13 +34,13 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
 import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
-import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.merchant.repository.MerchantRepository;
@@ -77,7 +77,7 @@ public class AdminDashboardFlowTest {
 	private final ProjectRepository projectRepository;
 	private final NewsRepository newsRepository;
 	private final CampaignRepository campaignRepository;
-	private final OrganizationRepository profileRepository;
+	private final OrganizationAboutRepository profileRepository;
 
 	@BeforeEach
 	void setup() {

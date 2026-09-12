@@ -1,5 +1,7 @@
 package com.taqwa.gowaqaf.modules.user.personal.service;
 
+import java.util.UUID;
+
 import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.personal.dto.AccountUploadFields;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalAccountInfo;
@@ -19,5 +21,7 @@ public interface PersonalService {
 	PersonalAccountInfo getAccountByUser(AccountUserDetails principal);
 
 	void changePasswordByUsername(AccountUserDetails principal, ChangePasswordRequest request);
+
+	Personal getPersonalById(UUID personalId);
 
 }

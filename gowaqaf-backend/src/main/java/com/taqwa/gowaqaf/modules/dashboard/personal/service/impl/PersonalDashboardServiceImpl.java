@@ -14,14 +14,14 @@ import com.taqwa.gowaqaf.modules.dashboard.personal.service.PersonalDashboardSer
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSum;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
+import com.taqwa.gowaqaf.modules.organization.about.service.OrganizationAboutService;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.service.CampaignService;
 import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
 import com.taqwa.gowaqaf.modules.organization.content.news.service.NewsService;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalAccountInfo;
 import com.taqwa.gowaqaf.modules.user.personal.service.PersonalService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
@@ -34,7 +34,7 @@ public class PersonalDashboardServiceImpl implements PersonalDashboardService {
 
 	private final PersonalDonationService donationService;
 	private final PersonalService personalService;
-	private final OrganizationService profileService;
+	private final OrganizationAboutService profileService;
 	private final ProjectService projectService;
 	private final NewsService newsService;
 	private final CampaignService campaignService;
@@ -66,8 +66,8 @@ public class PersonalDashboardServiceImpl implements PersonalDashboardService {
 		return personalService.getAccountByUser(principal);
 	}
 
-	private OrgInfoDetails getOrganizationProfile() {
-		return profileService.getProfile();
+	private OrgAboutDetails getOrganizationProfile() {
+		return profileService.getAbout();
 	}
 
 	private List<ProjectDetails> getProjectDetailsList() {

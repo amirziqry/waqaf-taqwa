@@ -36,4 +36,6 @@ public interface RakanQrService {
 
 	void updateRakanQrCollectedAmountById(UUID id, BigDecimal amount);
 
+	RakanQr getRakanQrById(UUID rakanQrId);
+
 }

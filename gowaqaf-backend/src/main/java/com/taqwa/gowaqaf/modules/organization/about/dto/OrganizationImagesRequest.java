@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.organization.profile.dto;
+package com.taqwa.gowaqaf.modules.organization.about.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

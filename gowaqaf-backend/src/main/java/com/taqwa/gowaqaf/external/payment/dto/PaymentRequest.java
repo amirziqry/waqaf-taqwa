@@ -12,12 +12,24 @@ import lombok.NoArgsConstructor;
 public class PaymentRequest {
 
 	private String collectionCode;
+
 	private String name;
 	private String email;
 	private String phone;
+
 	private BigDecimal amount;
 	private String description;
+
 	private String redirectUrl;
 	private String callbackUrl;
+
+	private String referenceLabel1;
+	private String referenceValue1;
+	private String referenceLabel2;
+	private String referenceValue2;
+	private String referenceLabel3;
+	private String referenceValue3;
+	private String referenceLabel4;
+	private String referenceValue4;
 
 }

@@ -12,6 +12,8 @@ import com.taqwa.gowaqaf.modules.dashboard.admin.dto.AdminDashboard;
 import com.taqwa.gowaqaf.modules.dashboard.admin.service.AdminDashboardService;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.dto.RakanQrInfo;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
+import com.taqwa.gowaqaf.modules.organization.about.service.OrganizationAboutService;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrgCollectionInfo;
 import com.taqwa.gowaqaf.modules.organization.collection.service.OrganizationCollectionService;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
@@ -20,8 +22,6 @@ import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
 import com.taqwa.gowaqaf.modules.organization.content.news.service.NewsService;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminDashboardServiceImpl implements AdminDashboardService {
 
 	private final OrganizationCollectionService collectionService;
-	private final OrganizationService profileService;
+	private final OrganizationAboutService profileService;
 	private final ProjectService projectService;
 	private final NewsService newsService;
 	private final CampaignService campaignService;
@@ -58,8 +58,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 		return collectionService.getDonationCollectionSum(startDate, endDate);
 	}
 
-	private OrgInfoDetails getOrganizationProfile() {
-		return profileService.getProfile();
+	private OrgAboutDetails getOrganizationProfile() {
+		return profileService.getAbout();
 	}
 
 	private List<ProjectDetails> getProjectDetailsList() {

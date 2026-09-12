@@ -32,8 +32,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
-import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationAboutUploadUrlsResponse;
+import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -52,7 +52,7 @@ public class OrganizationProfileFlowTest {
 	private final MockMvc mockMvc;
 
 	@SuppressWarnings("unused")
-	private final OrganizationRepository repository;
+	private final OrganizationAboutRepository repository;
 
 	@Value("${storage.bucket}")
 	private String bucket;
@@ -99,8 +99,8 @@ public class OrganizationProfileFlowTest {
 
 		String response = result.getResponse().getContentAsString();
 
-		OrganizationProfileUploadUrlsResponse objectResponse = objectMapper.readValue(response,
-				OrganizationProfileUploadUrlsResponse.class);
+		OrganizationAboutUploadUrlsResponse objectResponse = objectMapper.readValue(response,
+				OrganizationAboutUploadUrlsResponse.class);
 
 		Assertions.assertNotNull(objectResponse);
 		Assertions.assertNotNull(objectResponse.getLogoUploadUrl());

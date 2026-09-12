@@ -13,6 +13,7 @@ public class CommonEndpoints {
 
 	public static String personalDirectDonationRequest = "/api/personal/donations/payment-request";
 	public static String personalGetDonationDetails = "/api/personal/donations/{id}";
+	public static String personalGetDonationDetailsByBillingCode = "/api/personal/donations/billing/{code}";
 
 	public static String projectDonationRequest = "/api/projects/{projectId}/donations/payment-request";
 	public static String projectGetDonationDetails = "/api/projects/donations/{id}";

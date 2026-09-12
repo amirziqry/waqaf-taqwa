@@ -30,7 +30,7 @@ public class PersonalDonation {
 	@Id
 	private UUID id;
 
-	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, optional = false)
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE }, optional = false)
 	@JoinColumn(name = "id")
 	private Donation donation;
 

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
@@ -182,6 +183,7 @@ public class CampaignServiceImpl implements CampaignService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CampaignDetails> getCampaignsList(Pageable pageable) {
 		List<Campaign> campaigns = campaignRepository.findAllBy(pageable);
 

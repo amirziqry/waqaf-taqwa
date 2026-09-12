@@ -1,5 +1,7 @@
 package com.taqwa.gowaqaf.modules.user.personal.service.impl;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -78,6 +80,14 @@ public class PersonalServiceImpl implements PersonalService {
 	public Personal getPersonalByUsername(String username) {
 		Personal user = repository.findByUsername(username).orElseThrow(
 				() -> new ResourceNotFoundException(ErrorCode.PER001, String.format("User %s not found.", username)));
+
+		return user;
+	}
+
+	@Override
+	public Personal getPersonalById(UUID personalId) {
+		Personal user = repository.findById(personalId).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.PER001, String.format("User %s not found.", personalId)));
 
 		return user;
 	}

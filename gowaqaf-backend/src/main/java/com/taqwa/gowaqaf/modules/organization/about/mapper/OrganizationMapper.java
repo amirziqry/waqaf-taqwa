@@ -1,13 +1,13 @@
-package com.taqwa.gowaqaf.modules.organization.profile.mapper;
+package com.taqwa.gowaqaf.modules.organization.about.mapper;
 
-import com.taqwa.gowaqaf.modules.organization.profile.dto.Address;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
+import com.taqwa.gowaqaf.modules.organization.about.dto.Address;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
+import com.taqwa.gowaqaf.modules.organization.about.entity.OrganizationAbout;
 
 public class OrganizationMapper {
 
-	public static OrgInfoDetails mapToOrganizationProfileDetails(OrganizationProfile org) {
-		OrgInfoDetails dto = new OrgInfoDetails();
+	public static OrgAboutDetails mapToOrganizationProfileDetails(OrganizationAbout org) {
+		OrgAboutDetails dto = new OrgAboutDetails();
 
 		dto.setId(org.getId());
 		dto.setName(org.getName());
@@ -21,7 +21,7 @@ public class OrganizationMapper {
 		return dto;
 	}
 
-	private static Address mapToAddress(OrganizationProfile org) {
+	private static Address mapToAddress(OrganizationAbout org) {
 		Address address = new Address();
 
 		address.setAddressLine1(org.getAddressLine1());

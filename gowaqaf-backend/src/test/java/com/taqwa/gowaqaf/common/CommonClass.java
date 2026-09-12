@@ -32,6 +32,8 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrAccount;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
+import com.taqwa.gowaqaf.modules.organization.about.entity.OrganizationAbout;
+import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
 import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
 import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.entity.Campaign;
@@ -46,8 +48,6 @@ import com.taqwa.gowaqaf.modules.organization.content.news.entity.News;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
 import com.taqwa.gowaqaf.modules.organization.content.project.repository.ProjectRepository;
-import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
-import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
 import com.taqwa.gowaqaf.modules.user.account.entity.AccountInfo;
 import com.taqwa.gowaqaf.modules.user.account.repository.AccountInfoRepository;
 import com.taqwa.gowaqaf.modules.user.admin.entity.Admin;
@@ -282,8 +282,8 @@ public class CommonClass {
 	}
 
 	// Mock profile.
-	public static void createMockProfile(OrganizationRepository repository) {
-		OrganizationProfile test = new OrganizationProfile();
+	public static void createMockProfile(OrganizationAboutRepository repository) {
+		OrganizationAbout test = new OrganizationAbout();
 
 		test.setName("Taqwa");
 		test.setPhone("011-5432 6360");

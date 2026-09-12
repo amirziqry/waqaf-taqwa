@@ -56,15 +56,17 @@ public class RakanQrServiceImpl implements RakanQrService {
 		RakanQr agent = new RakanQr();
 
 		if (principal.getAccountType() == AccountType.PERSONAL) {
-			Personal personal = personalService.getPersonalByUsername(principal.getUsername());
-			agent.setPersonal(personal);
+			Personal user = personalService.getPersonalByUsername(principal.getUsername());
+			agent.setPersonal(user);
 			agent.setAccount(RakanQrAccount.PERSONAL);
+			validateUser(user.getInfo().getAccountHolderName(), user.getInfo().getEmail(), user.getInfo().getPhone());
 		}
 
 		if (principal.getAccountType() == AccountType.MERCHANT) {
-			Merchant merchant = merchantService.getMerchantByUsername(principal.getUsername());
-			agent.setMerchant(merchant);
+			Merchant user = merchantService.getMerchantByUsername(principal.getUsername());
+			agent.setMerchant(user);
 			agent.setAccount(RakanQrAccount.MERCHANT);
+			validateUser(user.getInfo().getAccountHolderName(), user.getInfo().getEmail(), user.getInfo().getPhone());
 		}
 
 		agent.setType(request.getType());
@@ -78,6 +80,11 @@ public class RakanQrServiceImpl implements RakanQrService {
 		RakanQr saved = repository.save(agent);
 
 		return RakanQrMapper.mapToInfo(saved);
+	}
+
+	private void validateUser(String name, String email, String phone) {
+		if (name == null || email == null || phone == null)
+			throw new BadRequestException(ErrorCode.PER001, "Please update account name, email, phone.");
 	}
 
 	private String generateUniqueRakanQrCode() {
@@ -106,6 +113,14 @@ public class RakanQrServiceImpl implements RakanQrService {
 	@Transactional
 	public void updateRakanQrCollectedAmountById(UUID id, BigDecimal amount) {
 		repository.incrementCollectedAmountById(id, amount);
+	}
+
+	@Override
+	public RakanQr getRakanQrById(UUID rakanQrId) {
+		RakanQr agent = repository.findById(rakanQrId)
+				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.RQA001, "Rakan QR agent not found"));
+
+		return agent;
 	}
 
 	/**

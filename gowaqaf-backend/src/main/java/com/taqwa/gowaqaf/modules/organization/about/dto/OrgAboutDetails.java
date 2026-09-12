@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.organization.profile.dto;
+package com.taqwa.gowaqaf.modules.organization.about.dto;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrgInfoDetails {
+public class OrgAboutDetails {
 
 	private UUID id;
 	private String name;

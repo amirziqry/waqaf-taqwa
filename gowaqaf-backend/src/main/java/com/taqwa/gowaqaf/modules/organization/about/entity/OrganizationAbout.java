@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.organization.profile.entity;
+package com.taqwa.gowaqaf.modules.organization.about.entity;
 
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationProfile {
+public class OrganizationAbout {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

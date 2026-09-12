@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.organization.profile.dto;
+package com.taqwa.gowaqaf.modules.organization.about.dto;
 
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationProfileUploadUrlsResponse {
+public class OrganizationAboutUploadUrlsResponse {
 	
 	UploadUrl logoUploadUrl;
 	

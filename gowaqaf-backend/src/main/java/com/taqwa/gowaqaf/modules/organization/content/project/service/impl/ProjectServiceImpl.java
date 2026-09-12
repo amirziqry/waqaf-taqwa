@@ -176,6 +176,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ProjectDetails> getProjectsDetailsList(Pageable pageable) {
 		List<Project> projects = projectRepository.findAllBy(pageable);
 

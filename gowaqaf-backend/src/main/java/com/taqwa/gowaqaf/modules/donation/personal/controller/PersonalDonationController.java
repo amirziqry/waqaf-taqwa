@@ -25,6 +25,8 @@ import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationRequest;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSum;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSumFilter;
+import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationPaymentService;
+import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationReconcileService;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
@@ -35,7 +37,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PersonalDonationController {
 
-	private final PersonalDonationService donationService;
+	private final PersonalDonationService service;
+	private final PersonalDonationPaymentService paymentService;
+	private final PersonalDonationReconcileService reconcileService;
 
 	@PostMapping("/payment-request")
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
@@ -43,7 +47,7 @@ public class PersonalDonationController {
 			@RequestBody PersonalDonationRequest request) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		PaymentUrlResponse response = donationService.createDonation(principal, request);
+		PaymentUrlResponse response = paymentService.createDonation(principal, request);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -54,7 +58,18 @@ public class PersonalDonationController {
 			@PathVariable UUID id) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		PersonalDonationDetails response = donationService.getPaymentStatus(id, principal.getId());
+		PersonalDonationDetails response = reconcileService.getDonationDetailsById(principal.getId(), id);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/billing/{code}")
+	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
+	public ResponseEntity<PersonalDonationDetails> getDonationDetailsById(Authentication authentication,
+			@PathVariable String code) {
+		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
+
+		PersonalDonationDetails response = reconcileService.getDonationDetailsByCode(principal.getId(), code);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -67,7 +82,7 @@ public class PersonalDonationController {
 		if (principal == null)
 			throw new UsernameNotFoundException("Invalid Username or Password");
 
-		PersonalDonationSum response = donationService.getDonationSumByUser(principal.getId(), filter);
+		PersonalDonationSum response = service.getDonationSumByUser(principal.getId(), filter);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -75,13 +90,12 @@ public class PersonalDonationController {
 	@GetMapping
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<Page<PersonalDonationDetails>> getAllDonationDetailsByUser(Authentication authentication,
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = 10, sort = "donation.createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 		if (principal == null)
 			throw new UsernameNotFoundException("Invalid Username or Password");
 
-		Page<PersonalDonationDetails> response = donationService.getAllDonationDetailsByUser(principal.getId(),
-				pageable);
+		Page<PersonalDonationDetails> response = service.getAllDonationDetailsByUser(principal.getId(), pageable);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

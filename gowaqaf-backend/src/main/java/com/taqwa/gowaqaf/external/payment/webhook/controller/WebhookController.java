@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taqwa.gowaqaf.external.payment.client.nexgen.dto.webhook.NexGenWebhookPayload;
-import com.taqwa.gowaqaf.external.payment.webhook.service.WebhookService;
+import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationWebhookService;
 import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
-import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationWebhookService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,16 +20,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebhookController {
 
-	private final WebhookService webhookService;
+	private final PersonalDonationWebhookService personalWebhookService;
 	private final ProjectDonationService projectDonationService;
-	private final RakanQrDonationService rakanQrDonationService;
+	private final RakanQrDonationWebhookService rakanQrWebhookService;
 
 	@PostMapping("/personal/{token}")
 	public ResponseEntity<Void> handleWebhookForPersonalDonation(@PathVariable String token,
 			@RequestBody NexGenWebhookPayload payload) {
-		webhookService.processWebhook(token, payload.getCode(), payload.getStatus(), payload.getAmount(),
-				payload.getPaymentMethodDetail().getTransactionId(), payload.getPaymentMethodDetail().getOrderId(),
-				payload.getPaymentMethodDetail().getTransactionDate());
+		personalWebhookService.handleWebhook(token, payload);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -47,9 +45,7 @@ public class WebhookController {
 	@PostMapping("/rakan-qr/{token}")
 	public ResponseEntity<Void> handleWebhookForRakanQrDonation(@PathVariable String token,
 			@RequestBody NexGenWebhookPayload payload) {
-		rakanQrDonationService.processWebhook(token, payload.getCode(), payload.getStatus(), payload.getAmount(),
-				payload.getPaymentMethodDetail().getTransactionId(), payload.getPaymentMethodDetail().getOrderId(),
-				payload.getPaymentMethodDetail().getTransactionDate());
+		rakanQrWebhookService.handleWebhook(token, payload);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

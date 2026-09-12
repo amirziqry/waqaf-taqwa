@@ -1,33 +1,34 @@
-package com.taqwa.gowaqaf.modules.organization.profile.service.impl;
+package com.taqwa.gowaqaf.modules.organization.about.service.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.taqwa.gowaqaf.exception.code.ErrorCode;
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.external.storage.dto.FileUploadRequest;
 import com.taqwa.gowaqaf.external.storage.dto.UploadUrl;
 import com.taqwa.gowaqaf.external.storage.service.StorageService;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationImagesRequest;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUpload;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrganizationProfileUploadUrlsResponse;
-import com.taqwa.gowaqaf.modules.organization.profile.entity.OrganizationProfile;
-import com.taqwa.gowaqaf.modules.organization.profile.mapper.OrganizationMapper;
-import com.taqwa.gowaqaf.modules.organization.profile.repository.OrganizationRepository;
-import com.taqwa.gowaqaf.modules.organization.profile.service.OrganizationService;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationImagesRequest;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationAboutUpload;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrganizationAboutUploadUrlsResponse;
+import com.taqwa.gowaqaf.modules.organization.about.entity.OrganizationAbout;
+import com.taqwa.gowaqaf.modules.organization.about.mapper.OrganizationMapper;
+import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
+import com.taqwa.gowaqaf.modules.organization.about.service.OrganizationAboutService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class OrganizationServiceImpl implements OrganizationService {
+public class OrganizationServiceImpl implements OrganizationAboutService {
 
-	private final OrganizationRepository organizationRepository;
+	private final OrganizationAboutRepository repository;
 	private final StorageService storageService;
 
 	@Override
-	public OrganizationProfileUploadUrlsResponse updateProfile(OrganizationProfileUpload dto) {
-		OrganizationProfile org = organizationRepository.findFirstBy().orElse(new OrganizationProfile());
+	public OrganizationAboutUploadUrlsResponse updateAbout(OrganizationAboutUpload dto) {
+		OrganizationAbout org = repository.findFirstBy().orElse(new OrganizationAbout());
 
 		org.setName(dto.getName());
 		org.setPhone(dto.getPhone());
@@ -41,7 +42,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		org.setCountry(dto.getAddress().getCountry());
 		org.setContentHtml(dto.getContentHtml());
 
-		OrganizationProfileUploadUrlsResponse uploadUrls = new OrganizationProfileUploadUrlsResponse();
+		OrganizationAboutUploadUrlsResponse uploadUrls = new OrganizationAboutUploadUrlsResponse();
 
 		if (dto.getLogoUploadRequest() != null) {
 			dto.getLogoUploadRequest().setPath("organization/images/logo");
@@ -55,7 +56,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 			uploadUrls.setHeroUploadUrl(generateImageUploadUrl(dto.getHeroUploadRequest()));
 		}
 
-		organizationRepository.save(org);
+		repository.save(org);
 
 		return uploadUrls;
 	}
@@ -68,7 +69,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 	@Override
 	public void uploadImageKeys(OrganizationImagesRequest request) {
-		OrganizationProfile org = organizationRepository.findFirstBy().get();
+		OrganizationAbout org = repository.findFirstBy().get();
 		if (org == null)
 			throw new BadRequestException(ErrorCode.A001, "Profile not created");
 
@@ -78,7 +79,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		org.setLogoKey(request.getLogoKey());
 		org.setHeroKey(request.getHeroKey());
 
-		OrganizationProfile saved = organizationRepository.save(org);
+		OrganizationAbout saved = repository.save(org);
 
 		if (oldLogoKey != null && !oldLogoKey.equals(saved.getLogoKey()))
 			storageService.deleteFile(oldLogoKey);
@@ -90,10 +91,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
-	public OrgInfoDetails getProfile() {
-		OrganizationProfile org = organizationRepository.findFirstBy().orElse(new OrganizationProfile());
+	@Transactional(readOnly = true)
+	public OrgAboutDetails getAbout() {
+		OrganizationAbout org = repository.findFirstBy().orElse(new OrganizationAbout());
 
-		OrgInfoDetails dto = OrganizationMapper.mapToOrganizationProfileDetails(org);
+		OrgAboutDetails dto = OrganizationMapper.mapToOrganizationProfileDetails(org);
 
 		if (org.getLogoKey() != null)
 			dto.setLogoUrl(storageService.generateAccessUrl(org.getLogoKey()));

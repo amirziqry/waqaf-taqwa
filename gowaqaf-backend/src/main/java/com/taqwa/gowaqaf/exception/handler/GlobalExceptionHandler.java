@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.BaseException;
+import com.taqwa.gowaqaf.exception.custom.InternalServerErrorException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
 import com.taqwa.gowaqaf.exception.response.ErrorResponse;
 
@@ -20,9 +21,15 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<ErrorResponse> handleNotFound(BadRequestException ex) {
+	public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
 
 		return buildResponse(ex, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(InternalServerErrorException.class)
+	public ResponseEntity<ErrorResponse> handleInternalServer(InternalServerErrorException ex) {
+
+		return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	private ResponseEntity<ErrorResponse> buildResponse(BaseException ex, HttpStatus status) {

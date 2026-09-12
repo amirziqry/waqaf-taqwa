@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationSum;
+import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
-import com.taqwa.gowaqaf.modules.organization.profile.dto.OrgInfoDetails;
 import com.taqwa.gowaqaf.modules.user.personal.dto.PersonalAccountInfo;
 
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ public class PersonalDashboard {
 
 	private PersonalAccountInfo accountInfo;
 
-	private OrgInfoDetails orgAbout;
+	private OrgAboutDetails orgAbout;
 
 	private List<ProjectDetails> projects;
 

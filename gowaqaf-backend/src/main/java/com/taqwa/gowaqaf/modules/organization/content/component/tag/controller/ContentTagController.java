@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,10 @@ public class ContentTagController {
 
 	private final ContentTagService service;
 
+	// TODO: Update
+
 	@PostMapping("/{type}/tag")
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ContentTagDto> createTag(@PathVariable String type,
 			@RequestBody ContentTagUploadRequest request) {
 		ContentTagDto response = service.createTag(ContentType.valueOf(type.toUpperCase()), request);
@@ -36,29 +40,31 @@ public class ContentTagController {
 	}
 
 	@PutMapping("/{type}/tag/{id}")
-	public ResponseEntity<ContentTagDto> updateTag(@PathVariable String type, @PathVariable Long id,
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<ContentTagDto> updateTagById(@PathVariable String type, @PathVariable Long id,
 			@RequestBody ContentTagUploadRequest request) {
 		ContentTagDto response = service.updateTag(ContentType.valueOf(type.toUpperCase()), id, request);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/{type}/tag/{id}/get")
-	public ResponseEntity<ContentTagDto> getTag(@PathVariable String type, @PathVariable Long id) {
+	@GetMapping("/{type}/tag/{id}")
+	public ResponseEntity<ContentTagDto> getTagById(@PathVariable String type, @PathVariable Long id) {
 		ContentTagDto response = service.getTagDtoById(ContentType.valueOf(type.toUpperCase()), id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/{type}/tag")
-	public ResponseEntity<List<ContentTagDto>> getTagList(@PathVariable String type) {
+	public ResponseEntity<List<ContentTagDto>> getTags(@PathVariable String type) {
 		List<ContentTagDto> response = service.getAllTagDto(ContentType.valueOf(type.toUpperCase()));
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{type}/tag/{id}")
-	public ResponseEntity<Void> deleteTag(@PathVariable String type, @PathVariable Long id) {
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<Void> deleteTagById(@PathVariable String type, @PathVariable Long id) {
 		service.deleteTag(ContentType.valueOf(type.toUpperCase()), id);
 
 		return new ResponseEntity<>(HttpStatus.OK);

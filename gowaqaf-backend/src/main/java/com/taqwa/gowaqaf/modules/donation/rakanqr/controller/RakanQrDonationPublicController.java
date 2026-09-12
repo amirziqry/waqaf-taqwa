@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.dto.RakanQrDonationRequest;
-import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationPaymentService;
+import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationReconcileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RakanQrDonationPublicController {
 
-	private final RakanQrDonationService service;
+	private final RakanQrDonationPaymentService paymentService;
+	private final RakanQrDonationReconcileService reconcileService;
 
 	/**
 	 * FINAL Request payment URL for RakanQr's client.
@@ -35,7 +37,7 @@ public class RakanQrDonationPublicController {
 	@PostMapping("/{rakanQrCode}/donations/payment-request")
 	public ResponseEntity<PaymentUrlResponse> requestPaymentGatewayUrl(@PathVariable String rakanQrCode,
 			@RequestBody RakanQrDonationRequest request) {
-		PaymentUrlResponse response = service.createDonation(rakanQrCode, request);
+		PaymentUrlResponse response = paymentService.createDonation(rakanQrCode, request);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -48,7 +50,20 @@ public class RakanQrDonationPublicController {
 	 */
 	@GetMapping("/donations/{donationId}")
 	public ResponseEntity<RakanQrDonationDetails> getDonationDetailsById(@PathVariable UUID donationId) {
-		RakanQrDonationDetails response = service.getDonationDetailsById(donationId);
+		RakanQrDonationDetails response = reconcileService.getDonationDetailsById(donationId);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	/**
+	 * TESTING
+	 * 
+	 * @param billingCode
+	 * @return
+	 */
+	@GetMapping("/donations/billing/{billingCode}")
+	public ResponseEntity<RakanQrDonationDetails> getDonationDetailsByCode(@PathVariable String billingCode) {
+		RakanQrDonationDetails response = reconcileService.getDonationDetailsByCode(billingCode);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

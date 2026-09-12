@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ public class ContentCategoryController {
 	private final ContentCategoryService service;
 
 	@PostMapping("/{type}/category") // project / news / campaign
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ContentCategoryDto> createCategory(@PathVariable String type,
 			@RequestBody ContentCategoryUploadRequest request) {
 		ContentCategoryDto response = service.createCategory(ContentType.valueOf(type.toUpperCase()), request);
@@ -36,7 +38,8 @@ public class ContentCategoryController {
 	}
 
 	@PutMapping("/{type}/category/{id}")
-	public ResponseEntity<ContentCategoryDto> updateCategory(@PathVariable String type, @PathVariable Long id,
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<ContentCategoryDto> updateCategoryById(@PathVariable String type, @PathVariable Long id,
 			@RequestBody ContentCategoryUploadRequest request) {
 		ContentCategoryDto response = service.updateCategory(ContentType.valueOf(type.toUpperCase()), id, request);
 
@@ -44,21 +47,22 @@ public class ContentCategoryController {
 	}
 
 	@GetMapping("/{type}/category/{id}")
-	public ResponseEntity<ContentCategoryDto> getCategory(@PathVariable String type, @PathVariable Long id) {
+	public ResponseEntity<ContentCategoryDto> getCategoryById(@PathVariable String type, @PathVariable Long id) {
 		ContentCategoryDto response = service.getCategoryDtoById(ContentType.valueOf(type.toUpperCase()), id);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/{type}/category")
-	public ResponseEntity<List<ContentCategoryDto>> getCategoryList(@PathVariable String type) {
+	public ResponseEntity<List<ContentCategoryDto>> getCategories(@PathVariable String type) {
 		List<ContentCategoryDto> response = service.getCategoryDtoList(ContentType.valueOf(type.toUpperCase()));
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{type}/category/{id}")
-	public ResponseEntity<Void> deleteCategory(@PathVariable String type, @PathVariable Long id) {
+	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
+	public ResponseEntity<Void> deleteCategoryById(@PathVariable String type, @PathVariable Long id) {
 		service.deleteCategory(ContentType.valueOf(type.toUpperCase()), id);
 
 		return new ResponseEntity<>(HttpStatus.OK);

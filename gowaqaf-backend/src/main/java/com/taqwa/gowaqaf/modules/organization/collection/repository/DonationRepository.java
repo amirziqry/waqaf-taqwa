@@ -44,8 +44,8 @@ public interface DonationRepository extends JpaRepository<Donation, UUID> {
 			)
 			FROM Donation d
 			WHERE d.status = 'PAID'
-			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
-			  AND (:endDate IS NULL OR d.paidAt < :endDate)
+			  AND (CAST(:startDate AS timestamp) IS NULL OR d.paidAt >= :startDate)
+			  AND (CAST(:endDate AS timestamp) IS NULL OR d.paidAt < :endDate)
 			""")
 	OrgCollectionInfo getDonationCollectionSum(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
