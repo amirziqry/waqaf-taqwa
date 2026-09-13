@@ -18,6 +18,7 @@ import { AdminCampaignsPage } from './pages/admin/AdminCampaignsPage';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminVendorsPage } from './pages/admin/AdminVendorsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+import { RakanQrPage } from './pages/user/RakanQrPage';
 
 
 export const App: React.FC = () => {
@@ -34,7 +35,7 @@ export const App: React.FC = () => {
         <Route path="/transaksi" element={<TransactionHistoryPage />} />
         <Route path="/resit/:id" element={<ReceiptPage />} />
         <Route path="/profil" element={<ProfilePage />} />
-        <Route path="/rakan-qr" element={<VendorPosPage />} />
+        <Route path="/rakan-qr" element={<RakanQrPage />} />
         <Route path="/pos" element={<VendorPosPage />} />
         <Route path="/apply-tijarah" element={<ApplyTijarahPage />} />
         <Route path="/auto-waqaf" element={<AutoWaqafPage />} />
