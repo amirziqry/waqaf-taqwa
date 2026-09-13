@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationCollectionSumFilter {
+public class DonationCollectionFilter {
 
 	@DateTimeFormat(pattern = "dd-MM-yyyy")
 	private LocalDate startDate;

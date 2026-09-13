@@ -2,7 +2,7 @@ package com.taqwa.gowaqaf.modules.donation.personal.entity;
 
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 
 import jakarta.persistence.CascadeType;
@@ -32,7 +32,7 @@ public class PersonalDonation {
 
 	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE }, optional = false)
 	@JoinColumn(name = "id")
-	private Donation donation;
+	private Transaction transaction;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "personal_id", nullable = true)

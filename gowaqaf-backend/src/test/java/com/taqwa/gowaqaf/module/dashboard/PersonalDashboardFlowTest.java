@@ -37,7 +37,7 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
@@ -63,7 +63,7 @@ public class PersonalDashboardFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final PersonalRepository personalRepository;
 	private final AccountInfoRepository identityRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -94,32 +94,32 @@ public class PersonalDashboardFlowTest {
 				"personal1", "test@gmail.com");
 
 		// Personal - DIRECT
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, 9, 1, 10, 0, 0));
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("50.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, 9, 3, 14, 30, 0));
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, 9, 5, 10, 0, 0));
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("50.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, 9, 7, 14, 30, 0));
 
 		// Personal - PROJECT
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, c1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p1, c1,
 				new BigDecimal("200.00"), PaymentStatus.PAID, LocalDateTime.of(2026, 9, 2, 15, 0, 0));
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, c1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p1, c1,
 				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.of(2026, 9, 4, 16, 0, 0));
 
 		RakanQr r1 = CommonClass.createMockRakanQr(rakanQrRepository, p1, RakanQrType.STANDARD, RakanQrStatus.ACTIVE);
 
-		CommonClass.createMockRakanQrDonation(donationRepository, rakanQrDonationRepository, r1,
+		CommonClass.createMockRakanQrDonation(transactionRepository, rakanQrDonationRepository, r1,
 				new BigDecimal("10.00"), PaymentStatus.PAID, LocalDateTime.of(2026, 9, 2, 16, 0, 0));
-		CommonClass.createMockRakanQrDonation(donationRepository, rakanQrDonationRepository, r1, new BigDecimal("5.00"),
+		CommonClass.createMockRakanQrDonation(transactionRepository, rakanQrDonationRepository, r1, new BigDecimal("5.00"),
 				PaymentStatus.PAID, LocalDateTime.of(2026, 9, 3, 16, 0, 0));
-		CommonClass.createMockRakanQrDonation(donationRepository, rakanQrDonationRepository, r1,
+		CommonClass.createMockRakanQrDonation(transactionRepository, rakanQrDonationRepository, r1,
 				new BigDecimal("15.00"), PaymentStatus.PAID, LocalDateTime.of(2026, 9, 4, 16, 0, 0));
 
 	}

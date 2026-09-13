@@ -43,14 +43,14 @@ public interface RakanQrRepository extends JpaRepository<RakanQr, UUID>, JpaSpec
 			    a.code,
 			    a.type,
 			    a.status,
-			    COALESCE(SUM(d.donation.amount), 0)
+			    COALESCE(SUM(d.transaction.amount), 0)
 			)
 			FROM RakanQr a
 			LEFT JOIN RakanQrDonation d
 			    ON d.rakanQr = a
-			    AND d.donation.status = 'PAID'
-			    AND (:startDate IS NULL OR d.donation.paidAt >= :startDate)
-			    AND (:endDate IS NULL OR d.donation.paidAt < :endDate)
+			    AND d.transaction.status = 'PAID'
+			    AND (:startDate IS NULL OR d.transaction.paidAt >= :startDate)
+			    AND (:endDate IS NULL OR d.transaction.paidAt < :endDate)
 			GROUP BY a.id, a.code, a.type, a.status, a.updatedAt
 			""", countQuery = """
 			SELECT COUNT(a)

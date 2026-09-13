@@ -34,8 +34,8 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.organization.about.entity.OrganizationAbout;
 import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.entity.Campaign;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
 import com.taqwa.gowaqaf.modules.organization.content.component.category.entity.ContentCategory;
@@ -128,26 +128,26 @@ public class CommonClass {
 	}
 
 	// Mock personal donation.
-	public static void createMockPersonalDonation(DonationRepository repository,
+	public static void createMockPersonalDonation(TransactionRepository repository,
 			PersonalDonationRepository donationRepository, Personal personal, BigDecimal amount, DonationType type,
 			PaymentStatus status, LocalDateTime paidAt) {
-		Donation donation = new Donation();
+		Transaction transaction = new Transaction();
 		PersonalDonation personalDonation = new PersonalDonation();
 
 		// Parent donation
-		donation.setBillingCode(UUID.randomUUID().toString());
-		donation.setAmount(amount);
-		donation.setStatus(status);
-		donation.setPaidAt(paidAt);
-		donation.setStatus(status);
-		donation.setDonationType(type);
-		donation.setWebhookToken(null);
+		transaction.setBillingCode(UUID.randomUUID().toString());
+		transaction.setAmount(amount);
+		transaction.setStatus(status);
+		transaction.setPaidAt(paidAt);
+		transaction.setStatus(status);
+		transaction.setDonationType(type);
+		transaction.setWebhookToken(null);
 
-		donation = repository.save(donation);
+		transaction = repository.save(transaction);
 
 		// Personal donation
-		personalDonation.setId(donation.getId());
-		personalDonation.setDonation(donation);
+		personalDonation.setId(transaction.getId());
+		personalDonation.setTransaction(transaction);
 		personalDonation.setPersonal(personal);
 		personalDonation.setTaxExempt(false);
 
@@ -155,52 +155,27 @@ public class CommonClass {
 	}
 
 	// Mock project donation.
-	public static ProjectDonation createMockProjectDonation(DonationRepository repository,
+	public static ProjectDonation createMockProjectDonation(TransactionRepository repository,
 			ProjectDonationRepository donationRepository, Personal personal, Project project, BigDecimal amount,
 			PaymentStatus status, LocalDateTime paidAt) {
-		Donation donation = new Donation();
+		Transaction transaction = new Transaction();
 		ProjectDonation projectDonation = new ProjectDonation();
 
 		// Parent donation
-		donation.setBillingCode(UUID.randomUUID().toString());
-		donation.setAmount(amount);
-		donation.setPaidAt(paidAt);
-		donation.setStatus(status);
-		donation.setDonationType(DonationType.PROJECT);
-		donation.setWebhookToken(null);
+		transaction.setBillingCode(UUID.randomUUID().toString());
+		transaction.setAmount(amount);
+		transaction.setPaidAt(paidAt);
+		transaction.setStatus(status);
+		transaction.setDonationType(DonationType.PROJECT);
+		transaction.setWebhookToken(null);
 
-		donation = repository.save(donation);
+		transaction = repository.save(transaction);
 
 		// Project donation
-		projectDonation.setId(donation.getId());
-		projectDonation.setDonation(donation);
+		projectDonation.setId(transaction.getId());
+		projectDonation.setTransaction(transaction);
 		projectDonation.setProject(project);
 		projectDonation.setPersonal(personal);
-		projectDonation.setMerchant(null);
-		projectDonation.setTaxExempt(false);
-
-		return donationRepository.save(projectDonation);
-	}
-
-	// Mock project donation.
-	public static ProjectDonation createMockProjectDonation(ProjectDonationRepository donationRepository,
-			Merchant merchant, Project project, BigDecimal amount, PaymentStatus status, LocalDateTime paidAt) {
-		Donation donation = new Donation();
-		ProjectDonation projectDonation = new ProjectDonation();
-
-		// Parent donation
-		donation.setBillingCode(UUID.randomUUID().toString());
-		donation.setAmount(amount);
-		donation.setPaidAt(paidAt);
-		donation.setStatus(status);
-		donation.setDonationType(DonationType.PROJECT);
-		donation.setWebhookToken(null);
-
-		// Project donation
-		projectDonation.setDonation(donation);
-		projectDonation.setProject(project);
-		projectDonation.setMerchant(merchant);
-		projectDonation.setPersonal(null);
 		projectDonation.setTaxExempt(false);
 
 		return donationRepository.save(projectDonation);
@@ -341,25 +316,25 @@ public class CommonClass {
 	}
 
 	// Mock rakanqr donation.
-	public static RakanQrDonation createMockRakanQrDonation(DonationRepository repository,
+	public static RakanQrDonation createMockRakanQrDonation(TransactionRepository repository,
 			RakanQrDonationRepository donationRepository, RakanQr agent, BigDecimal amount, PaymentStatus status,
 			LocalDateTime paidAt) {
-		Donation donation = new Donation();
+		Transaction transaction = new Transaction();
 		RakanQrDonation rakanQrDonation = new RakanQrDonation();
 
 		// Parent donation
-		donation.setBillingCode(UUID.randomUUID().toString());
-		donation.setAmount(amount);
-		donation.setPaidAt(paidAt);
-		donation.setStatus(status);
-		donation.setDonationType(DonationType.RAKANQR);
-		donation.setWebhookToken(null);
+		transaction.setBillingCode(UUID.randomUUID().toString());
+		transaction.setAmount(amount);
+		transaction.setPaidAt(paidAt);
+		transaction.setStatus(status);
+		transaction.setDonationType(DonationType.RAKANQR);
+		transaction.setWebhookToken(null);
 
-		donation = repository.save(donation);
+		transaction = repository.save(transaction);
 
 		// Project donation
-		rakanQrDonation.setId(donation.getId());
-		rakanQrDonation.setDonation(donation);
+		rakanQrDonation.setId(transaction.getId());
+		rakanQrDonation.setTransaction(transaction);
 		rakanQrDonation.setRakanQr(agent);
 
 		return donationRepository.save(rakanQrDonation);

@@ -22,8 +22,8 @@ import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepo
 import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RakanQrDonationServiceImpl implements RakanQrDonationService {
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final RakanQrDonationRepository repository;
 	private final RakanQrService rakanQrService;
 
@@ -40,17 +40,17 @@ public class RakanQrDonationServiceImpl implements RakanQrDonationService {
 	public void reconstructDonation(UUID rakanQrId, RakanQrDonation rakanQrDonation) {
 		RakanQr user = rakanQrService.getRakanQrById(rakanQrId);
 
-		Donation donation = donationRepository.save(rakanQrDonation.getDonation());
+		Transaction transaction = transactionRepository.save(rakanQrDonation.getTransaction());
 
-		rakanQrDonation.setId(donation.getId());
-		rakanQrDonation.setDonation(donation);
+		rakanQrDonation.setId(transaction.getId());
+		rakanQrDonation.setTransaction(transaction);
 		rakanQrDonation.setRakanQr(user);
 
 		RakanQrDonation saved = repository.save(rakanQrDonation);
 
-		if (saved.getDonation().getStatus() != PaymentStatus.PAID)
+		if (saved.getTransaction().getStatus() != PaymentStatus.PAID)
 			rakanQrService.updateRakanQrCollectedAmountById(saved.getRakanQr().getId(),
-					saved.getDonation().getAmount());
+					saved.getTransaction().getAmount());
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.taqwa.gowaqaf.modules.user.merchant.service.impl;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,14 @@ public class MerchantServiceImpl implements MerchantService {
 		account.setModMesra(request.getModMesra() == null ? false : request.getModMesra());
 
 		accountRepository.save(account);
+	}
+
+	@Override
+	public Merchant getMerchantById(UUID userId) {
+		Merchant user = repository.findById(userId).orElseThrow(
+				() -> new ResourceNotFoundException(ErrorCode.MER001, String.format("User %s not found.", userId)));
+
+		return user;
 	}
 
 	/**

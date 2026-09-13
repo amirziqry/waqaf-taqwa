@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.donation.personal.service.impl;
+package com.taqwa.gowaqaf.modules.donation.project.service.impl;
 
 import java.time.LocalDateTime;
 
@@ -10,23 +10,26 @@ import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.exception.custom.ResourceNotFoundException;
 import com.taqwa.gowaqaf.external.payment.client.nexgen.dto.webhook.NexGenWebhookPayload;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
-import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationReconcileService;
-import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationWebhookService;
+import com.taqwa.gowaqaf.modules.donation.project.entity.ProjectDonation;
+import com.taqwa.gowaqaf.modules.donation.project.repository.ProjectDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationReconcileService;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationWebhookService;
+import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PersonalDonationWebhookServiceImpl implements PersonalDonationWebhookService {
+public class ProjectDonationWebhookServiceImpl implements ProjectDonationWebhookService {
 
-	private final PersonalDonationRepository repository;
-	private final PersonalDonationReconcileService reconcileService;
+	private final ProjectDonationRepository repository;
+	private final ProjectDonationReconcileService reconcileService;
+	private final ProjectService projectService;
 
 	@Override
 	@Transactional
 	public void handleWebhook(String token, NexGenWebhookPayload payload) {
+
 		try {
 			processWebhook(token, payload);
 		} catch (Exception e) {
@@ -36,7 +39,7 @@ public class PersonalDonationWebhookServiceImpl implements PersonalDonationWebho
 
 	private void processWebhook(String token, NexGenWebhookPayload payload) {
 		// Get donation from DB.
-		PersonalDonation donation = repository.findByTransaction_WebhookToken(token)
+		ProjectDonation donation = repository.findByTransaction_WebhookToken(token)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
 
 		// Validate billing code > reconcile for mismatch.
@@ -47,7 +50,8 @@ public class PersonalDonationWebhookServiceImpl implements PersonalDonationWebho
 		if (donation.getTransaction().getAmount().compareTo(payload.getAmount()) != 0)
 			throw new BadRequestException(ErrorCode.WHK003, "Amount does not match");
 
-		// Update payment status.
+		PaymentStatus previousStatus = donation.getTransaction().getStatus();
+
 		switch (payload.getStatus().toLowerCase()) {
 		case "paid" -> donation.getTransaction().setStatus(PaymentStatus.PAID);
 		case "pending" -> donation.getTransaction().setStatus(PaymentStatus.PENDING);
@@ -56,7 +60,7 @@ public class PersonalDonationWebhookServiceImpl implements PersonalDonationWebho
 		}
 
 		// Update donation details if status paid.
-		if (donation.getTransaction().getStatus() == PaymentStatus.PAID) {
+		if (donation.getTransaction().getStatus() == PaymentStatus.PAID && previousStatus != PaymentStatus.PAID) {
 			String transactionId = payload.getPaymentMethodDetail().getTransactionId();
 			String orderId = payload.getPaymentMethodDetail().getOrderId();
 			LocalDateTime transactionDate = payload.getPaymentMethodDetail().getTransactionDate();
@@ -69,7 +73,13 @@ public class PersonalDonationWebhookServiceImpl implements PersonalDonationWebho
 
 			// Nullify webhook token.
 			donation.getTransaction().setWebhookToken(null);
+
+			if (previousStatus != PaymentStatus.PAID)
+				projectService.updateProjectCollectedAmountById(donation.getProject().getId(),
+						donation.getTransaction().getAmount());
 		}
 	}
+
+	
 
 }

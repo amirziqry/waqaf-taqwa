@@ -1,4 +1,4 @@
-package com.taqwa.gowaqaf.modules.donation.personal.service.impl;
+package com.taqwa.gowaqaf.modules.donation.project.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,31 +15,28 @@ import com.taqwa.gowaqaf.external.payment.client.nexgen.client.NexGenClient;
 import com.taqwa.gowaqaf.external.payment.client.nexgen.dto.billing.NexGenBillingObject;
 import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationDetails;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
-import com.taqwa.gowaqaf.modules.donation.personal.mapper.PersonalDonationMapper;
-import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationReconcileService;
-import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
+import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationDetails;
+import com.taqwa.gowaqaf.modules.donation.project.entity.ProjectDonation;
+import com.taqwa.gowaqaf.modules.donation.project.mapper.ProjectDonationMapper;
+import com.taqwa.gowaqaf.modules.donation.project.repository.ProjectDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationReconcileService;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
 import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
+import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
+import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * <p>
- * Fallback for case Webhook token fails to update a donation.
- * <p>
- */
-
 @Service
 @RequiredArgsConstructor
-public class PersonalDonationReconcileServiceImpl implements PersonalDonationReconcileService {
+public class ProjectDonationReconcileServiceImpl implements ProjectDonationReconcileService {
 
 	private final NexGenClient nexGenClient;
-	private final PersonalDonationRepository repository;
-	private final PersonalDonationService service;
+	private final ProjectDonationRepository repository;
+	private final ProjectDonationService service;
+	private final ProjectService projectService;
 
-	@Value("${nexgen.collection.personal}")
+	@Value("${nexgen.collection.project}")
 	private String collectionCode;
 
 	@Override
@@ -49,7 +46,7 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 		NexGenBillingObject billing = nexGenClient.getBilling(collectionCode, billingCode);
 
 		// Try find the donation with respective billing code locally.
-		PersonalDonation donation = repository.findByTransaction_BillingCode(billingCode).orElse(null);
+		ProjectDonation donation = repository.findByTransaction_BillingCode(billingCode).orElse(null);
 
 		// If donation exists -> synchronize information with NexGen's data.
 		if (donation != null)
@@ -61,7 +58,9 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 
 	}
 
-	private void updateDonationFromBilling(PersonalDonation donation, NexGenBillingObject billing) {
+	private void updateDonationFromBilling(ProjectDonation donation, NexGenBillingObject billing) {
+		PaymentStatus previousStatus = donation.getTransaction().getStatus();
+
 		// Check and update payment status.
 		switch (billing.getStatus().toLowerCase()) {
 		case "paid" -> donation.getTransaction().setStatus(PaymentStatus.PAID);
@@ -86,6 +85,10 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 
 			// Nullify webhook token.
 			donation.getTransaction().setWebhookToken(null);
+
+			if (previousStatus != PaymentStatus.PAID)
+				projectService.updateProjectCollectedAmountById(donation.getProject().getId(),
+						donation.getTransaction().getAmount());
 		}
 
 		repository.saveAndFlush(donation);
@@ -93,21 +96,35 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 
 	private void reconstructDonationFromBilling(NexGenBillingObject billing) {
 		// Get user id.
-		UUID personalId = getPersonalIdFromBilling(billing);
+		UUID userId = getUserIdFromBilling(billing);
+
+		// Get project id.
+		UUID projectId = getProjectIdFromBilling(billing);
 
 		// Create & save donation into DB.
 		Transaction transaction = createDonationFromBilling(billing);
-		PersonalDonation personalDonation = createPersonalDonation(transaction);
+		ProjectDonation projectDonation = createProjectDonation(transaction);
 
-		service.reconstructDonation(personalId, personalDonation);
+		service.reconstructDonation(userId, projectId, projectDonation);
 	}
 
-	private UUID getPersonalIdFromBilling(NexGenBillingObject billing) {
+	private UUID getUserIdFromBilling(NexGenBillingObject billing) {
 		if (!"personalId".equals(billing.getExternalReferenceLabel1()))
 			throw new BadRequestException(ErrorCode.WHK017, "Failed to process request.");
 
 		try {
 			return UUID.fromString(billing.getExternalReferenceValue1());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(ErrorCode.WHK018, "Failed to process request.");
+		}
+	}
+
+	private UUID getProjectIdFromBilling(NexGenBillingObject billing) {
+		if (!"projectId".equals(billing.getExternalReferenceLabel2()))
+			throw new BadRequestException(ErrorCode.WHK017, "Failed to process request.");
+
+		try {
+			return UUID.fromString(billing.getExternalReferenceValue2());
 		} catch (IllegalArgumentException e) {
 			throw new BadRequestException(ErrorCode.WHK018, "Failed to process request.");
 		}
@@ -135,22 +152,22 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 		return transaction;
 	}
 
-	private PersonalDonation createPersonalDonation(Transaction transaction) {
-		PersonalDonation personalDonation = new PersonalDonation();
+	private ProjectDonation createProjectDonation(Transaction transaction) {
+		ProjectDonation projectDonation = new ProjectDonation();
 
-		personalDonation.setTransaction(transaction);
-		personalDonation.setPersonal(null);
-		personalDonation.setReceiptHashId(null);
-		personalDonation.setTaxExempt(false);
+		projectDonation.setTransaction(transaction);
+		projectDonation.setProject(null);
+		projectDonation.setPersonal(null);
 
-		return personalDonation;
+		return projectDonation;
 	}
 
 	@Override
-	public PersonalDonationDetails getDonationDetailsById(UUID personalID, UUID donationId) {
+	@Transactional
+	public ProjectDonationDetails getDonationDetailsById(AccountUserDetails principal, UUID donationId) {
 		// Find the local donation
-		PersonalDonation donation = repository.findByIdAndPersonalId(donationId, personalID)
-				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
+		ProjectDonation donation = repository.findByPersonal_IdAndTransaction_Id(principal.getId(), donationId)
+				.orElse(null);
 
 		PaymentStatus status = donation.getTransaction().getStatus();
 
@@ -164,21 +181,22 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 		}
 
 		// Return the latest status
-		return PersonalDonationMapper.mapToDetails(donation);
+		return ProjectDonationMapper.mapToDetails(donation);
 	}
 
 	@Override
-	public PersonalDonationDetails getDonationDetailsByCode(UUID personalId, String billingCode) {
+	@Transactional
+	public ProjectDonationDetails getDonationDetailsByCode(AccountUserDetails principal, String billingCode) {
 		// Find the local donation
-		PersonalDonation donation = repository.findByPersonal_IdAndTransaction_BillingCode(personalId, billingCode)
-				.orElse(null);
+		ProjectDonation donation = repository
+				.findByPersonal_IdAndTransaction_BillingCode(principal.getId(), billingCode).orElse(null);
 
 		if (donation != null) {
 			PaymentStatus status = donation.getTransaction().getStatus();
 
 			// Already paid -> no need to call NexGen
 			if (status == PaymentStatus.PAID || status == PaymentStatus.EXPIRED)
-				return PersonalDonationMapper.mapToDetails(donation);
+				return ProjectDonationMapper.mapToDetails(donation);
 
 			// Still pending/unpaid -> force reconciliation with NexGen
 			if (status == PaymentStatus.PENDING || status == PaymentStatus.UNPAID) {
@@ -187,18 +205,26 @@ public class PersonalDonationReconcileServiceImpl implements PersonalDonationRec
 				// Re-fetch because reconcile may have updated the entity
 				donation = repository.findById(donation.getId())
 						.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
+
+				if (donation.getTransaction().getStatus() != PaymentStatus.PAID)
+					projectService.updateProjectCollectedAmountById(donation.getProject().getId(),
+							donation.getTransaction().getAmount());
 			}
 		}
 
 		if (donation == null) {
 			reconcile(billingCode);
 
-			donation = repository.findByPersonal_IdAndTransaction_BillingCode(personalId, billingCode)
+			donation = repository.findByTransaction_BillingCode(billingCode)
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
+
+			if (donation.getTransaction().getStatus() != PaymentStatus.PAID)
+				projectService.updateProjectCollectedAmountById(donation.getProject().getId(),
+						donation.getTransaction().getAmount());
 		}
 
 		// Return the updated donation.
-		return PersonalDonationMapper.mapToDetails(donation);
+		return ProjectDonationMapper.mapToDetails(donation);
 	}
 
 }

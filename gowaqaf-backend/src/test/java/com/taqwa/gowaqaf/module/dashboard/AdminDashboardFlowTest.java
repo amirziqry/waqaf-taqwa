@@ -35,7 +35,7 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrType;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.repository.RakanQrRepository;
 import com.taqwa.gowaqaf.modules.organization.about.repository.OrganizationAboutRepository;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.repository.CampaignRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.news.repository.NewsRepository;
@@ -62,7 +62,7 @@ public class AdminDashboardFlowTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final PersonalRepository personalRepository;
 	private final MerchantRepository merchantRepository;
 	private final RakanQrRepository agentRepository;
@@ -98,29 +98,29 @@ public class AdminDashboardFlowTest {
 				"donator2", "test@gmail.com");
 
 		// Personal - DIRECT
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, month, 1, 10, 0, 0));
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p2,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p2,
 				new BigDecimal("50.00"), DonationType.DIRECT, PaymentStatus.PAID,
 				LocalDateTime.of(2026, month, 10, 14, 30, 0));
 
 		// Personal - RECURRING
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("75.00"), DonationType.RECURRING, PaymentStatus.PAID,
 				LocalDateTime.of(2026, month, 5, 12, 0, 0));
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p2,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p2,
 				new BigDecimal("25.00"), DonationType.RECURRING, PaymentStatus.PAID,
 				LocalDateTime.of(2026, month, 15, 18, 0, 0));
 
 		// PROJECT
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, c1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p1, c1,
 				new BigDecimal("200.00"), PaymentStatus.PAID, LocalDateTime.of(2026, month, 12, 15, 0, 0));
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p2, c1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p2, c1,
 				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.of(2026, month, 20, 16, 0, 0));
 
 		// Personal - should NOT be included
-		CommonClass.createMockPersonalDonation(donationRepository, personalDonationRepository, p1,
+		CommonClass.createMockPersonalDonation(transactionRepository, personalDonationRepository, p1,
 				new BigDecimal("100.00"), DonationType.DIRECT, PaymentStatus.UNPAID,
 				LocalDateTime.of(2026, month, 25, 12, 0, 0));
 
@@ -146,15 +146,15 @@ public class AdminDashboardFlowTest {
 		RakanQr r1 = CommonClass.createMockRakanQr(agentRepository, p1, RakanQrType.STANDARD, RakanQrStatus.ACTIVE);
 		RakanQr r2 = CommonClass.createMockRakanQr(agentRepository, m1, RakanQrType.STANDARD, RakanQrStatus.ACTIVE);
 
-		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r1, new BigDecimal("150.00"),
+		CommonClass.createMockRakanQrDonation(transactionRepository, agentDonationRepository, r1, new BigDecimal("150.00"),
 				PaymentStatus.PAID, LocalDateTime.of(2026, month, 3, 11, 0, 0));
-		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r2, new BigDecimal("75.00"),
+		CommonClass.createMockRakanQrDonation(transactionRepository, agentDonationRepository, r2, new BigDecimal("75.00"),
 				PaymentStatus.PAID, LocalDateTime.of(2026, month, 14, 13, 30, 0));
-		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r1, new BigDecimal("50.00"),
+		CommonClass.createMockRakanQrDonation(transactionRepository, agentDonationRepository, r1, new BigDecimal("50.00"),
 				PaymentStatus.PAID, LocalDateTime.of(2026, month, 22, 17, 0, 0));
 
 		// Rakan QR - should NOT be included
-		CommonClass.createMockRakanQrDonation(donationRepository, agentDonationRepository, r2, new BigDecimal("100.00"),
+		CommonClass.createMockRakanQrDonation(transactionRepository, agentDonationRepository, r2, new BigDecimal("100.00"),
 				PaymentStatus.UNPAID, LocalDateTime.of(2026, month, 25, 19, 0, 0));
 	}
 

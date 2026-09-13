@@ -27,7 +27,7 @@ import com.taqwa.gowaqaf.mockuser.admin.WithMockAdmin;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.project.repository.ProjectDonationRepository;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.modules.organization.content.enums.ContentStatus;
 import com.taqwa.gowaqaf.modules.organization.content.project.dto.ProjectDetails;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
@@ -49,7 +49,7 @@ public class ProjectDonationSumTest {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MockMvc mockMvc;
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final ProjectDonationRepository projectDonationRepository;
 
 	private final ProjectRepository projectRepository;
@@ -73,13 +73,13 @@ public class ProjectDonationSumTest {
 		this.d2 = CommonClass.createMockProject(projectRepository, "Project2", new BigDecimal("10000.00"),
 				ContentStatus.PUBLISHED);
 
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, d1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p1, d1,
 				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p2, d1,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p2, d1,
 				new BigDecimal("150.00"), PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p1, d2,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p1, d2,
 				new BigDecimal("100.00"), PaymentStatus.PAID, LocalDateTime.now());
-		CommonClass.createMockProjectDonation(donationRepository, projectDonationRepository, p2, d2,
+		CommonClass.createMockProjectDonation(transactionRepository, projectDonationRepository, p2, d2,
 				new BigDecimal("200.00"), PaymentStatus.PAID, LocalDateTime.now());
 	}
 

@@ -57,7 +57,7 @@ public class RakanQrDashboardServiceImpl implements RakanQrDashboardService {
 	}
 
 	private List<RakanQrDonationDetails> getAllRakanQrDonationDetailsByUser(UUID rakanQrId) {
-		Pageable pageable = PageRequest.of(0, 10, Sort.by("donation.createdAt").descending());
+		Pageable pageable = PageRequest.of(0, 10, Sort.by("transaction.createdAt").descending());
 
 		return donationService.getDonationDetailsListByUser(rakanQrId, pageable);
 	}

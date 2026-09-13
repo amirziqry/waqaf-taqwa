@@ -1,5 +1,7 @@
 package com.taqwa.gowaqaf.modules.user.merchant.service;
 
+import java.util.UUID;
+
 import com.taqwa.gowaqaf.modules.user.admin.dto.ChangePasswordRequest;
 import com.taqwa.gowaqaf.modules.user.merchant.dto.MerchantAccountInfo;
 import com.taqwa.gowaqaf.modules.user.merchant.dto.MerchantRegisterCredentials;
@@ -22,5 +24,7 @@ public interface MerchantService {
 	 * Get personal account info.
 	 */
 	MerchantAccountInfo getAccountByUser(AccountUserDetails principal);
+
+	Merchant getMerchantById(UUID userId);
 
 }

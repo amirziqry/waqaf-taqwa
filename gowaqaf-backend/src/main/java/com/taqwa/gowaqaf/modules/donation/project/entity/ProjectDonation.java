@@ -2,9 +2,8 @@ package com.taqwa.gowaqaf.modules.donation.project.entity;
 
 import java.util.UUID;
 
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
 import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
-import com.taqwa.gowaqaf.modules.user.merchant.entity.Merchant;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 
 import jakarta.persistence.CascadeType;
@@ -34,7 +33,7 @@ public class ProjectDonation {
 
 	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, optional = false)
 	@JoinColumn(name = "id")
-	private Donation donation;
+	private Transaction transaction;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "project_id", nullable = true)
@@ -43,10 +42,6 @@ public class ProjectDonation {
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "personal_id", nullable = true)
 	private Personal personal;
-
-	@ManyToOne(fetch = FetchType.LAZY, optional = true)
-	@JoinColumn(name = "merchant_id", nullable = true)
-	private Merchant merchant;
 
 	@Column(nullable = false)
 	private Boolean taxExempt;

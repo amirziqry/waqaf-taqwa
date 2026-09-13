@@ -3,7 +3,7 @@ package com.taqwa.gowaqaf.modules.donation.rakanqr.entity;
 import java.util.UUID;
 
 import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -31,7 +31,7 @@ public class RakanQrDonation {
 
 	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, optional = false)
 	@JoinColumn(name = "id")
-	private Donation donation;
+	private Transaction transaction;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "rakan_qr_id", nullable = false)

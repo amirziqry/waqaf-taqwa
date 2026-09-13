@@ -95,7 +95,7 @@ public class PersonalDashboardServiceImpl implements PersonalDashboardService {
 	}
 
 	private List<PersonalDonationDetails> getAllPersonalDonationDetails(UUID personalId) {
-		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("donation.createdAt"), Sort.Order.desc("id")));
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("transaction.createdAt"), Sort.Order.desc("id")));
 
 		List<PersonalDonationDetails> donations = donationService.getDonationDetailsListByUser(personalId, pageable);
 

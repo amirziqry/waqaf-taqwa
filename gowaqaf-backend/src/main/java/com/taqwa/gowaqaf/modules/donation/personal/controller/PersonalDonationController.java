@@ -90,7 +90,7 @@ public class PersonalDonationController {
 	@GetMapping
 	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<Page<PersonalDonationDetails>> getAllDonationDetailsByUser(Authentication authentication,
-			@PageableDefault(size = 10, sort = "donation.createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = 10, sort = "transaction.createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 		if (principal == null)
 			throw new UsernameNotFoundException("Invalid Username or Password");

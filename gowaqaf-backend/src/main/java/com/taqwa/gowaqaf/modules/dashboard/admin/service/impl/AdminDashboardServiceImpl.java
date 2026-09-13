@@ -15,7 +15,7 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
 import com.taqwa.gowaqaf.modules.organization.about.dto.OrgAboutDetails;
 import com.taqwa.gowaqaf.modules.organization.about.service.OrganizationAboutService;
 import com.taqwa.gowaqaf.modules.organization.collection.dto.OrgCollectionInfo;
-import com.taqwa.gowaqaf.modules.organization.collection.service.OrganizationCollectionService;
+import com.taqwa.gowaqaf.modules.organization.collection.service.DonationCollectionService;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.dto.CampaignDetails;
 import com.taqwa.gowaqaf.modules.organization.content.campaign.service.CampaignService;
 import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminDashboardServiceImpl implements AdminDashboardService {
 
-	private final OrganizationCollectionService collectionService;
+	private final DonationCollectionService collectionService;
 	private final OrganizationAboutService profileService;
 	private final ProjectService projectService;
 	private final NewsService newsService;

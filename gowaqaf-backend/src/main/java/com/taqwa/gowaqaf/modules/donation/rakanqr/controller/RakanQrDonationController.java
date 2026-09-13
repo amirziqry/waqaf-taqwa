@@ -57,7 +57,7 @@ public class RakanQrDonationController {
 	@GetMapping
 	@PreAuthorize("@accountSecurity.isPersonal(authentication) || @accountSecurity.isMerchant(authentication)")
 	public ResponseEntity<Page<RakanQrDonationDetails>> getAllDonationDetailsByUser(Authentication authentication,
-			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+			@PageableDefault(size = 10, sort = "transaction.createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
 		Page<RakanQrDonationDetails> response = service.getAllDonationDetailsByUser(principal, pageable);

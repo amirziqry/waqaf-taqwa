@@ -20,8 +20,8 @@ import com.taqwa.gowaqaf.modules.feature.rakanqr.entity.RakanQr;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrAccount;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.enums.RakanQrStatus;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RakanQrDonationPaymentServiceImpl implements RakanQrDonationPaymentService {
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final RakanQrDonationRepository rakanQrDonationRepository;
 	private final RakanQrService rakanQrService;
 	private final WebhookService webhookService;
@@ -38,8 +38,8 @@ public class RakanQrDonationPaymentServiceImpl implements RakanQrDonationPayment
 	@Value("${nexgen.collection.rakanqr}")
 	private String collectionCode;
 
-	@Transactional
 	@Override
+	@Transactional
 	public PaymentUrlResponse createDonation(String agentCode, RakanQrDonationRequest request) {
 		RakanQr agent = rakanQrService.getRakanQrByUser(agentCode);
 
@@ -63,27 +63,27 @@ public class RakanQrDonationPaymentServiceImpl implements RakanQrDonationPayment
 		response.setId(donation.getId());
 
 		// Update donation object.
-		donation.getDonation().setBillingCode(response.getBillingCode());
-		donation.getDonation().setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
+		donation.getTransaction().setBillingCode(response.getBillingCode());
+		donation.getTransaction().setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
 
 		return response;
 	}
 
 	private RakanQrDonation buildDonationDetails(RakanQr rakanQr, RakanQrDonationRequest dto, String webhookToken) {
-		Donation donation = new Donation();
+		Transaction transaction = new Transaction();
 		RakanQrDonation rakanQrDonation = new RakanQrDonation();
 
 		// Parent donation
-		donation.setAmount(dto.getAmount());
-		donation.setStatus(PaymentStatus.UNPAID);
-		donation.setDonationType(DonationType.RAKANQR);
-		donation.setWebhookToken(webhookToken);
+		transaction.setAmount(dto.getAmount());
+		transaction.setStatus(PaymentStatus.UNPAID);
+		transaction.setDonationType(DonationType.RAKANQR);
+		transaction.setWebhookToken(webhookToken);
 
-		donation = donationRepository.saveAndFlush(donation);
+		transaction = transactionRepository.saveAndFlush(transaction);
 
 		// RakanQr donation
-		rakanQrDonation.setId(donation.getId());
-		rakanQrDonation.setDonation(donation);
+		rakanQrDonation.setId(transaction.getId());
+		rakanQrDonation.setTransaction(transaction);
 		rakanQrDonation.setRakanQr(rakanQr);
 
 		RakanQrDonation saved = rakanQrDonationRepository.saveAndFlush(rakanQrDonation);
@@ -115,7 +115,7 @@ public class RakanQrDonationPaymentServiceImpl implements RakanQrDonationPayment
 		paymentRequest.setPhone(phone);
 
 		// Set payment details.
-		paymentRequest.setAmount(donation.getDonation().getAmount());
+		paymentRequest.setAmount(donation.getTransaction().getAmount());
 		paymentRequest.setDescription("RakanQr client donation.");
 
 		// Set external API details.

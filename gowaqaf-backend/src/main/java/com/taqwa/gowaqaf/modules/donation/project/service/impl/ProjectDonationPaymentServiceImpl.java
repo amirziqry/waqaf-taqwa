@@ -1,23 +1,25 @@
-package com.taqwa.gowaqaf.modules.donation.personal.service.impl;
+package com.taqwa.gowaqaf.modules.donation.project.service.impl;
+
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taqwa.gowaqaf.exception.code.ErrorCode;
-import com.taqwa.gowaqaf.exception.custom.BadRequestException;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentRequest;
 import com.taqwa.gowaqaf.external.payment.dto.PaymentUrlResponse;
 import com.taqwa.gowaqaf.external.payment.service.PaymentService;
 import com.taqwa.gowaqaf.external.payment.webhook.service.WebhookService;
 import com.taqwa.gowaqaf.modules.donation.enums.DonationType;
 import com.taqwa.gowaqaf.modules.donation.enums.PaymentStatus;
-import com.taqwa.gowaqaf.modules.donation.personal.dto.PersonalDonationRequest;
-import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
-import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
-import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationPaymentService;
+import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationRequest;
+import com.taqwa.gowaqaf.modules.donation.project.entity.ProjectDonation;
+import com.taqwa.gowaqaf.modules.donation.project.repository.ProjectDonationRepository;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationPaymentService;
 import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
 import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
+import com.taqwa.gowaqaf.modules.organization.content.project.entity.Project;
+import com.taqwa.gowaqaf.modules.organization.content.project.service.ProjectService;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.service.PersonalService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
@@ -26,77 +28,74 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PersonalDonationPaymentServiceImpl implements PersonalDonationPaymentService {
+public class ProjectDonationPaymentServiceImpl implements ProjectDonationPaymentService {
 
 	private final TransactionRepository transactionRepository;
-	private final PersonalDonationRepository repository;
+	private final ProjectDonationRepository projectDonationRepository;
 	private final PersonalService userService;
-	private final WebhookService webhookService;
+	private final ProjectService projectService;
 	private final PaymentService paymentService;
+	private final WebhookService webhookService;
 
-	@Value("${nexgen.collection.personal}")
+	@Value("${nexgen.collection.project}")
 	private String collectionCode;
 
 	@Override
 	@Transactional
-	public PaymentUrlResponse createDonation(AccountUserDetails principal, PersonalDonationRequest dto) {
-		// Get account.
+	public PaymentUrlResponse createDonationByProjectId(AccountUserDetails principal, UUID projectId,
+			ProjectDonationRequest dto) {
+		// Get project
+		Project project = projectService.getProjectById(projectId);
+
+		// Get account
 		Personal user = userService.getPersonalByUsername(principal.getUsername());
-		validateUser(user);
 
-		// Generate webhook token.
+		// Generate webhook token
 		String webhookToken = webhookService.generateWebhookToken();
-		String callbackUrl = webhookService.buildWebhookUrl("personal", webhookToken);
+		String callbackUrl = webhookService.buildWebhookUrl("project", webhookToken);
 
-		// Build donation object.
-		PersonalDonation donation = buildDonationDetails(user, dto, webhookToken);
+		// Build and save donation
+		ProjectDonation donation = buildDonationDetails(project, user, dto, webhookToken);
 
-		// Build payment request dto.
+		// Build payment request
 		PaymentRequest paymentRequest = buildPaymentRequest(collectionCode, user, donation, dto.getRedirectUrl(),
 				callbackUrl);
 
-		// Call payment service (Gateway router).
+		// Call payment service (Gateway router)
 		PaymentUrlResponse response = paymentService.createPaymentBill(paymentRequest);
 		response.setId(donation.getId());
 
-		// Update donation object.
+		// Update donation after billing
 		donation.getTransaction().setBillingCode(response.getBillingCode());
 		donation.getTransaction().setStatus(PaymentStatus.valueOf(response.getStatus().toUpperCase()));
 
 		return response;
 	}
 
-	private void validateUser(Personal personal) {
-		String name = personal.getInfo().getAccountHolderName();
-		String email = personal.getInfo().getEmail();
-		String phone = personal.getInfo().getPhone();
-
-		if (name == null || email == null || phone == null)
-			throw new BadRequestException(ErrorCode.PER001, "Please update account name, email, phone.");
-	}
-
-	private PersonalDonation buildDonationDetails(Personal personal, PersonalDonationRequest dto, String webhookToken) {
+	private ProjectDonation buildDonationDetails(Project project, Personal personal, ProjectDonationRequest dto,
+			String webhookToken) {
 		Transaction transaction = new Transaction();
-		PersonalDonation personalDonation = new PersonalDonation();
+		ProjectDonation projectDonation = new ProjectDonation();
 
 		// Parent donation
 		transaction.setAmount(dto.getAmount());
 		transaction.setStatus(PaymentStatus.UNPAID);
-		transaction.setDonationType(DonationType.DIRECT);
+		transaction.setDonationType(DonationType.PROJECT);
 		transaction.setWebhookToken(webhookToken);
 
 		transaction = transactionRepository.saveAndFlush(transaction);
 
-		// Personal donation
-		personalDonation.setId(transaction.getId());
-		personalDonation.setTransaction(transaction);
-		personalDonation.setPersonal(personal);
-		personalDonation.setTaxExempt(dto.getTaxExempt());
+		// Project donation
+		projectDonation.setId(transaction.getId());
+		projectDonation.setTransaction(transaction);
+		projectDonation.setProject(project);
+		projectDonation.setPersonal(personal);
+		projectDonation.setTaxExempt(dto.getTaxExempt());
 
-		return repository.saveAndFlush(personalDonation);
+		return projectDonationRepository.saveAndFlush(projectDonation);
 	}
 
-	private PaymentRequest buildPaymentRequest(String collectionCode, Personal personal, PersonalDonation donation,
+	private PaymentRequest buildPaymentRequest(String collectionCode, Personal personal, ProjectDonation donation,
 			String redirectUrl, String callbackUrl) {
 		PaymentRequest paymentRequest = new PaymentRequest();
 
@@ -107,7 +106,7 @@ public class PersonalDonationPaymentServiceImpl implements PersonalDonationPayme
 
 		// Set payment details.
 		paymentRequest.setAmount(donation.getTransaction().getAmount());
-		paymentRequest.setDescription("Personal direct donation.");
+		paymentRequest.setDescription("Project donation.");
 
 		// Set external API details.
 		paymentRequest.setCollectionCode(collectionCode);
@@ -117,8 +116,9 @@ public class PersonalDonationPaymentServiceImpl implements PersonalDonationPayme
 		// Set external ref values.
 		paymentRequest.setReferenceLabel1("personalId");
 		paymentRequest.setReferenceValue1(personal.getId().toString());
+		paymentRequest.setReferenceLabel2("projectId");
+		paymentRequest.setReferenceValue2(donation.getProject().getId().toString());
 
 		return paymentRequest;
 	}
-
 }

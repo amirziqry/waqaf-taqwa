@@ -9,11 +9,11 @@ public class ProjectDonationMapper {
 		ProjectDonationDetails dto = new ProjectDonationDetails();
 
 		dto.setId(donation.getId());
-		dto.setBillingCode(donation.getDonation().getBillingCode());
-		dto.setTransactionId(donation.getDonation().getTransactionId());
-		dto.setAmount(donation.getDonation().getAmount());
-		dto.setPaidAt(donation.getDonation().getPaidAt());
-		dto.setStatus(donation.getDonation().getStatus());
+		dto.setBillingCode(donation.getTransaction().getBillingCode());
+		dto.setTransactionId(donation.getTransaction().getTransactionId());
+		dto.setAmount(donation.getTransaction().getAmount());
+		dto.setPaidAt(donation.getTransaction().getPaidAt());
+		dto.setStatus(donation.getTransaction().getStatus());
 		dto.setReceiptHashId(donation.getReceiptHashId());
 		dto.setProjectId(donation.getProject().getId());
 		dto.setProjectName(donation.getProject().getName());

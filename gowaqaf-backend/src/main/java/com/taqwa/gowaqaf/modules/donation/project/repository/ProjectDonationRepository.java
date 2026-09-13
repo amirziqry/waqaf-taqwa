@@ -15,12 +15,18 @@ public interface ProjectDonationRepository extends JpaRepository<ProjectDonation
 
 	Optional<ProjectDonation> findByIdAndPersonalId(UUID donationId, UUID personalId);
 
-	Optional<ProjectDonation> findByIdAndMerchantId(UUID donationId, UUID merchantId);
+	Optional<ProjectDonation> findByTransaction_WebhookToken(String token);
+
+	Optional<ProjectDonation> findByTransaction_BillingCode(String billingCode);
+
+	Optional<ProjectDonation> findByPersonal_IdAndTransaction_Id(UUID personalId, UUID donationId);
+
+	Optional<ProjectDonation> findByPersonal_IdAndTransaction_BillingCode(UUID personalId, String billingCode);
 
 	@Query("""
 			SELECT COALESCE(SUM(d.amount), 0)
 			FROM ProjectDonation pd
-			JOIN pd.donation d
+			JOIN pd.transaction d
 			WHERE pd.project.id = :projectId
 			  AND d.status = 'PAID'
 			  AND (:startDate IS NULL OR d.paidAt >= :startDate)
@@ -29,5 +35,4 @@ public interface ProjectDonationRepository extends JpaRepository<ProjectDonation
 	BigDecimal sumPaidDonationsByProjectId(@Param("projectId") UUID projectId,
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-	Optional<ProjectDonation> findByDonation_WebhookToken(String token);
 }

@@ -28,12 +28,12 @@ import lombok.Setter;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "donation_table")
+@Table(name = "transaction_table")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Donation {
+public class Transaction {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

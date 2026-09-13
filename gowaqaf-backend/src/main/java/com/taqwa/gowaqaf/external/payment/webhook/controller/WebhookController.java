@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.taqwa.gowaqaf.external.payment.client.nexgen.dto.webhook.NexGenWebhookPayload;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationWebhookService;
-import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationWebhookService;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationWebhookService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class WebhookController {
 
 	private final PersonalDonationWebhookService personalWebhookService;
-	private final ProjectDonationService projectDonationService;
+	private final ProjectDonationWebhookService projectWebhookService;
 	private final RakanQrDonationWebhookService rakanQrWebhookService;
 
 	@PostMapping("/personal/{token}")
@@ -35,9 +35,7 @@ public class WebhookController {
 	@PostMapping("/project/{token}")
 	public ResponseEntity<Void> handleWebhookForProjectDonation(@PathVariable String token,
 			@RequestBody NexGenWebhookPayload payload) {
-		projectDonationService.processWebhook(token, payload.getCode(), payload.getStatus(), payload.getAmount(),
-				payload.getPaymentMethodDetail().getTransactionId(), payload.getPaymentMethodDetail().getOrderId(),
-				payload.getPaymentMethodDetail().getTransactionDate());
+		projectWebhookService.handleWebhook(token, payload);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

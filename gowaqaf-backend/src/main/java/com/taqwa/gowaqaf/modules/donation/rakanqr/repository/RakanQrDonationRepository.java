@@ -18,31 +18,31 @@ public interface RakanQrDonationRepository extends JpaRepository<RakanQrDonation
 
 	Page<RakanQrDonation> findByRakanQrId(UUID rakanQrId, Pageable pageable);
 
-	Optional<RakanQrDonation> findByDonation_WebhookToken(String token);
+	Optional<RakanQrDonation> findByTransaction_WebhookToken(String token);
 
 	@Query("""
-			SELECT COALESCE(SUM(d.donation.amount), 0)
+			SELECT COALESCE(SUM(d.transaction.amount), 0)
 			FROM RakanQrDonation d
 			WHERE d.rakanQr.id = :id
-			  AND d.donation.status = 'PAID'
-			  AND (CAST(:startDate AS timestamp) IS NULL OR d.donation.paidAt >= :startDate)
-			  AND (CAST(:endDate AS timestamp) IS NULL OR d.donation.paidAt <= :endDate)
+			  AND d.transaction.status = 'PAID'
+			  AND (CAST(:startDate AS timestamp) IS NULL OR d.transaction.paidAt >= :startDate)
+			  AND (CAST(:endDate AS timestamp) IS NULL OR d.transaction.paidAt <= :endDate)
 			""")
 	BigDecimal sumAllPaidDonationsByUser(@Param("id") UUID rakanQrId, @Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
 
 	@Query("""
-			SELECT COALESCE(SUM(d.donation.amount), 0)
+			SELECT COALESCE(SUM(d.transaction.amount), 0)
 			FROM RakanQrDonation d
-			WHERE d.donation.status = 'PAID'
-			  AND (CAST(:startDate AS timestamp) IS NULL OR d.donation.paidAt >= :startDate)
-			  AND (CAST(:endDate AS timestamp) IS NULL OR d.donation.paidAt < :endDate)
+			WHERE d.transaction.status = 'PAID'
+			  AND (CAST(:startDate AS timestamp) IS NULL OR d.transaction.paidAt >= :startDate)
+			  AND (CAST(:endDate AS timestamp) IS NULL OR d.transaction.paidAt < :endDate)
 			""")
 	BigDecimal sumAllPaidDonations(@Param("startDate") LocalDateTime startDate,
 			@Param("endDate") LocalDateTime endDate);
 
 	List<RakanQrDonation> findAllByRakanQr_Id(UUID rakanQrId, Pageable pageable);
 
-	Optional<RakanQrDonation> findByDonation_BillingCode(String billingCode);
+	Optional<RakanQrDonation> findByTransaction_BillingCode(String billingCode);
 
 }

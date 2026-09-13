@@ -20,8 +20,8 @@ import com.taqwa.gowaqaf.modules.donation.personal.entity.PersonalDonation;
 import com.taqwa.gowaqaf.modules.donation.personal.mapper.PersonalDonationMapper;
 import com.taqwa.gowaqaf.modules.donation.personal.repository.PersonalDonationRepository;
 import com.taqwa.gowaqaf.modules.donation.personal.service.PersonalDonationService;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
-import com.taqwa.gowaqaf.modules.organization.collection.repository.DonationRepository;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
+import com.taqwa.gowaqaf.modules.organization.collection.repository.TransactionRepository;
 import com.taqwa.gowaqaf.modules.user.personal.entity.Personal;
 import com.taqwa.gowaqaf.modules.user.personal.service.PersonalService;
 
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PersonalDonationServiceImpl implements PersonalDonationService {
 
-	private final DonationRepository donationRepository;
+	private final TransactionRepository transactionRepository;
 	private final PersonalDonationRepository repository;
 	private final PersonalService personalService;
 
@@ -39,10 +39,10 @@ public class PersonalDonationServiceImpl implements PersonalDonationService {
 	public void reconstructDonation(UUID personalId, PersonalDonation personalDonation) {
 		Personal user = personalService.getPersonalById(personalId);
 
-		Donation donation = donationRepository.save(personalDonation.getDonation());
+		Transaction transaction = transactionRepository.save(personalDonation.getTransaction());
 
-		personalDonation.setId(donation.getId());
-		personalDonation.setDonation(donation);
+		personalDonation.setId(transaction.getId());
+		personalDonation.setTransaction(transaction);
 		personalDonation.setPersonal(user);
 
 		repository.save(personalDonation);

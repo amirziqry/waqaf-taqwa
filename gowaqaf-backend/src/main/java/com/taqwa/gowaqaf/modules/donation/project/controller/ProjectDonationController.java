@@ -19,6 +19,8 @@ import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSum;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectCollectionSumFilter;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationDetails;
 import com.taqwa.gowaqaf.modules.donation.project.dto.ProjectDonationRequest;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationPaymentService;
+import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationReconcileService;
 import com.taqwa.gowaqaf.modules.donation.project.service.ProjectDonationService;
 import com.taqwa.gowaqaf.security.account.AccountUserDetails;
 
@@ -34,7 +36,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProjectDonationController {
 
-	private final ProjectDonationService donationService;
+	private final ProjectDonationService service;
+	private final ProjectDonationPaymentService paymentService;
+	private final ProjectDonationReconcileService reconcileService;
 
 	/**
 	 * Personal/Merchant only to request payment for project donation.
@@ -45,12 +49,12 @@ public class ProjectDonationController {
 	 * @return
 	 */
 	@PostMapping("/{projectId}/donations/payment-request")
-	@PreAuthorize("@accountSecurity.isPersonal(authentication) || @accountSecurity.isMerchant(authentication)")
+	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<PaymentUrlResponse> requestPaymentGatewayUrl(Authentication authentication,
 			@PathVariable UUID projectId, @RequestBody ProjectDonationRequest request) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		PaymentUrlResponse response = donationService.createDonationByProjectId(principal, projectId, request);
+		PaymentUrlResponse response = paymentService.createDonationByProjectId(principal, projectId, request);
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -64,12 +68,23 @@ public class ProjectDonationController {
 	 * @return
 	 */
 	@GetMapping("/donations/{donationId}")
-	@PreAuthorize("@accountSecurity.isPersonal(authentication) || @accountSecurity.isMerchant(authentication)")
+	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
 	public ResponseEntity<ProjectDonationDetails> getPaymentStatus(Authentication authentication,
 			@PathVariable UUID donationId) {
 		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
 
-		ProjectDonationDetails response = donationService.getPaymentStatus(principal, donationId);
+		ProjectDonationDetails response = reconcileService.getDonationDetailsById(principal, donationId);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/donations/billing/{billingCode}")
+	@PreAuthorize("@accountSecurity.isPersonal(authentication)")
+	public ResponseEntity<ProjectDonationDetails> getPaymentStatus(Authentication authentication,
+			@PathVariable String billingCode) {
+		AccountUserDetails principal = (AccountUserDetails) authentication.getPrincipal();
+
+		ProjectDonationDetails response = reconcileService.getDonationDetailsByCode(principal, billingCode);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -78,7 +93,7 @@ public class ProjectDonationController {
 	@PreAuthorize("@accountSecurity.isAdmin(authentication)")
 	public ResponseEntity<ProjectCollectionSum> getProjectCollectionSumById(@PathVariable UUID projectId,
 			@ModelAttribute ProjectCollectionSumFilter filter) {
-		ProjectCollectionSum response = donationService.getDonationCollectionByProjectId(projectId, filter);
+		ProjectCollectionSum response = service.getDonationCollectionByProjectId(projectId, filter);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

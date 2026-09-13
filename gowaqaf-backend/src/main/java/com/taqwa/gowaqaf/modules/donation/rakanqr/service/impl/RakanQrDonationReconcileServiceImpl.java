@@ -22,7 +22,7 @@ import com.taqwa.gowaqaf.modules.donation.rakanqr.repository.RakanQrDonationRepo
 import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationReconcileService;
 import com.taqwa.gowaqaf.modules.donation.rakanqr.service.RakanQrDonationService;
 import com.taqwa.gowaqaf.modules.feature.rakanqr.service.RakanQrService;
-import com.taqwa.gowaqaf.modules.organization.collection.entity.Donation;
+import com.taqwa.gowaqaf.modules.organization.collection.entity.Transaction;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,7 +45,7 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 		NexGenBillingObject billing = nexGenClient.getBilling(collectionCode, billingCode);
 
 		// Try find the donation with respective billing code locally.
-		RakanQrDonation donation = repository.findByDonation_BillingCode(billingCode).orElse(null);
+		RakanQrDonation donation = repository.findByTransaction_BillingCode(billingCode).orElse(null);
 
 		// If donation exists -> synchronize information with NexGen's data.
 		if (donation != null)
@@ -58,38 +58,39 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 	}
 
 	private void updateDonationFromBilling(RakanQrDonation donation, NexGenBillingObject billing) {
-		PaymentStatus previousStatus = donation.getDonation().getStatus();
+		PaymentStatus previousStatus = donation.getTransaction().getStatus();
 
 		// Check and update payment status.
 		switch (billing.getStatus().toLowerCase()) {
-		case "paid" -> donation.getDonation().setStatus(PaymentStatus.PAID);
-		case "pending" -> donation.getDonation().setStatus(PaymentStatus.PENDING);
-		case "unpaid" -> donation.getDonation().setStatus(PaymentStatus.UNPAID);
-		default -> donation.getDonation().setStatus(PaymentStatus.EXPIRED);
+		case "paid" -> donation.getTransaction().setStatus(PaymentStatus.PAID);
+		case "pending" -> donation.getTransaction().setStatus(PaymentStatus.PENDING);
+		case "unpaid" -> donation.getTransaction().setStatus(PaymentStatus.UNPAID);
+		default -> donation.getTransaction().setStatus(PaymentStatus.EXPIRED);
 		}
 
-		if (donation.getDonation().getStatus() == PaymentStatus.PAID) {
+		if (donation.getTransaction().getStatus() == PaymentStatus.PAID) {
 			String transactionId = billing.getPaymentMethodDetail().getTransactionId();
 			String orderId = billing.getPaymentMethodDetail().getOrderId();
 			LocalDateTime transactionDate = billing.getPaymentMethodDetail().getTransactionDate();
 
 			// Update amount to real paid amount.
-			donation.getDonation().setAmount(billing.getAmount());
+			donation.getTransaction().setAmount(billing.getAmount());
 
 			// Set transaction/order id.
-			donation.getDonation().setTransactionId(transactionId != null ? transactionId : orderId);
+			donation.getTransaction().setTransactionId(transactionId != null ? transactionId : orderId);
 
 			// Set transaction/paid time.
-			donation.getDonation().setPaidAt(transactionDate);
+			donation.getTransaction().setPaidAt(transactionDate);
 
 			// Nullify webhook token.
-			donation.getDonation().setWebhookToken(null);
+			donation.getTransaction().setWebhookToken(null);
 
 			if (previousStatus != PaymentStatus.PAID)
 				rakanQrService.updateRakanQrCollectedAmountById(donation.getRakanQr().getId(),
-						donation.getDonation().getAmount());
+						donation.getTransaction().getAmount());
 		}
 
+		repository.saveAndFlush(donation);
 	}
 
 	private void reconstructDonationFromBilling(NexGenBillingObject billing) {
@@ -97,8 +98,8 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 		UUID rakanQrId = getRakanQrIdFromBilling(billing);
 
 		// Create & save donation into DB.
-		Donation donation = createDonationFromBilling(billing);
-		RakanQrDonation rakanQrDonation = createPersonalDonation(donation);
+		Transaction transaction = createDonationFromBilling(billing);
+		RakanQrDonation rakanQrDonation = createPersonalDonation(transaction);
 
 		service.reconstructDonation(rakanQrId, rakanQrDonation);
 	}
@@ -114,32 +115,32 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 		}
 	}
 
-	private Donation createDonationFromBilling(NexGenBillingObject billing) {
-		Donation donation = new Donation();
+	private Transaction createDonationFromBilling(NexGenBillingObject billing) {
+		Transaction transaction = new Transaction();
 
 		String transactionId = billing.getPaymentMethodDetail().getTransactionId();
 		String orderId = billing.getPaymentMethodDetail().getOrderId();
 
-		donation.setBillingCode(billing.getCode());
-		donation.setTransactionId(transactionId != null ? transactionId : orderId);
-		donation.setAmount(billing.getAmount());
-		donation.setPaidAt(billing.getPaymentMethodDetail().getTransactionDate());
-		donation.setDonationType(DonationType.DIRECT);
+		transaction.setBillingCode(billing.getCode());
+		transaction.setTransactionId(transactionId != null ? transactionId : orderId);
+		transaction.setAmount(billing.getAmount());
+		transaction.setPaidAt(billing.getPaymentMethodDetail().getTransactionDate());
+		transaction.setDonationType(DonationType.DIRECT);
 
 		switch (billing.getStatus().toLowerCase()) {
-		case "paid" -> donation.setStatus(PaymentStatus.PAID);
-		case "pending" -> donation.setStatus(PaymentStatus.PENDING);
-		case "unpaid" -> donation.setStatus(PaymentStatus.UNPAID);
-		default -> donation.setStatus(PaymentStatus.EXPIRED);
+		case "paid" -> transaction.setStatus(PaymentStatus.PAID);
+		case "pending" -> transaction.setStatus(PaymentStatus.PENDING);
+		case "unpaid" -> transaction.setStatus(PaymentStatus.UNPAID);
+		default -> transaction.setStatus(PaymentStatus.EXPIRED);
 		}
 
-		return donation;
+		return transaction;
 	}
 
-	private RakanQrDonation createPersonalDonation(Donation donation) {
+	private RakanQrDonation createPersonalDonation(Transaction transaction) {
 		RakanQrDonation rakanQrDonation = new RakanQrDonation();
 
-		rakanQrDonation.setDonation(donation);
+		rakanQrDonation.setTransaction(transaction);
 		rakanQrDonation.setRakanQr(null);
 
 		return rakanQrDonation;
@@ -151,15 +152,16 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 		RakanQrDonation donation = repository.findById(donationId)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
 
-		PaymentStatus status = donation.getDonation().getStatus();
+		PaymentStatus status = donation.getTransaction().getStatus();
 
 		// For pending/unpaid -> force reconciliation with NexGen
 		if (status == PaymentStatus.PENDING || status == PaymentStatus.UNPAID) {
-			reconcile(donation.getDonation().getBillingCode());
+			reconcile(donation.getTransaction().getBillingCode());
 
 			// Re-fetch because reconcile may have updated the entity
 			donation = repository.findById(donationId)
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
+
 		}
 
 		// Return the latest status
@@ -169,10 +171,10 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 	@Override
 	public RakanQrDonationDetails getDonationDetailsByCode(String billingCode) {
 		// Find the local donation
-		RakanQrDonation donation = repository.findByDonation_BillingCode(billingCode).orElse(null);
+		RakanQrDonation donation = repository.findByTransaction_BillingCode(billingCode).orElse(null);
 
 		if (donation != null) {
-			PaymentStatus status = donation.getDonation().getStatus();
+			PaymentStatus status = donation.getTransaction().getStatus();
 
 			// Already paid -> no need to call NexGen
 			if (status == PaymentStatus.PAID || status == PaymentStatus.EXPIRED)
@@ -180,27 +182,27 @@ public class RakanQrDonationReconcileServiceImpl implements RakanQrDonationRecon
 
 			// Still pending/unpaid -> force reconciliation with NexGen
 			if (status == PaymentStatus.PENDING || status == PaymentStatus.UNPAID) {
-				reconcile(donation.getDonation().getBillingCode());
+				reconcile(donation.getTransaction().getBillingCode());
 
 				// Re-fetch because reconcile may have updated the entity
 				donation = repository.findById(donation.getId())
 						.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
 
-				if (donation.getDonation().getStatus() != PaymentStatus.PAID)
+				if (donation.getTransaction().getStatus() != PaymentStatus.PAID)
 					rakanQrService.updateRakanQrCollectedAmountById(donation.getRakanQr().getId(),
-							donation.getDonation().getAmount());
+							donation.getTransaction().getAmount());
 			}
 		}
 
 		if (donation == null) {
 			reconcile(billingCode);
 
-			donation = repository.findByDonation_BillingCode(billingCode)
+			donation = repository.findByTransaction_BillingCode(billingCode)
 					.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
 
-			if (donation.getDonation().getStatus() != PaymentStatus.PAID)
+			if (donation.getTransaction().getStatus() != PaymentStatus.PAID)
 				rakanQrService.updateRakanQrCollectedAmountById(donation.getRakanQr().getId(),
-						donation.getDonation().getAmount());
+						donation.getTransaction().getAmount());
 		}
 
 		// Return the updated donation.

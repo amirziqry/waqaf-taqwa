@@ -38,45 +38,45 @@ public class RakanQrDonationWebhookServiceImpl implements RakanQrDonationWebhook
 
 	private void processWebhook(String token, NexGenWebhookPayload payload) {
 		// Get donation from DB.
-		RakanQrDonation donation = repository.findByDonation_WebhookToken(token)
+		RakanQrDonation donation = repository.findByTransaction_WebhookToken(token)
 				.orElseThrow(() -> new ResourceNotFoundException(ErrorCode.WHK001, "Donation not found."));
 
 		// Validate billing code > reconcile for mismatch.
-		if (!donation.getDonation().getBillingCode().equals(payload.getCode()))
+		if (!donation.getTransaction().getBillingCode().equals(payload.getCode()))
 			throw new BadRequestException(ErrorCode.WHK002, "Billing code does not match");
 
 		// Validate amount > reconcile for mismatch.
-		if (donation.getDonation().getAmount().compareTo(payload.getAmount()) != 0)
+		if (donation.getTransaction().getAmount().compareTo(payload.getAmount()) != 0)
 			throw new BadRequestException(ErrorCode.WHK003, "Amount does not match");
 
-		PaymentStatus previousStatus = donation.getDonation().getStatus();
+		PaymentStatus previousStatus = donation.getTransaction().getStatus();
 
 		// Update payment status.
 		switch (payload.getStatus().toLowerCase()) {
-		case "paid" -> donation.getDonation().setStatus(PaymentStatus.PAID);
-		case "pending" -> donation.getDonation().setStatus(PaymentStatus.PENDING);
-		case "unpaid" -> donation.getDonation().setStatus(PaymentStatus.UNPAID);
-		default -> donation.getDonation().setStatus(PaymentStatus.EXPIRED);
+		case "paid" -> donation.getTransaction().setStatus(PaymentStatus.PAID);
+		case "pending" -> donation.getTransaction().setStatus(PaymentStatus.PENDING);
+		case "unpaid" -> donation.getTransaction().setStatus(PaymentStatus.UNPAID);
+		default -> donation.getTransaction().setStatus(PaymentStatus.EXPIRED);
 		}
 
 		// Update donation details if status paid.
-		if (donation.getDonation().getStatus() == PaymentStatus.PAID && previousStatus != PaymentStatus.PAID) {
+		if (donation.getTransaction().getStatus() == PaymentStatus.PAID && previousStatus != PaymentStatus.PAID) {
 			String transactionId = payload.getPaymentMethodDetail().getTransactionId();
 			String orderId = payload.getPaymentMethodDetail().getOrderId();
 			LocalDateTime transactionDate = payload.getPaymentMethodDetail().getTransactionDate();
 
 			// Save transaction/order id.
-			donation.getDonation().setTransactionId(transactionId != null ? transactionId : orderId);
+			donation.getTransaction().setTransactionId(transactionId != null ? transactionId : orderId);
 
 			// Save transaction date time.
-			donation.getDonation().setPaidAt(transactionDate);
+			donation.getTransaction().setPaidAt(transactionDate);
 
 			// Nullify webhook token.
-			donation.getDonation().setWebhookToken(null);
+			donation.getTransaction().setWebhookToken(null);
 
 			if (previousStatus != PaymentStatus.PAID)
 				rakanQrService.updateRakanQrCollectedAmountById(donation.getRakanQr().getId(),
-						donation.getDonation().getAmount());
+						donation.getTransaction().getAmount());
 		}
 	}
 }
