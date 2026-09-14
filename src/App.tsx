@@ -19,6 +19,7 @@ import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminVendorsPage } from './pages/admin/AdminVendorsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { RakanQrPage } from './pages/user/RakanQrPage';
+import './index.css';
 
 
 export const App: React.FC = () => {
