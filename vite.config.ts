@@ -18,15 +18,15 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        secure: false,
-        cookieDomainRewrite: {
-          '*': '', // Strips domain constraints so cookie attaches strictly to localhost
-        },
-      },
+    proxy:  {
+      // '/api': {
+      //   target: 'http://localhost:8080',// Proxy requests to the backend server
+      //   changeOrigin: true,
+      //   secure: false,
+      //   cookieDomainRewrite: {
+      //     '*': '', // Strips domain constraints so cookie attaches strictly to localhost
+      //   },
+      // },
     },
   },
 });

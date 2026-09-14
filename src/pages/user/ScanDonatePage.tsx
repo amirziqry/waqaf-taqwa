@@ -119,7 +119,7 @@ export const ScanDonatePage: React.FC = () => {
             </span>
           </label>
 
-          <label className="flex items-start gap-2.5 cursor-pointer select-none">
+          {/* <label className="flex items-start gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={taxExempt}
@@ -129,7 +129,7 @@ export const ScanDonatePage: React.FC = () => {
             <span className="text-[11px] text-slate-600 font-medium leading-tight">
               Mohon pelepasan resit cukai LHDN rasmi.
             </span>
-          </label>
+          </label> */}
         </div>
 
         {/* Action Button */}
