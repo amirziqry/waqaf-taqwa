@@ -21,7 +21,7 @@ export const ScanDonatePage: React.FC = () => {
     setErrorMsg('');
 
     try {
-      const response = await api.post('/personal/donation/payment/request-gateway-url', {
+      const response = await api.post('/personal/donations/payment-request', {
         amount: Number(amount),
         taxExempt: taxExempt,
       });

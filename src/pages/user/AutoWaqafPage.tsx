@@ -16,7 +16,7 @@ export const AutoWaqafPage: React.FC = () => {
 
   useEffect(() => {
     // 1. Fetch existing auto-waqaf schedule configuration from backend
-    api.get('/donator/auto-waqaf/me')
+    api.get('/personal/donations/payment-requests')
       .then((res) => {
         if (res.data) {
           setFrequency(res.data.frequency || 'SUBUH');
