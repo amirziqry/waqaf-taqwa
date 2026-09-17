@@ -6,7 +6,6 @@ import {
   CreditCard, 
   LogOut, 
   ChevronRight, 
-  Bell, 
   HeartHandshake, 
   LayoutDashboard,
   Award,
@@ -271,7 +270,7 @@ export const ProfilePage: React.FC = () => {
           <HeartHandshake className="w-5 h-5 text-emerald-200" />
         </div>
         <p className="text-3xl font-black">RM {totalDonated.toFixed(2)}</p>
-        <p className="text-[11px] text-emerald-100">Semua transaksi dilindungi rekod kriptografi LHDN.</p>
+        <p className="text-[11px] text-emerald-100">Semua transaksi dilindungi rekod kriptografi.</p>
       </div>
 
       {/* Menu Settings Group */}
@@ -299,14 +298,6 @@ export const ProfilePage: React.FC = () => {
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </div>
         )}
-
-        <div className="p-4 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition">
-          <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-slate-400" />
-            <span className="text-xs font-bold text-slate-800">Pemberitahuan & Laporan Projek</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </div>
       </div>
 
       {/* Sign Out Button */}

@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import api from '../../api/client';
-
-type RoleType = 'donator' | 'member';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [role, setRole] = useState<RoleType>('donator');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,20 +16,12 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setErrorMessage('');
 
-    // Updated to match ApiBasePath.PERSONAL:
-    const endpoint = role === 'member' ? '/member/auth/login' : '/personal/auth/login';
-
     try {
-      await api.post(endpoint, { username, password });
+      await api.post('/personal/auth/login', { username, password });
       
-      localStorage.setItem('wt_user_role', role);
+      localStorage.setItem('wt_user_role', 'donator');
       localStorage.setItem('wt_user_name', username);
-      
-      if (role === 'member') {
-        navigate('/admin');
-      } else {
-        navigate('/profil');
-      }
+      navigate('/profil');
     } catch (err: any) {
       setErrorMessage(err.response?.data?.message || 'Log masuk gagal. Sila semak nama pengguna dan kata laluan.');
     } finally {
@@ -42,42 +31,17 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="p-5 md:p-10 max-w-md mx-auto space-y-6">
-      {/* Header */}
       <div className="text-center space-y-1.5">
         <h1 className="text-2xl font-black text-[#0F2028]">Log Masuk</h1>
-        <p className="text-xs text-slate-500">Pilih peranan akaun anda untuk meneruskan</p>
+        <p className="text-xs text-slate-500">Selamat kembali ke portal Waqaf Taqwa</p>
       </div>
 
-      {/* Role Switcher Tabs (Pewakaf vs Admin) */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
-        <button
-          type="button"
-          onClick={() => { setRole('donator'); setErrorMessage(''); }}
-          className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-            role === 'donator' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <User className="w-3.5 h-3.5" /> Pewakaf
-        </button>
-        <button
-          type="button"
-          onClick={() => { setRole('member'); setErrorMessage(''); }}
-          className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-            role === 'member' ? 'bg-[#1A8C4E] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Shield className="w-3.5 h-3.5" /> Admin
-        </button>
-      </div>
-
-      {/* Error Alert */}
       {errorMessage && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-[11px] font-semibold text-red-600 text-center">
           {errorMessage}
         </div>
       )}
 
-      {/* Login Form */}
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-xs font-extrabold text-[#0F2028]">Nama Pengguna</label>
@@ -99,7 +63,7 @@ export const LoginPage: React.FC = () => {
           <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
             <Lock className="w-4 h-4 text-slate-400" />
             <input
-              type={showPassword ? 'text' : 'password'}
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -125,7 +89,8 @@ export const LoginPage: React.FC = () => {
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
       </form>
-<div className="text-center pt-2">
+
+      <div className="text-center pt-2">
         <p className="text-xs text-slate-500">
           Belum mempunyai akaun?{' '}
           <button

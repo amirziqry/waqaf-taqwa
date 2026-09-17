@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Lock, Mail, ArrowRight, Phone } from 'lucide-react';
+import { User, Lock, Mail, ArrowRight, Phone } from 'lucide-react';
 import api from '../../api/client';
 
 export const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
-  const [accountType, setAccountType] = useState<'personal' | 'admin'>('personal');
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -19,21 +18,19 @@ export const SignUpPage: React.FC = () => {
     setLoading(true);
     setErrorMsg('');
 
-    const endpoint = accountType === 'admin' ? '/admin/register-admin' : '/personal/register';
-
     try {
-      await api.post(endpoint, {
-        name,         // Include name in the payload
-        nama: name,   // Fallback alias in case DTO expects BM property name
+      await api.post('/personal/register', {
+        name,
+        nama: name,
         username,
         email,
         phone,
-        phoneNumber: phone, // Fallback alias
+        phoneNumber: phone,
         password,
         modMesra: false,
       });
 
-      localStorage.setItem('wt_user_role', accountType === 'admin' ? 'member' : 'donator');
+      localStorage.setItem('wt_user_role', 'donator');
       localStorage.setItem('wt_user_name', username);
       navigate('/auth/login');
     } catch (err: any) {
@@ -46,7 +43,7 @@ export const SignUpPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6 bg-white min-h-full max-w-md mx-auto">
       <div className="text-center space-y-1">
-        <h1 className="text-2xl font-black text-[#0F2028]">Daftar Akaun</h1>
+        <h1 className="text-2xl font-black text-[#0F2028]">Daftar Akaun Pewakaf</h1>
         <p className="text-xs text-slate-500">Sertai platform Waqaf Taqwa digital hari ini</p>
       </div>
 
@@ -56,36 +53,10 @@ export const SignUpPage: React.FC = () => {
         </div>
       )}
 
-      {/* Account Type Selection (Pewakaf & Admin only) */}
-      <div className="space-y-2">
-        <label className="text-xs font-extrabold text-[#0F2028]">Pilih Jenis Akaun</label>
-        <div className="grid grid-cols-2 gap-2">
-          <div
-            onClick={() => setAccountType('personal')}
-            className={`p-3 rounded-2xl border-2 cursor-pointer transition text-center ${
-              accountType === 'personal' ? 'border-[#1A8C4E] bg-emerald-50/40' : 'border-slate-200 bg-white'
-            }`}
-          >
-            <User className="w-4 h-4 mx-auto mb-1 text-[#1A8C4E]" />
-            <h4 className="font-extrabold text-[11px] text-[#0F2028]">Pewakaf</h4>
-          </div>
-
-          <div
-            onClick={() => setAccountType('admin')}
-            className={`p-3 rounded-2xl border-2 cursor-pointer transition text-center ${
-              accountType === 'admin' ? 'border-[#1A8C4E] bg-emerald-50/40' : 'border-slate-200 bg-white'
-            }`}
-          >
-            <Shield className="w-4 h-4 mx-auto mb-1 text-[#1A8C4E]" />
-            <h4 className="font-extrabold text-[11px] text-[#0F2028]">Admin</h4>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Details Form */}
+      {/* Registration Form */}
       <form onSubmit={handleRegister} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-extrabold text-[#0F2028]">Nama Penuh (Account Holder Name)</label>
+          <label className="text-xs font-extrabold text-[#0F2028]">Nama Penuh (Mengikut MyKad)</label>
           <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
             <User className="w-4 h-4 text-slate-400" />
             <input
@@ -115,7 +86,7 @@ export const SignUpPage: React.FC = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-extrabold text-[#0F2028]">No. Telefon (Phone Number)</label>
+          <label className="text-xs font-extrabold text-[#0F2028]">No. Telefon</label>
           <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
             <Phone className="w-4 h-4 text-slate-400" />
             <input
@@ -123,7 +94,7 @@ export const SignUpPage: React.FC = () => {
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+60123456789"
+              placeholder="0123456789"
               className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
             />
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReceiptText, ShieldCheck, Download, Search } from 'lucide-react';
+import { ReceiptText, Download, Search } from 'lucide-react';
 import api from '../../api/client';
 import type { TransactionRecordDTO } from '../../types/api';
 
@@ -35,20 +35,17 @@ export const TransactionHistoryPage: React.FC = () => {
       } else {
         // Initial sample record for verification
         setTransactions([
-          {
-            id: 'TXN-948123',
-            referenceNo: 'WTQ-7A9B3C',
-            amount: 50.0,
-            donorName: localStorage.getItem('wt_user_name') || 'Pewakaf Taqwa',
-            campaignTitle: 'Pembinaan Dewan Solat Masjid Cyberjaya',
-            paymentMethod: 'DUITNOW_QR',
-            taxDeductible: true,
-            taxExemptionRef: 'LHDN.01/35/42/51/179-6.4218',
-            verificationHash: '0x3f7a8b192e4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e',
-            createdAt: new Date().toISOString(),
-            status: 'SUCCESS',
-          },
-        ]);
+  {
+    id: 'TXN-948123',
+    referenceNo: 'WTQ-7A9B3C',
+    amount: 50.0,
+    donorName: localStorage.getItem('wt_user_name') || 'Pewakaf Taqwa',
+    campaignTitle: 'Pembinaan Dewan Solat Masjid Cyberjaya',
+    paymentMethod: 'DUITNOW_QR',
+    createdAt: new Date().toISOString(),
+    status: 'SUCCESS',
+  } as TransactionRecordDTO,
+]);
       }
     } catch {
       setTransactions([]);
@@ -67,7 +64,7 @@ export const TransactionHistoryPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-xs">
         <div>
           <h1 className="text-2xl font-black text-[#0F2028]">Sejarah Transaksi & Resit</h1>
-          <p className="text-xs text-slate-400">Senarai rekod sumbangan dan resit pelepasan cukai LHDN</p>
+          <p className="text-xs text-slate-400">Senarai rekod sumbangan dan resit transaksi anda</p>
         </div>
 
         <div className="relative w-full md:w-80">
@@ -92,7 +89,6 @@ export const TransactionHistoryPage: React.FC = () => {
                 <th className="py-3.5 px-4">Tarikh</th>
                 <th className="py-3.5 px-4">Kaedah</th>
                 <th className="py-3.5 px-4">Amaun (RM)</th>
-                <th className="py-3.5 px-4">Pelepasan Cukai</th>
                 <th className="py-3.5 px-5 text-right">Resit Rasmi</th>
               </tr>
             </thead>
@@ -117,11 +113,6 @@ export const TransactionHistoryPage: React.FC = () => {
                   </td>
                   <td className="py-4 px-4 font-black text-[#1A8C4E] text-sm">
                     RM {Number(item.amount).toFixed(2)}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <ShieldCheck className="w-3 h-3" /> Layak LHDN
-                    </span>
                   </td>
                   <td className="py-4 px-5 text-right">
                     <button
