@@ -40,14 +40,21 @@ interface TijarahApp {
 }
 
 interface RakanQrApp {
+  id?: string;
   agentCode: string;
   fullName: string;
-  phone: string;
-  placementType: string;
-  locationName: string;
-  deliveryAddress: string;
-  physicalKitStatus: string;
-  trackingNumber: string;
+  phone?: string;
+  phoneNumber?: string;
+  placementLocation?: string;
+  locationName?: string;
+  placementType?: string;
+  deliveryAddress?: string;
+  shippingAddress?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  membershipTier?: 'BIASA' | 'DUTA';
+  physicalKitStatus?: string;
+  trackingNumber?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
@@ -99,12 +106,13 @@ const DEFAULT_TIJARAH_APPS: TijarahApp[] = [
 
 const DEFAULT_RAKAN_QR: RakanQrApp[] = [
   {
-    agentCode: 'AGT-4402',
+    agentCode: 'DUTA-4402',
     fullName: 'Ustaz Azhar Ghazali',
     phone: '012-9981122',
-    placementType: 'Surau / Masjid',
-    locationName: 'Surau Al-Hidayah Mukim 4',
-    deliveryAddress: 'Lot 14, Kampung Melayu, 63000 Cyberjaya',
+    placementLocation: 'Surau Al-Hidayah Mukim 4',
+    shippingAddress: 'Lot 14, Kampung Melayu, 63000 Cyberjaya',
+    bankName: 'Bank Islam Malaysia',
+    bankAccountNumber: '12018020394812',
     physicalKitStatus: 'SEDANG DIPROSES',
     trackingNumber: 'MENUNGGU KURIER',
     status: 'PENDING',
@@ -133,7 +141,6 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
 ];
 
 export const AdminDashboardPage: React.FC = () => {
-  
   const [activeTab, setActiveTab] = useState<'campaigns' | 'tijarah' | 'rakanqr' | 'admins'>('campaigns');
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -172,14 +179,10 @@ export const AdminDashboardPage: React.FC = () => {
     const storedTijarah: TijarahApp[] = JSON.parse(localStorage.getItem('wt_admin_vendors') || '[]');
     setTijarahApps(storedTijarah.length > 0 ? storedTijarah : DEFAULT_TIJARAH_APPS);
 
-    const singleAgent = localStorage.getItem('wt_agent_profile');
-    if (singleAgent) {
-      try {
-        const parsed = JSON.parse(singleAgent);
-        setRakanQrApps([parsed, ...DEFAULT_RAKAN_QR.filter(a => a.agentCode !== parsed.agentCode)]);
-      } catch {
-        setRakanQrApps(DEFAULT_RAKAN_QR);
-      }
+    // Read submissions from wt_admin_rakan_apps populated by RakanQrPage
+    const storedRakanApps: RakanQrApp[] = JSON.parse(localStorage.getItem('wt_admin_rakan_apps') || '[]');
+    if (storedRakanApps.length > 0) {
+      setRakanQrApps(storedRakanApps);
     } else {
       setRakanQrApps(DEFAULT_RAKAN_QR);
     }
@@ -241,12 +244,47 @@ export const AdminDashboardPage: React.FC = () => {
     localStorage.setItem('wt_admin_vendors', JSON.stringify(updated));
   };
 
+  const handleApproveDuta = (agentCode: string) => {
+    const updated = rakanQrApps.map((item) => 
+      item.agentCode === agentCode ? { ...item, status: 'APPROVED' as const } : item
+    );
+    setRakanQrApps(updated);
+    localStorage.setItem('wt_admin_rakan_apps', JSON.stringify(updated));
+
+    // Synchronize to current browser user if testing locally
+    const currentUserApp = localStorage.getItem('wt_rakan_qr_application');
+    if (currentUserApp) {
+      const parsed = JSON.parse(currentUserApp);
+      if (parsed.agentCode === agentCode) {
+        parsed.status = 'APPROVED';
+        localStorage.setItem('wt_rakan_qr_application', JSON.stringify(parsed));
+      }
+    }
+  };
+
+  const handleRejectDuta = (agentCode: string) => {
+    const updated = rakanQrApps.map((item) => 
+      item.agentCode === agentCode ? { ...item, status: 'REJECTED' as const } : item
+    );
+    setRakanQrApps(updated);
+    localStorage.setItem('wt_admin_rakan_apps', JSON.stringify(updated));
+
+    const currentUserApp = localStorage.getItem('wt_rakan_qr_application');
+    if (currentUserApp) {
+      const parsed = JSON.parse(currentUserApp);
+      if (parsed.agentCode === agentCode) {
+        parsed.status = 'REJECTED';
+        localStorage.setItem('wt_rakan_qr_application', JSON.stringify(parsed));
+      }
+    }
+  };
+
   const handleUpdateQrDispatch = (agentCode: string, kitStatus: string) => {
     const updated = rakanQrApps.map((item) => 
       item.agentCode === agentCode ? { ...item, physicalKitStatus: kitStatus, trackingNumber: 'MYPOS-77492100' } : item
     );
     setRakanQrApps(updated);
-    localStorage.setItem('wt_agent_profile', JSON.stringify(updated[0]));
+    localStorage.setItem('wt_admin_rakan_apps', JSON.stringify(updated));
   };
 
   const handleApproveAdmin = (id: string) => {
@@ -264,12 +302,13 @@ export const AdminDashboardPage: React.FC = () => {
 
   const totalFunds = campaigns.reduce((acc, curr) => acc + (curr.collectedAmount || 0), 0);
   const pendingTijarahCount = tijarahApps.filter((a) => a.status === 'PENDING').length;
+  const pendingRakanQrCount = rakanQrApps.filter((a) => a.status === 'PENDING').length;
   const pendingAdminCount = adminUsers.filter((a) => a.status === 'PENDING').length;
 
   const tabOptions = [
     { id: 'campaigns', label: 'Projek Kempen', count: campaigns.length },
     { id: 'tijarah', label: 'Rakan Tijarah (SSM)', count: pendingTijarahCount },
-    { id: 'rakanqr', label: 'Kit Standee QR', count: rakanQrApps.length },
+    { id: 'rakanqr', label: 'Duta & Kit Standee QR', count: pendingRakanQrCount },
     { id: 'admins', label: 'Staf & Admin', count: pendingAdminCount },
   ];
 
@@ -289,7 +328,6 @@ export const AdminDashboardPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Triggers Create Campaign Modal */}
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
@@ -333,8 +371,8 @@ export const AdminDashboardPage: React.FC = () => {
               <QrCode className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl font-black text-blue-600 mt-2">{rakanQrApps.length} Ejen</p>
-          <span className="text-[10px] font-bold text-slate-400 mt-1 block">Komisen 5% Ditauliahkan</span>
+          <p className="text-xl font-black text-blue-600 mt-2">{pendingRakanQrCount} Menunggu</p>
+          <span className="text-[10px] font-bold text-slate-400 mt-1 block">Kelulusan & Penyaluran Elaun</span>
         </div>
 
         <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xs">
@@ -530,57 +568,89 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: Permohonan Kit Standee QR */}
+      {/* TAB 3: Permohonan Kit Standee QR & Ahli Duta */}
       {activeTab === 'rakanqr' && (
         <div className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden">
           <div className="p-5 border-b border-slate-100">
             <h3 className="font-extrabold text-[#0F2028] text-base">Permohonan Standee Fizikal (Duta QR)</h3>
-            <p className="text-xs text-slate-400">Pengurusan penghantaran kit standee dan rekod pentauliahan ejen</p>
+            <p className="text-xs text-slate-400">Semak permohonan duta, maklumat bank, dan kelulusan sebelum kit dihantar</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-5">Kod Ejen & Nama</th>
-                  <th className="py-3.5 px-4">Penempatan</th>
-                  <th className="py-3.5 px-4">Alamat Penghantaran Kit</th>
-                  <th className="py-3.5 px-4">Status Kit Standee</th>
-                  <th className="py-3.5 px-5 text-right">Tindakan Kurier</th>
+                  <th className="py-3.5 px-5">Kod & Nama Pemohon</th>
+                  <th className="py-3.5 px-4">Lokasi & Alamat Pos</th>
+                  <th className="py-3.5 px-4">Akaun Bank Elaun</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-5 text-right">Tindakan Kelulusan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-semibold">
                 {rakanQrApps.map((item) => (
                   <tr key={item.agentCode} className="hover:bg-slate-50/50 transition">
                     <td className="py-4 px-5">
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-mono text-[10px] font-bold">
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded font-mono text-[10px] font-bold">
                         {item.agentCode}
                       </span>
                       <p className="font-extrabold text-slate-800 mt-1">{item.fullName}</p>
-                      <span className="text-[10px] text-slate-400">{item.phone}</span>
+                      <span className="text-[10px] text-slate-400">{item.phone || item.phoneNumber}</span>
                     </td>
-                    <td className="py-4 px-4">
-                      <p className="text-slate-800 font-bold">{item.locationName}</p>
-                      <span className="text-[10px] text-slate-500 font-normal">{item.placementType}</span>
-                    </td>
-                    <td className="py-4 px-4 max-w-xs text-slate-600 text-[11px] font-normal leading-relaxed">
-                      {item.deliveryAddress}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 uppercase">
-                        <Package className="w-3 h-3 text-amber-600" />
-                        {item.physicalKitStatus}
+                    <td className="py-4 px-4 max-w-xs">
+                      <p className="text-slate-800 font-bold">{item.placementLocation || item.locationName || 'Lokasi Premis'}</p>
+                      <span className="text-[10px] text-slate-500 font-normal line-clamp-2">
+                        {item.shippingAddress || item.deliveryAddress || 'Alamat tidak disediakan'}
                       </span>
-                      <p className="text-[9px] text-slate-400 font-mono mt-0.5">{item.trackingNumber}</p>
+                    </td>
+                    <td className="py-4 px-4 text-slate-700 font-mono text-[11px]">
+                      {item.bankName ? (
+                        <div>
+                          <p className="font-bold text-slate-800">{item.bankName}</p>
+                          <span className="text-slate-500">{item.bankAccountNumber}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 text-[10px]">Tiada Maklumat Bank</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${
+                        item.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                        item.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                        'bg-amber-50 text-amber-700 border border-amber-200'
+                      }`}>
+                        {item.status}
+                      </span>
                     </td>
                     <td className="py-4 px-5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateQrDispatch(item.agentCode, 'TELAH DIPOS')}
-                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs"
-                      >
-                        Kemas Kini Tracking Pos
-                      </button>
+                      {item.status === 'PENDING' ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleApproveDuta(item.agentCode)}
+                            className="px-3 py-1.5 bg-[#1A8C4E] hover:bg-[#15703E] text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" /> Sahkan Duta
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectDuta(item.agentCode)}
+                            className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition"
+                          >
+                            Tolak
+                          </button>
+                        </div>
+                      ) : item.status === 'APPROVED' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQrDispatch(item.agentCode, 'TELAH DIPOS')}
+                          className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                        >
+                          Kemas Kini Pos
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 font-medium">Permohonan Ditolak</span>
+                      )}
                     </td>
                   </tr>
                 ))}

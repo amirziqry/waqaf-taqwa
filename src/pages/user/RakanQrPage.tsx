@@ -10,11 +10,34 @@ import {
   Printer,
   Sparkles,
   UserCheck,
-  Award
+  Award,
+  CreditCard,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import api from '../../api/client';
 
 export type MembershipTier = 'BIASA' | 'DUTA';
+
+const MALAYSIAN_BANKS = [
+  'Maybank',
+  'CIMB Bank',
+  'Public Bank',
+  'RHB Bank',
+  'Hong Leong Bank',
+  'AmBank',
+  'Bank Islam Malaysia',
+  'Bank Muamalat',
+  'Bank Kerjasama Rakyat Malaysia (Bank Rakyat)',
+  'Affin Bank',
+  'Alliance Bank',
+  'Agrobank',
+  'BSN (Bank Simpanan Nasional)',
+  'HSBC Bank Malaysia',
+  'OCBC Bank Malaysia',
+  'Standard Chartered Bank',
+  'UOB Malaysia',
+] as const;
 
 interface RakanApplication {
   id: string;
@@ -26,7 +49,9 @@ interface RakanApplication {
   organizationName: string;
   placementLocation?: string;
   shippingAddress?: string;
-  status: 'PENDING' | 'APPROVED';
+  bankName?: string;
+  bankAccountNumber?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   agentCode: string;
   createdAt: string;
 }
@@ -47,6 +72,8 @@ export const RakanQrPage: React.FC = () => {
     organizationName: '',
     placementLocation: '',
     shippingAddress: '',
+    bankName: '',
+    bankAccountNumber: '',
   });
 
   useEffect(() => {
@@ -64,7 +91,12 @@ export const RakanQrPage: React.FC = () => {
     e.preventDefault();
     setSubmitting(true);
 
-    const prefix = membershipTier === 'DUTA' ? 'DUTA' : 'AHLI';
+    const isDuta = membershipTier === 'DUTA';
+    const prefix = isDuta ? 'DUTA' : 'AHLI';
+    
+    // Ahli Duta requires Admin verification; Ahli Biasa is active immediately
+    const initialStatus = isDuta ? 'PENDING' : 'APPROVED';
+
     const newApplication: RakanApplication = {
       id: `RAKAN-${Date.now()}`,
       membershipTier,
@@ -73,9 +105,11 @@ export const RakanQrPage: React.FC = () => {
       phoneNumber: formData.phoneNumber,
       organizationType: formData.organizationType,
       organizationName: formData.organizationName,
-      placementLocation: membershipTier === 'DUTA' ? formData.placementLocation : 'Atas Talian / Komuniti Digital',
-      shippingAddress: membershipTier === 'DUTA' ? formData.shippingAddress : undefined,
-      status: 'APPROVED',
+      placementLocation: isDuta ? formData.placementLocation : 'Atas Talian / Komuniti Digital',
+      shippingAddress: isDuta ? formData.shippingAddress : undefined,
+      bankName: isDuta ? formData.bankName : undefined,
+      bankAccountNumber: isDuta ? formData.bankAccountNumber : undefined,
+      status: initialStatus,
       agentCode: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`,
       createdAt: new Date().toISOString(),
     };
@@ -87,7 +121,7 @@ export const RakanQrPage: React.FC = () => {
       // Offline fallback
     }
 
-    // 2. Local storage persistence
+    // 2. Sync to local client application & shared admin moderation list
     localStorage.setItem('wt_rakan_qr_application', JSON.stringify(newApplication));
     
     const allApps = JSON.parse(localStorage.getItem('wt_admin_rakan_apps') || '[]');
@@ -101,9 +135,11 @@ export const RakanQrPage: React.FC = () => {
     window.print();
   };
 
-  // View when user already has an active badge/standee
+  // View when user already has an active or pending badge/application
   if (hasExistingApp) {
     const isDuta = hasExistingApp.membershipTier === 'DUTA';
+    const isPending = hasExistingApp.status === 'PENDING';
+    const isRejected = hasExistingApp.status === 'REJECTED';
 
     return (
       <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -115,94 +151,181 @@ export const RakanQrPage: React.FC = () => {
           <span>Kembali ke Laman Utama</span>
         </button>
 
-        <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs space-y-6 text-center">
-          <div className={`inline-flex p-3 rounded-2xl mb-1 ${isDuta ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-[#1A8C4E]'}`}>
-            {isDuta ? <Award className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
-          </div>
-
-          <div>
-            <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full ${
-              isDuta ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'
-            }`}>
-              {isDuta ? 'Status: Duta Waqaf Komuniti (Rasmi)' : 'Status: Rakan Waqaf Sah (Ahli Biasa)'}
-            </span>
-            <h2 className="text-xl font-black text-[#0F2028] mt-2">
-              {isDuta ? 'Kad & Standee Akrilik Duta Anda' : 'Lencana Digital & QR Komuniti'}
-            </h2>
-            <p className="text-xs text-slate-400">
-              Kod Rujukan: <span className="font-extrabold text-slate-700">{hasExistingApp.agentCode}</span>
-            </p>
-          </div>
-
-          {/* Card / Badge Display */}
-          <div className={`max-w-sm mx-auto p-6 rounded-3xl border-2 shadow-sm space-y-4 text-left ${
-            isDuta 
-              ? 'bg-gradient-to-b from-amber-50/40 via-white to-amber-50/20 border-amber-400/40' 
-              : 'bg-gradient-to-b from-slate-50 to-emerald-50/40 border-emerald-500/20'
-          }`}>
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-              <div>
-                <p className={`text-xs font-black tracking-tight ${isDuta ? 'text-amber-700' : 'text-[#1A8C4E]'}`}>
-                  Waqaf Taqwa
-                </p>
-                <p className="text-[9px] text-slate-400 font-semibold">
-                  {isDuta ? 'Duta Rasmi & Penggerak Ummah' : 'Rakan Sah Waqaf Digital'}
-                </p>
-              </div>
-              <Building2 className="w-5 h-5 text-slate-400" />
+        {/* PENDING APPROVAL STATE FOR AHLI DUTA */}
+        {isPending && (
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-amber-200/80 shadow-xs space-y-6 text-center">
+            <div className="inline-flex p-3.5 bg-amber-50 rounded-2xl text-amber-600">
+              <Clock className="w-8 h-8 animate-pulse" />
             </div>
 
-            <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <div className="relative p-2 bg-white rounded-xl border border-slate-100">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=DuitNow-WaqafTaqwa-${hasExistingApp.agentCode}`}
-                  alt="Agent Standee QR"
-                  className="w-40 h-40 object-contain rounded-lg"
-                />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="bg-white p-1 rounded-full shadow-md border border-slate-100">
-                    <QrCode className={`w-5 h-5 ${isDuta ? 'text-amber-600' : 'text-[#1A8C4E]'}`} />
-                  </div>
-                </div>
-              </div>
-              <span className="text-[10px] font-extrabold text-slate-700 mt-2">
-                Imbas untuk Berwaqaf Terus
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-amber-100 text-amber-900 uppercase tracking-wider">
+                Status: Menunggu Kelulusan Pentadbir
               </span>
-              <span className="text-[9px] text-slate-400">DuitNow QR Kebangsaan</span>
+              <h2 className="text-xl font-black text-[#0F2028] pt-1">
+                Permohonan Ahli Duta Sedang Disemak
+              </h2>
+              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                Permohonan anda dan kelayakan kit standee akrilik premis sedang diteliti oleh pihak pentadbir Waqaf Taqwa.
+              </p>
             </div>
 
-            <div className="text-xs space-y-1 pt-1">
-              <p className="font-extrabold text-slate-800">{hasExistingApp.fullName}</p>
-              {isDuta && (
-                <p className="text-[11px] text-slate-500">
-                  Lokasi:{' '}
-                  <span className="font-semibold text-slate-700">
-                    {hasExistingApp.placementLocation}
-                  </span>
-                </p>
-              )}
+            <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60 max-w-md mx-auto text-left text-xs space-y-2">
+              <div className="flex justify-between border-b border-amber-200/40 pb-2">
+                <span className="text-slate-500">Kod Permohonan:</span>
+                <span className="font-mono font-bold text-slate-800">{hasExistingApp.agentCode}</span>
+              </div>
+              <div className="flex justify-between border-b border-amber-200/40 pb-2">
+                <span className="text-slate-500">Nama Pemohon:</span>
+                <span className="font-bold text-slate-800">{hasExistingApp.fullName}</span>
+              </div>
+              <div className="flex justify-between border-b border-amber-200/40 pb-2">
+                <span className="text-slate-500">Lokasi Premis:</span>
+                <span className="font-semibold text-slate-800">{hasExistingApp.placementLocation}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Akaun Penyaluran Elaun:</span>
+                <span className="font-semibold text-slate-800">{hasExistingApp.bankName}</span>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={() => {
+                  localStorage.removeItem('wt_rakan_qr_application');
+                  setHasExistingApp(null);
+                }}
+                className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition"
+              >
+                Batal & Hantar Permohonan Baharu
+              </button>
             </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <button
-              onClick={handlePrint}
-              className="h-11 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition"
-            >
-              <Printer className="w-4 h-4" />
-              <span>{isDuta ? 'Cetak Standee Meja' : 'Cetak / Muat Turun Kad'}</span>
-            </button>
+        {/* REJECTED STATE */}
+        {isRejected && (
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-rose-200 shadow-xs space-y-4 text-center">
+            <div className="inline-flex p-3 bg-rose-50 rounded-2xl text-rose-600">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-black text-[#0F2028]">Permohonan Tidak Diluluskan</h2>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Maaf, permohonan standee fizikal anda tidak melepasi semakan pentadbir. Sila hubungi pihak pengurusan untuk maklumat lanjut.
+            </p>
             <button
               onClick={() => {
                 localStorage.removeItem('wt_rakan_qr_application');
                 setHasExistingApp(null);
               }}
-              className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition"
+              className="px-6 py-2.5 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs transition"
             >
-              <span>Hantar Permohonan Baharu</span>
+              Cuba Mohon Semula
             </button>
           </div>
-        </div>
+        )}
+
+        {/* APPROVED STATE (Ahli Biasa OR Admin-Approved Ahli Duta) */}
+        {!isPending && !isRejected && (
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs space-y-6 text-center">
+            <div className={`inline-flex p-3 rounded-2xl mb-1 ${isDuta ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-[#1A8C4E]'}`}>
+              {isDuta ? <Award className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
+            </div>
+
+            <div>
+              <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full ${
+                isDuta ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'
+              }`}>
+                {isDuta ? 'Status: Duta Waqaf Komuniti (Disahkan)' : 'Status: Rakan Waqaf Sah (Ahli Biasa)'}
+              </span>
+              <h2 className="text-xl font-black text-[#0F2028] mt-2">
+                {isDuta ? 'Kad & Standee Akrilik Duta Anda' : 'Lencana Digital & QR Komuniti'}
+              </h2>
+              <p className="text-xs text-slate-400">
+                Kod Rujukan: <span className="font-extrabold text-slate-700">{hasExistingApp.agentCode}</span>
+              </p>
+            </div>
+
+            {/* Card / Badge Display */}
+            <div className={`max-w-sm mx-auto p-6 rounded-3xl border-2 shadow-sm space-y-4 text-left ${
+              isDuta 
+                ? 'bg-gradient-to-b from-amber-50/40 via-white to-amber-50/20 border-amber-400/40' 
+                : 'bg-gradient-to-b from-slate-50 to-emerald-50/40 border-emerald-500/20'
+            }`}>
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                <div>
+                  <p className={`text-xs font-black tracking-tight ${isDuta ? 'text-amber-700' : 'text-[#1A8C4E]'}`}>
+                    Waqaf Taqwa
+                  </p>
+                  <p className="text-[9px] text-slate-400 font-semibold">
+                    {isDuta ? 'Duta Rasmi & Penggerak Ummah' : 'Rakan Sah Waqaf Digital'}
+                  </p>
+                </div>
+                <Building2 className="w-5 h-5 text-slate-400" />
+              </div>
+
+              <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <div className="relative p-2 bg-white rounded-xl border border-slate-100">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=DuitNow-WaqafTaqwa-${hasExistingApp.agentCode}`}
+                    alt="Agent Standee QR"
+                    className="w-40 h-40 object-contain rounded-lg"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="bg-white p-1 rounded-full shadow-md border border-slate-100">
+                      <QrCode className={`w-5 h-5 ${isDuta ? 'text-amber-600' : 'text-[#1A8C4E]'}`} />
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-extrabold text-slate-700 mt-2">
+                  Imbas untuk Berwaqaf Terus
+                </span>
+                <span className="text-[9px] text-slate-400">DuitNow QR Kebangsaan</span>
+              </div>
+
+              <div className="text-xs space-y-1 pt-1">
+                <p className="font-extrabold text-slate-800">{hasExistingApp.fullName}</p>
+                {isDuta && (
+                  <>
+                    <p className="text-[11px] text-slate-500">
+                      Lokasi:{' '}
+                      <span className="font-semibold text-slate-700">
+                        {hasExistingApp.placementLocation}
+                      </span>
+                    </p>
+                    {hasExistingApp.bankName && (
+                      <p className="text-[11px] text-slate-500">
+                        Akaun Elaun/Insentif:{' '}
+                        <span className="font-semibold text-slate-700">
+                          {hasExistingApp.bankName} (•••• {hasExistingApp.bankAccountNumber?.slice(-4)})
+                        </span>
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={handlePrint}
+                className="h-11 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition"
+              >
+                <Printer className="w-4 h-4" />
+                <span>{isDuta ? 'Cetak Standee Meja' : 'Cetak / Muat Turun Kad'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('wt_rakan_qr_application');
+                  setHasExistingApp(null);
+                }}
+                className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition"
+              >
+                <span>Hantar Permohonan Baharu</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -270,11 +393,11 @@ export const RakanQrPage: React.FC = () => {
                   <Sparkles className={`w-4 h-4 ${membershipTier === 'DUTA' ? 'text-amber-600' : 'text-slate-400'}`} />
                 </div>
                 <p className="text-[11px] text-slate-500 leading-snug">
-                  Menerima kit standee akrilik fizikal & pelekat kalis cuaca untuk diletakkan di kaunter atau premis.
+                  Menerima kit standee akrilik fizikal & pelekat kalis cuaca untuk diletakkan di kaunter atau premis, beserta elaun insentif.
                 </p>
               </div>
               <span className="text-[10px] font-bold text-amber-700 mt-3 inline-block">
-                ✓ Termasuk Standee & Pos Fizikal
+                ⏳ Memerlukan Kelulusan Pentadbir
               </span>
             </div>
           </div>
@@ -346,9 +469,14 @@ export const RakanQrPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Duta Exclusive Fields: Physical Location & Shipping Details */}
+          {/* Duta Exclusive Fields: Physical Location, Shipping Details & Bank Account */}
           {membershipTier === 'DUTA' && (
-            <>
+            <div className="space-y-4 pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2 text-amber-700 font-extrabold text-xs">
+                <CreditCard className="w-4 h-4" />
+                <span>Maklumat Penghantaran & Penyaluran Elaun Duta</span>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-[#0F2028]">Lokasi Cadangan Pameran QR Fizikal</label>
                 <input
@@ -372,7 +500,40 @@ export const RakanQrPage: React.FC = () => {
                   className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none resize-none transition"
                 />
               </div>
-            </>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-[#0F2028]">Nama Bank (Malaysia)</label>
+                  <select
+                    required
+                    value={formData.bankName}
+                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none transition"
+                  >
+                    <option value="">-- Pilih Bank --</option>
+                    {MALAYSIAN_BANKS.map((bank) => (
+                      <option key={bank} value={bank}>
+                        {bank}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-[#0F2028]">Nombor Akaun Bank</label>
+                  <input
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    value={formData.bankAccountNumber}
+                    onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value.replace(/\D/g, '') })}
+                    placeholder="cth. 164258902831"
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none transition"
+                  />
+                  <p className="text-[10px] text-slate-400">Pastikan nama pemegang akaun sama seperti nama MyKad.</p>
+                </div>
+              </div>
+            </div>
           )}
 
           <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl flex items-center gap-3">
