@@ -1,0 +1,65 @@
+# Spring Boot / Maven
+waqaf-taqwa-backend/target/
+waqaf-taqwa-backend/.mvn/wrapper/maven-wrapper.jar
+!waqaf-taqwa-backend/src/main/**/target/
+!waqaf-taqwa-backend/src/test/**/target/
+
+# Spring Boot local configuration
+waqaf-taqwa-backend/src/main/resources/application-local.properties
+waqaf-taqwa-backend/src/main/resources/application-local.properties
+# application-docker.properties is intentionally NOT ignored
+
+### STS ###
+waqaf-taqwa-backend/.apt_generated
+waqaf-taqwa-backend/.classpath
+waqaf-taqwa-backend/.factorypath
+waqaf-taqwa-backend/.project
+waqaf-taqwa-backend/.settings
+waqaf-taqwa-backend/.springBeans
+waqaf-taqwa-backend/.sts4-cache
+
+### IntelliJ IDEA ###
+waqaf-taqwa-backend/.idea
+waqaf-taqwa-backend/*.iws
+waqaf-taqwa-backend/*.iml
+waqaf-taqwa-backend/*.ipr
+
+### NetBeans ###
+waqaf-taqwa-backend/nbproject/private/
+waqaf-taqwa-backend/nbbuild/
+waqaf-taqwa-backend/dist/
+waqaf-taqwa-backend/nbdist/
+waqaf-taqwa-backend/.nb-gradle/
+
+### Build ###
+waqaf-taqwa-backend/build/
+!waqaf-taqwa-backend/src/main/**/build/
+!waqaf-taqwa-backend/src/test/**/build/
+
+### VS Code ###
+waqaf-taqwa-backend/.vscode/
+
+### Environment / secrets ###
+.env
+**/.env
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+# React
+waqaf-taqwa-frontend/node_modules/
+waqaf-taqwa-frontend/dist/
+waqaf-taqwa-frontend/.vite/
+
+Frontend environment / secrets
+
+waqaf-taqwa-frontend/.env
+waqaf-taqwa-frontend/.env.local
+waqaf-taqwa-frontend/.env.development
+waqaf-taqwa-frontend/.env.production
+waqaf-taqwa-frontend/.env.*.local
+
+Vite cache
+
+waqaf-taqwa-frontend/.cache/

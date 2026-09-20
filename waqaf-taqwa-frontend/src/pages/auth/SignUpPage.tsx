@@ -1,0 +1,179 @@
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { User, Lock, Mail, ArrowRight, Phone } from "lucide-react";
+import api from "../../api/client";
+import { register } from "../../api/services/user/UserService";
+
+export const SignUpPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      // await api.post('/personal/register', {
+      //   accountHolderName: name,         // Include name in the payload
+      //   // nama: name,
+      //   username,
+      //   email,
+      //   phone,
+      //   // phoneNumber: phone,
+      //   password,
+      //   modMesra: false,
+      // });
+
+      const response = await register(
+        username,
+        name, // Include name in the payload
+        email,
+        phone,
+        password,
+      );
+
+      localStorage.setItem("wt_user_role", response.role.toLowerCase());
+      localStorage.setItem("wt_user_name", response.username);
+      navigate("/auth/login");
+    } catch (err: any) {
+      setErrorMsg(
+        err.response?.data?.message || "Pendaftaran gagal. Sila cuba lagi.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6 bg-white min-h-full max-w-md mx-auto">
+      <div className="text-center space-y-1">
+        <h1 className="text-2xl font-black text-[#0F2028]">
+          Daftar Akaun Pewakaf
+        </h1>
+        <p className="text-xs text-slate-500">
+          Sertai platform Waqaf Taqwa digital hari ini
+        </p>
+      </div>
+
+      {errorMsg && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs font-bold text-red-600 text-center">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Registration Form */}
+      <form onSubmit={handleRegister} className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">
+            Nama Penuh (Mengikut MyKad)
+          </label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <User className="w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ahmad bin Abdullah"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">
+            Nama Pengguna (Username)
+          </label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <User className="w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="ahmad99"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">
+            No. Telefon
+          </label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <Phone className="w-4 h-4 text-slate-400" />
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="0123456789"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">E-mel</label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <Mail className="w-4 h-4 text-slate-400" />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ahmad@example.com"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-extrabold text-[#0F2028]">
+            Kata Laluan
+          </label>
+          <div className="h-12 bg-white border border-slate-200 rounded-2xl px-4 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+            <Lock className="w-4 h-4 text-slate-400" />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] disabled:bg-slate-300 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99] mt-2"
+        >
+          {loading ? "Mendaftar..." : "Lengkapkan Pendaftaran"}
+          {!loading && <ArrowRight className="w-4 h-4" />}
+        </button>
+      </form>
+
+      <div className="text-center pt-1">
+        <p className="text-xs text-slate-500">
+          Sudah mempunyai akaun?{" "}
+          <Link
+            to="/auth/login"
+            className="text-[#1A8C4E] font-bold hover:underline"
+          >
+            Log Masuk
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};

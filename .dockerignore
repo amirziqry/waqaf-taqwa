@@ -1,0 +1,30 @@
+# Backend
+
+## Git
+
+waqaf-taqwa-backend/.gitignore
+waqaf-taqwa-backend/.gitattributes
+
+# Local Spring configuration
+
+waqaf-taqwa-backend/src/main/resources/application-local.properties
+waqaf-taqwa-backend/src/main/resources/static/\*
+!waqaf-taqwa-backend/src/main/resources/static/.gitkeep
+
+# Build output
+
+waqaf-taqwa-backend/target
+
+# Eclipse / STS
+
+waqaf-taqwa-backend/.metadata/
+waqaf-taqwa-backend/.settings/
+waqaf-taqwa-backend/.classpath
+waqaf-taqwa-backend/.project
+waqaf-taqwa-backend/HELP.md
+
+# Logs
+
+waqaf-taqwa-backend/\*.log
+
+.env

@@ -1,0 +1,86 @@
+package com.taqwa.gowaqaf.modules.organization.content.news.controller;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.taqwa.gowaqaf.modules.organization.content.news.component.image.dto.NewsImageKey;
+import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsDetails;
+import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsUploadRequest;
+import com.taqwa.gowaqaf.modules.organization.content.news.dto.NewsUploadResponse;
+import com.taqwa.gowaqaf.modules.organization.content.news.service.NewsService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/organization/news")
+@RequiredArgsConstructor
+public class NewsController {
+
+	private final NewsService newsService;
+
+	@PostMapping
+	@PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+	public ResponseEntity<NewsUploadResponse> createNews(@RequestBody NewsUploadRequest request) {
+		NewsUploadResponse response = newsService.createNews(request);
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@PutMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+	public ResponseEntity<NewsUploadResponse> updateNewsById(@PathVariable UUID id,
+			@RequestBody NewsUploadRequest request) {
+		NewsUploadResponse response = newsService.updateNewsById(id, request);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PutMapping("/{id}/image-keys")
+	@PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+	public ResponseEntity<Void> updateNewsImageKeysById(@PathVariable UUID id,
+			@RequestBody List<NewsImageKey> request) {
+		newsService.uploadNewsImageKeysById(id, request);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<NewsDetails> getNewsDetailsById(@PathVariable UUID id) {
+		NewsDetails response = newsService.getNewsDetailsById(id);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping
+	public ResponseEntity<Page<NewsDetails>> getAllNewsDetails(
+			@PageableDefault(size = 10, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		Page<NewsDetails> response = newsService.getAllNews(pageable);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+	public ResponseEntity<Void> deleteNewsById(@PathVariable UUID id) {
+		newsService.deleteNewsById(id);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+}
