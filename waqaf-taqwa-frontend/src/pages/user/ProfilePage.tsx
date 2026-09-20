@@ -17,8 +17,11 @@ import {
   Clock,
 } from "lucide-react";
 import api from "../../api/client";
-import { accountMe } from "../../api/services/AdminService";
-import { getContribution, logout } from "../../api/services/user/UserService";
+import {
+  accountMe,
+  getContribution,
+  logout,
+} from "../../api/services/user/UserService";
 
 interface DutaApplication {
   id: string;

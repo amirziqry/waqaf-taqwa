@@ -8,7 +8,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import api from "../../api/client";
-import { adminLogin, adminRegister } from "../../api/services/AdminService";
+import {
+  adminLogin,
+  adminRegister,
+} from "../../api/services/admin/AdminService";
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;

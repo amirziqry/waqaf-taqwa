@@ -13,16 +13,20 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "../../api/client";
+import { AdminLoginPage } from "../auth/AdminLoginPage";
 import {
   createProject,
-  getAllAdmins,
   getAllProjects,
-  getAllRakanQrs,
-  getDonationCollections,
   updateProjectImageKeys,
+} from "../../api/services/projects/ProjectService";
+import {
+  getAllRakanQrs,
   updateRakanQrStatus,
-} from "../../api/services/AdminService";
-import { AdminLoginPage } from "../auth/AdminLoginPage";
+} from "../../api/services/rakanqr/RakanQrService";
+import {
+  getAllAdmins,
+  getDonationCollections,
+} from "../../api/services/admin/AdminService";
 
 interface Campaign {
   id: string;

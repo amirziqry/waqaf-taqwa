@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ReceiptText, Download, Search } from "lucide-react";
 import api from "../../api/client";
 import type { TransactionRecordDTO } from "../../types/api";
-import { getAllDonations } from "../../api/services/PersonalService";
+import { getAllDonations } from "../../api/services/user/UserService";
 
 export const TransactionHistoryPage: React.FC = () => {
   const navigate = useNavigate();

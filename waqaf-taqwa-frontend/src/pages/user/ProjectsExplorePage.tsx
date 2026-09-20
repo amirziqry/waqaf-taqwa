@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import api from "../../api/client";
-import { getAllProjects } from "../../api/services/AdminService";
+import { getAllProjects } from "../../api/services/projects/ProjectService";
 
 interface CampaignItem {
   id: string | number;
