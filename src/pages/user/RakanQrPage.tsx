@@ -93,7 +93,7 @@ export const RakanQrPage: React.FC = () => {
       </button>
 
       {/* Hero Banner */}
-      <div className="bg-gradient-to-br from-[#0F2028] to-[#1A3340] rounded-3xl p-6 text-white space-y-3 relative overflow-hidden shadow-sm">
+      <div className="bg-linear-to-br from-[#0F2028] to-[#1A3340] rounded-3xl p-6 text-white space-y-3 relative overflow-hidden shadow-sm">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black uppercase tracking-wider">
             Inisiatif Komuniti
@@ -118,7 +118,7 @@ export const RakanQrPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 inline-block text-left min-w-[260px]">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 inline-block text-left min-w-65">
             <div className="flex items-center justify-between gap-4">
               <span className="text-[10px] uppercase font-bold text-slate-400">Kategori</span>
               <span className="text-[10px] font-extrabold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
