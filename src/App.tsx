@@ -12,6 +12,7 @@ import { HomePage } from './pages/user/HomePage';
 import { ProjectsExplorePage } from './pages/user/ProjectsExplorePage';
 import { ScanDonatePage } from './pages/user/ScanDonatePage';
 import { TransactionHistoryPage } from './pages/user/TransactionHistoryPage';
+import { ApplyTijarahPage } from './pages/user/ApplyTijarahPage';
 import { ProfilePage } from './pages/user/ProfilePage';
 import { RakanQrPage } from './pages/user/RakanQrPage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -80,6 +81,7 @@ export const App: React.FC = () => {
       <Route path="/transaksi" element={<UserShell><TransactionHistoryPage /></UserShell>} />
       <Route path="/profil" element={<UserShell><ProfilePage /></UserShell>} />
       <Route path="/rakan-qr" element={<UserShell><RakanQrPage /></UserShell>} />
+      <Route path="/apply-tijarah" element={<UserShell><ApplyTijarahPage /></UserShell>} />
 
       {/* 2. Authentication Pages */}
       <Route path="/auth/login" element={<LoginPage />} />
