@@ -2,565 +2,312 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   QrCode, 
-  ShieldCheck, 
-  Send, 
-  CheckCircle2,  
-  ArrowLeft, 
-  Building2,  
-  Printer,
-  Sparkles,
-  UserCheck,
+  CheckCircle2, 
+  User, 
+  Phone, 
+  Mail, 
+  ArrowRight, 
+  Building2, 
+  Truck, 
+  ArrowLeft,
   Award,
-  CreditCard,
-  Clock,
-  AlertCircle
+  Users
 } from 'lucide-react';
-import api from '../../api/client';
-
-export type MembershipTier = 'BIASA' | 'DUTA';
-
-const MALAYSIAN_BANKS = [
-  'Maybank',
-  'CIMB Bank',
-  'Public Bank',
-  'RHB Bank',
-  'Hong Leong Bank',
-  'AmBank',
-  'Bank Islam Malaysia',
-  'Bank Muamalat',
-  'Bank Kerjasama Rakyat Malaysia (Bank Rakyat)',
-  'Affin Bank',
-  'Alliance Bank',
-  'Agrobank',
-  'BSN (Bank Simpanan Nasional)',
-  'HSBC Bank Malaysia',
-  'OCBC Bank Malaysia',
-  'Standard Chartered Bank',
-  'UOB Malaysia',
-] as const;
-
-interface RakanApplication {
-  id: string;
-  membershipTier: MembershipTier;
-  fullName: string;
-  icNumber: string;
-  phoneNumber: string;
-  organizationType: 'INDIVIDUAL' | 'MASJID' | 'SEKOLAH' | 'KOMUNITI';
-  organizationName: string;
-  placementLocation?: string;
-  shippingAddress?: string;
-  bankName?: string;
-  bankAccountNumber?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  agentCode: string;
-  createdAt: string;
-}
 
 export const RakanQrPage: React.FC = () => {
   const navigate = useNavigate();
-  const [hasExistingApp, setHasExistingApp] = useState<RakanApplication | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState('pemohon_baru');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [generatedAgentCode, setGeneratedAgentCode] = useState('');
+  const [membershipTier, setMembershipTier] = useState<'BIASA' | 'DUTA'>('DUTA');
 
-  // Default selection: Ahli Biasa vs Ahli Duta
-  const [membershipTier, setMembershipTier] = useState<MembershipTier>('BIASA');
-
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     fullName: '',
-    icNumber: '',
-    phoneNumber: '',
-    organizationType: 'INDIVIDUAL' as 'INDIVIDUAL' | 'MASJID' | 'SEKOLAH' | 'KOMUNITI',
-    organizationName: '',
-    placementLocation: '',
-    shippingAddress: '',
-    bankName: '',
-    bankAccountNumber: '',
+    phone: '',
+    email: '',
+    locationName: '',
+    placementType: 'Premis Perniagaan / Restoran',
+    deliveryAddress: '',
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('wt_rakan_qr_application');
-    if (saved) {
+    const user = localStorage.getItem('wt_user_name') || 'pemohon_baru';
+    setCurrentUsername(user);
+
+    // Check if THIS specific user has already submitted
+    const savedUserApp = localStorage.getItem(`wt_rakan_qr_app_${user}`);
+    if (savedUserApp) {
       try {
-        setHasExistingApp(JSON.parse(saved));
-      } catch {
-        // Fallback
-      }
+        const parsed = JSON.parse(savedUserApp);
+        if (parsed.agentCode) {
+          setGeneratedAgentCode(parsed.agentCode);
+          setMembershipTier(parsed.membershipTier || 'DUTA');
+          setIsSubmitted(true);
+        }
+      } catch {}
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitApplication = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
 
-    const isDuta = membershipTier === 'DUTA';
-    const prefix = isDuta ? 'DUTA' : 'AHLI';
-    
-    // Ahli Duta requires Admin verification; Ahli Biasa is active immediately
-    const initialStatus = isDuta ? 'PENDING' : 'APPROVED';
+    const prefix = membershipTier === 'DUTA' ? 'DUTA' : 'AHLI';
+    const agentCode = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const newApplication: RakanApplication = {
-      id: `RAKAN-${Date.now()}`,
+    const applicationData = {
+      id: `REQ-${Date.now()}`,
+      agentCode,
+      username: currentUsername,
+      fullName: form.fullName,
+      email: form.email || `${currentUsername}@taqwa.com`,
+      phone: form.phone,
+      placementLocation: form.locationName,
+      placementType: form.placementType,
+      shippingAddress: form.deliveryAddress,
       membershipTier,
-      fullName: formData.fullName,
-      icNumber: formData.icNumber,
-      phoneNumber: formData.phoneNumber,
-      organizationType: formData.organizationType,
-      organizationName: formData.organizationName,
-      placementLocation: isDuta ? formData.placementLocation : 'Atas Talian / Komuniti Digital',
-      shippingAddress: isDuta ? formData.shippingAddress : undefined,
-      bankName: isDuta ? formData.bankName : undefined,
-      bankAccountNumber: isDuta ? formData.bankAccountNumber : undefined,
-      status: initialStatus,
-      agentCode: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`,
-      createdAt: new Date().toISOString(),
+      status: 'PENDING' as const,
+      createdAt: new Date().toISOString().split('T')[0],
     };
 
-    // 1. Attempt API Post
-    try {
-      await api.post('/rakan-qr/apply', newApplication).catch(() => null);
-    } catch {
-      // Offline fallback
-    }
+    // 1. Save strictly under this specific user's key
+    localStorage.setItem(`wt_rakan_qr_app_${currentUsername}`, JSON.stringify(applicationData));
 
-    // 2. Sync to local client application & shared admin moderation list
-    localStorage.setItem('wt_rakan_qr_application', JSON.stringify(newApplication));
-    
-    const allApps = JSON.parse(localStorage.getItem('wt_admin_rakan_apps') || '[]');
-    localStorage.setItem('wt_admin_rakan_apps', JSON.stringify([newApplication, ...allApps]));
+    // 2. Add to the admin approval queue
+    const existingApps = JSON.parse(localStorage.getItem('wt_admin_rakan_apps') || '[]');
+    localStorage.setItem('wt_admin_rakan_apps', JSON.stringify([applicationData, ...existingApps]));
 
-    setHasExistingApp(newApplication);
-    setSubmitting(false);
+    setGeneratedAgentCode(agentCode);
+    setIsSubmitted(true);
   };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // View when user already has an active or pending badge/application
-  if (hasExistingApp) {
-    const isDuta = hasExistingApp.membershipTier === 'DUTA';
-    const isPending = hasExistingApp.status === 'PENDING';
-    const isRejected = hasExistingApp.status === 'REJECTED';
-
-    return (
-      <div className="max-w-2xl mx-auto space-y-6 pb-12">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xs transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Laman Utama</span>
-        </button>
-
-        {/* PENDING APPROVAL STATE FOR AHLI DUTA */}
-        {isPending && (
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-amber-200/80 shadow-xs space-y-6 text-center">
-            <div className="inline-flex p-3.5 bg-amber-50 rounded-2xl text-amber-600">
-              <Clock className="w-8 h-8 animate-pulse" />
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-amber-100 text-amber-900 uppercase tracking-wider">
-                Status: Menunggu Kelulusan Pentadbir
-              </span>
-              <h2 className="text-xl font-black text-[#0F2028] pt-1">
-                Permohonan Ahli Duta Sedang Disemak
-              </h2>
-              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                Permohonan anda dan kelayakan kit standee akrilik premis sedang diteliti oleh pihak pentadbir Waqaf Taqwa.
-              </p>
-            </div>
-
-            <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60 max-w-md mx-auto text-left text-xs space-y-2">
-              <div className="flex justify-between border-b border-amber-200/40 pb-2">
-                <span className="text-slate-500">Kod Permohonan:</span>
-                <span className="font-mono font-bold text-slate-800">{hasExistingApp.agentCode}</span>
-              </div>
-              <div className="flex justify-between border-b border-amber-200/40 pb-2">
-                <span className="text-slate-500">Nama Pemohon:</span>
-                <span className="font-bold text-slate-800">{hasExistingApp.fullName}</span>
-              </div>
-              <div className="flex justify-between border-b border-amber-200/40 pb-2">
-                <span className="text-slate-500">Lokasi Premis:</span>
-                <span className="font-semibold text-slate-800">{hasExistingApp.placementLocation}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Akaun Penyaluran Elaun:</span>
-                <span className="font-semibold text-slate-800">{hasExistingApp.bankName}</span>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={() => {
-                  localStorage.removeItem('wt_rakan_qr_application');
-                  setHasExistingApp(null);
-                }}
-                className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition"
-              >
-                Batal & Hantar Permohonan Baharu
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* REJECTED STATE */}
-        {isRejected && (
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-rose-200 shadow-xs space-y-4 text-center">
-            <div className="inline-flex p-3 bg-rose-50 rounded-2xl text-rose-600">
-              <AlertCircle className="w-8 h-8" />
-            </div>
-            <h2 className="text-xl font-black text-[#0F2028]">Permohonan Tidak Diluluskan</h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Maaf, permohonan standee fizikal anda tidak melepasi semakan pentadbir. Sila hubungi pihak pengurusan untuk maklumat lanjut.
-            </p>
-            <button
-              onClick={() => {
-                localStorage.removeItem('wt_rakan_qr_application');
-                setHasExistingApp(null);
-              }}
-              className="px-6 py-2.5 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs transition"
-            >
-              Cuba Mohon Semula
-            </button>
-          </div>
-        )}
-
-        {/* APPROVED STATE (Ahli Biasa OR Admin-Approved Ahli Duta) */}
-        {!isPending && !isRejected && (
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs space-y-6 text-center">
-            <div className={`inline-flex p-3 rounded-2xl mb-1 ${isDuta ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-[#1A8C4E]'}`}>
-              {isDuta ? <Award className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
-            </div>
-
-            <div>
-              <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full ${
-                isDuta ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'
-              }`}>
-                {isDuta ? 'Status: Duta Waqaf Komuniti (Disahkan)' : 'Status: Rakan Waqaf Sah (Ahli Biasa)'}
-              </span>
-              <h2 className="text-xl font-black text-[#0F2028] mt-2">
-                {isDuta ? 'Kad & Standee Akrilik Duta Anda' : 'Lencana Digital & QR Komuniti'}
-              </h2>
-              <p className="text-xs text-slate-400">
-                Kod Rujukan: <span className="font-extrabold text-slate-700">{hasExistingApp.agentCode}</span>
-              </p>
-            </div>
-
-            {/* Card / Badge Display */}
-            <div className={`max-w-sm mx-auto p-6 rounded-3xl border-2 shadow-sm space-y-4 text-left ${
-              isDuta 
-                ? 'bg-gradient-to-b from-amber-50/40 via-white to-amber-50/20 border-amber-400/40' 
-                : 'bg-gradient-to-b from-slate-50 to-emerald-50/40 border-emerald-500/20'
-            }`}>
-              <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-                <div>
-                  <p className={`text-xs font-black tracking-tight ${isDuta ? 'text-amber-700' : 'text-[#1A8C4E]'}`}>
-                    Waqaf Taqwa
-                  </p>
-                  <p className="text-[9px] text-slate-400 font-semibold">
-                    {isDuta ? 'Duta Rasmi & Penggerak Ummah' : 'Rakan Sah Waqaf Digital'}
-                  </p>
-                </div>
-                <Building2 className="w-5 h-5 text-slate-400" />
-              </div>
-
-              <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-200 shadow-xs">
-                <div className="relative p-2 bg-white rounded-xl border border-slate-100">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=DuitNow-WaqafTaqwa-${hasExistingApp.agentCode}`}
-                    alt="Agent Standee QR"
-                    className="w-40 h-40 object-contain rounded-lg"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white p-1 rounded-full shadow-md border border-slate-100">
-                      <QrCode className={`w-5 h-5 ${isDuta ? 'text-amber-600' : 'text-[#1A8C4E]'}`} />
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[10px] font-extrabold text-slate-700 mt-2">
-                  Imbas untuk Berwaqaf Terus
-                </span>
-                <span className="text-[9px] text-slate-400">DuitNow QR Kebangsaan</span>
-              </div>
-
-              <div className="text-xs space-y-1 pt-1">
-                <p className="font-extrabold text-slate-800">{hasExistingApp.fullName}</p>
-                {isDuta && (
-                  <>
-                    <p className="text-[11px] text-slate-500">
-                      Lokasi:{' '}
-                      <span className="font-semibold text-slate-700">
-                        {hasExistingApp.placementLocation}
-                      </span>
-                    </p>
-                    {hasExistingApp.bankName && (
-                      <p className="text-[11px] text-slate-500">
-                        Akaun Elaun/Insentif:{' '}
-                        <span className="font-semibold text-slate-700">
-                          {hasExistingApp.bankName} (•••• {hasExistingApp.bankAccountNumber?.slice(-4)})
-                        </span>
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <button
-                onClick={handlePrint}
-                className="h-11 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition"
-              >
-                <Printer className="w-4 h-4" />
-                <span>{isDuta ? 'Cetak Standee Meja' : 'Cetak / Muat Turun Kad'}</span>
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.removeItem('wt_rakan_qr_application');
-                  setHasExistingApp(null);
-                }}
-                className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition"
-              >
-                <span>Hantar Permohonan Baharu</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-12">
+    <div className="max-w-2xl mx-auto space-y-6 pb-20 p-4">
+      {/* Top Navigation */}
       <button
-        onClick={() => navigate('/')}
-        className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xs transition"
+        type="button"
+        onClick={() => navigate('/profil')}
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Kembali ke Laman Utama</span>
+        <span>Kembali ke Profil</span>
       </button>
 
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs space-y-6">
-        <div>
-          <div className="inline-flex p-3 bg-emerald-50 rounded-2xl text-[#1A8C4E] mb-2">
-            <QrCode className="w-6 h-6" />
-          </div>
-          <h2 className="text-xl font-black text-[#0F2028]">Permohonan Rakan QR</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Sertai rangkaian waqaf digital komuniti sama ada sebagai penggerak digital (Ahli Biasa) atau duta premis fizikal (Ahli Duta).
-          </p>
+      {/* Hero Banner */}
+      <div className="bg-gradient-to-br from-[#0F2028] to-[#1A3340] rounded-3xl p-6 text-white space-y-3 relative overflow-hidden shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black uppercase tracking-wider">
+            Inisiatif Komuniti
+          </span>
         </div>
+        <h1 className="text-2xl font-black text-white">Pendaftaran Keahlian & Standee QR</h1>
+        <p className="text-xs text-slate-300 leading-relaxed max-w-lg">
+          Pilih kategori keahlian anda dan dapatkan kit standee QR rasmi untuk penempatan di kaunter premis atau surau komuniti.
+        </p>
+      </div>
 
-        {/* Tier Selector */}
-        <div className="space-y-2">
-          <label className="text-xs font-extrabold text-[#0F2028]">Pilih Peringkat Keahlian</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Ahli Biasa Card */}
-            <div
-              onClick={() => setMembershipTier('BIASA')}
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between text-left ${
-                membershipTier === 'BIASA'
-                  ? 'border-[#1A8C4E] bg-emerald-50/40 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
-              }`}
-            >
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-xs text-[#0F2028]">Ahli Biasa</span>
-                  <UserCheck className={`w-4 h-4 ${membershipTier === 'BIASA' ? 'text-[#1A8C4E]' : 'text-slate-400'}`} />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  QR digital peribadi segera untuk sebaran mesej, media sosial, dan kutipan santai tanpa kit fizikal.
-                </p>
-              </div>
-              <span className="text-[10px] font-bold text-[#1A8C4E] mt-3 inline-block">
-                ✓ Pengaktifan Serta-merta
+      {isSubmitted ? (
+        /* Success Screen */
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center space-y-4 shadow-xs">
+          <div className="w-14 h-14 bg-emerald-50 text-[#1A8C4E] rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-[#0F2028]">Permohonan Berjaya Dihantar</h2>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Permohonan keahlian ({membershipTier === 'DUTA' ? 'Ahli Duta' : 'Ahli Biasa'}) anda sedang disemak oleh pihak pentadbir.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 inline-block text-left min-w-[260px]">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[10px] uppercase font-bold text-slate-400">Kategori</span>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
+                {membershipTier === 'DUTA' ? 'AHLI DUTA' : 'AHLI BIASA'}
               </span>
             </div>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block mt-2">Kod Rujukan</span>
+            <p className="text-base font-black text-slate-800 font-mono mt-0.5">{generatedAgentCode}</p>
+            <span className="text-[10px] font-bold text-amber-600 mt-1 block">Status: MENUNGGU KELULUSAN</span>
+          </div>
 
-            {/* Ahli Duta Card */}
-            <div
-              onClick={() => setMembershipTier('DUTA')}
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between text-left ${
-                membershipTier === 'DUTA'
-                  ? 'border-amber-500 bg-amber-50/40 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
-              }`}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => navigate('/profil')}
+              className="px-6 py-2.5 bg-[#1A8C4E] hover:bg-[#15703E] text-white text-xs font-bold rounded-2xl shadow-xs transition"
             >
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-xs text-[#0F2028]">Ahli Duta (Fizikal)</span>
-                  <Sparkles className={`w-4 h-4 ${membershipTier === 'DUTA' ? 'text-amber-600' : 'text-slate-400'}`} />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  Menerima kit standee akrilik fizikal & pelekat kalis cuaca untuk diletakkan di kaunter atau premis, beserta elaun insentif.
-                </p>
-              </div>
-              <span className="text-[10px] font-bold text-amber-700 mt-3 inline-block">
-                ⏳ Memerlukan Kelulusan Pentadbir
-              </span>
-            </div>
+              Lihat di Halaman Profil
+            </button>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-extrabold text-[#0F2028]">Nama Penuh Pemohon (Mengikut MyKad)</label>
-            <input
-              type="text"
-              required
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              placeholder="cth. Ahmad Faris Bin Zulkifli"
-              className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0F2028]">No. Kad Pengenalan</label>
-              <input
-                type="text"
-                required
-                value={formData.icNumber}
-                onChange={(e) => setFormData({ ...formData, icNumber: e.target.value })}
-                placeholder="010203-10-1234"
-                className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0F2028]">No. Telefon (WhatsApp)</label>
-              <input
-                type="tel"
-                required
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                placeholder="012-3456789"
-                className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0F2028]">Kategori Perwakilan</label>
-              <select
-                value={formData.organizationType}
-                onChange={(e) => setFormData({ ...formData, organizationType: e.target.value as any })}
-                className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
+      ) : (
+        /* Application Form */
+        <form onSubmit={handleSubmitApplication} className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
+          
+          {/* Tier Selection Radio Cards */}
+          <div className="space-y-2">
+            <label className="text-xs font-extrabold text-[#0F2028] block">Pilih Kategori Keahlian</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Option 1: Ahli Duta */}
+              <div 
+                onClick={() => setMembershipTier('DUTA')}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition flex items-start gap-3 ${
+                  membershipTier === 'DUTA'
+                    ? 'border-[#1A8C4E] bg-emerald-50/40 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
               >
-                <option value="INDIVIDUAL">Individu / Sukarelawan</option>
-                <option value="MASJID">Jawatankuasa Masjid / Surau</option>
-                <option value="SEKOLAH">Institusi Pendidikan / Sekolah</option>
-                <option value="KOMUNITI">Persatuan Penduduk / NGO</option>
-              </select>
-            </div>
+                <div className={`p-2 rounded-xl mt-0.5 ${
+                  membershipTier === 'DUTA' ? 'bg-[#1A8C4E] text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-slate-900">Ahli Duta Waqaf</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    Dapatkan kit standee fizikal rasmi, pautan bayaran rujukan peribadi & akses portal duta.
+                  </p>
+                </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0F2028]">Nama Entiti / Premis (Pilihan)</label>
-              <input
-                type="text"
-                value={formData.organizationName}
-                onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-                placeholder="cth. Surau Al-Ikhlas"
-                className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-[#1A8C4E] outline-none transition"
-              />
+              {/* Option 2: Ahli Biasa */}
+              <div 
+                onClick={() => setMembershipTier('BIASA')}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition flex items-start gap-3 ${
+                  membershipTier === 'BIASA'
+                    ? 'border-[#1A8C4E] bg-emerald-50/40 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                <div className={`p-2 rounded-xl mt-0.5 ${
+                  membershipTier === 'BIASA' ? 'bg-[#1A8C4E] text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-slate-900">Ahli Biasa</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    Daftar penempatan standee QR tanpa pautan rujukan duta.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Duta Exclusive Fields: Physical Location, Shipping Details & Bank Account */}
-          {membershipTier === 'DUTA' && (
-            <div className="space-y-4 pt-2 border-t border-slate-100">
-              <div className="flex items-center gap-2 text-amber-700 font-extrabold text-xs">
-                <CreditCard className="w-4 h-4" />
-                <span>Maklumat Penghantaran & Penyaluran Elaun Duta</span>
-              </div>
+          <div className="border-t border-slate-100 pt-4 space-y-4">
+            <div className="border-b border-slate-100 pb-2">
+              <h3 className="text-sm font-extrabold text-[#0F2028]">Maklumat Pemohon & Penempatan Standee</h3>
+              <p className="text-[11px] text-slate-400">Semua maklumat digunakan untuk penghantaran kit QR</p>
+            </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-[#0F2028]">Lokasi Cadangan Pameran QR Fizikal</label>
+            {/* Full Name */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0F2028]">Nama Penuh Pemohon</label>
+              <div className="h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+                <User className="w-4 h-4 text-slate-400 shrink-0" />
                 <input
                   type="text"
                   required
-                  value={formData.placementLocation}
-                  onChange={(e) => setFormData({ ...formData, placementLocation: e.target.value })}
-                  placeholder="cth. Kaunter Bayaran Kafe / Pintu Masuk Dewan"
-                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none transition"
+                  value={form.fullName}
+                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                  placeholder="cth. Muhammad Amir"
+                  className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
                 />
+              </div>
+            </div>
+
+            {/* Contact Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-[#0F2028]">No. Telefon (WhatsApp)</label>
+                <div className="h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+                  <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    type="tel"
+                    required
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder="012-3456789"
+                    className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-[#0F2028]">Alamat Pengeposan Kit Standee Akrilik</label>
-                <textarea
-                  rows={3}
-                  required
-                  value={formData.shippingAddress}
-                  onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
-                  placeholder="Sila masukkan alamat lengkap penghantaran kit fizikal..."
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none resize-none transition"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold text-[#0F2028]">Nama Bank (Malaysia)</label>
-                  <select
-                    required
-                    value={formData.bankName}
-                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none transition"
-                  >
-                    <option value="">-- Pilih Bank --</option>
-                    {MALAYSIAN_BANKS.map((bank) => (
-                      <option key={bank} value={bank}>
-                        {bank}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold text-[#0F2028]">Nombor Akaun Bank</label>
+                <label className="text-xs font-extrabold text-[#0F2028]">E-mel Pemohon</label>
+                <div className="h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                   <input
-                    type="text"
+                    type="email"
                     required
-                    inputMode="numeric"
-                    value={formData.bankAccountNumber}
-                    onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value.replace(/\D/g, '') })}
-                    placeholder="cth. 164258902831"
-                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold focus:bg-white focus:border-amber-500 outline-none transition"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="amir@example.com"
+                    className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
                   />
-                  <p className="text-[10px] text-slate-400">Pastikan nama pemegang akaun sama seperti nama MyKad.</p>
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-[#1A8C4E] shrink-0" />
-            <p className="text-[11px] text-emerald-900 leading-tight">
-              Setiap kutipan melalui kod Rakan QR disalurkan terus secara selamat ke akaun amanah tanpa penglibatan wang tunai peribadi.
-            </p>
+            {/* Location & Placement Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-[#0F2028]">Nama Premis / Lokasi Standee</label>
+                <div className="h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 flex items-center gap-2.5 focus-within:border-[#1A8C4E] transition">
+                  <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input
+                    type="text"
+                    required
+                    value={form.locationName}
+                    onChange={(e) => setForm({ ...form, locationName: e.target.value })}
+                    placeholder="cth. Kaunter Cafe Taqwa"
+                    className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-[#0F2028]">Jenis Penempatan</label>
+                <select
+                  value={form.placementType}
+                  onChange={(e) => setForm({ ...form, placementType: e.target.value })}
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs font-semibold outline-none focus:border-[#1A8C4E]"
+                >
+                  <option value="Premis Perniagaan / Restoran">Premis Perniagaan / Restoran</option>
+                  <option value="Masjid / Surau">Masjid / Surau Komuniti</option>
+                  <option value="Pejabat / Institusi">Pejabat / Institusi</option>
+                  <option value="Acara / Program Khas">Acara / Gerai Jualan</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Delivery Address */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0F2028]">Alamat Lengkap Pengeposan Kit Standee</label>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 focus-within:border-[#1A8C4E] transition flex items-start gap-2.5">
+                <Truck className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <textarea
+                  rows={3}
+                  required
+                  value={form.deliveryAddress}
+                  onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })}
+                  placeholder="No unit, nama jalan, poskod, bandar, dan negeri untuk penghantaran..."
+                  className="w-full bg-transparent text-xs font-semibold outline-none text-slate-800 resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Submission Button */}
+            <button
+              type="submit"
+              className="w-full h-12 bg-[#1A8C4E] hover:bg-[#15703E] text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99] mt-2"
+            >
+              <span>Hantar Permohonan {membershipTier === 'DUTA' ? 'Ahli Duta' : 'Ahli Biasa'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className={`w-full h-12 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(26,140,78,0.25)] transition active:scale-[0.99] ${
-              membershipTier === 'DUTA'
-                ? 'bg-amber-600 hover:bg-amber-700'
-                : 'bg-[#1A8C4E] hover:bg-[#15703E]'
-            } disabled:bg-slate-300`}
-          >
-            {submitting 
-              ? 'Sedang Memproses...' 
-              : membershipTier === 'DUTA' 
-                ? 'Hantar Permohonan Duta & Pesan Standee' 
-                : 'Daftar & Jana QR Digital Serta-Merta'}
-            {!submitting && <Send className="w-4 h-4" />}
-          </button>
         </form>
-      </div>
+      )}
     </div>
   );
 };

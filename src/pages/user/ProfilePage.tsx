@@ -13,20 +13,18 @@ import {
   Check,
   ExternalLink,
   QrCode,
-  Building,
   Clock
 } from 'lucide-react';
 import api from '../../api/client';
 
 interface DutaApplication {
   id: string;
+  username?: string;
   membershipTier: 'BIASA' | 'DUTA';
   fullName: string;
   agentCode: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   placementLocation?: string;
-  bankName?: string;
-  bankAccountNumber?: string;
 }
 
 export const ProfilePage: React.FC = () => {
@@ -48,16 +46,26 @@ export const ProfilePage: React.FC = () => {
       email: `${storedUsername}@taqwa.com`,
     });
 
-    // Check if user submitted an Ahli Duta application
-    const savedRakan = localStorage.getItem('wt_rakan_qr_application');
-    if (savedRakan) {
+    // Check application specific ONLY to the logged-in user
+    const userAppKey = `wt_rakan_qr_app_${storedUsername}`;
+    const userApp = localStorage.getItem(userAppKey);
+
+    if (userApp) {
       try {
-        const parsed: DutaApplication = JSON.parse(savedRakan);
+        const parsed: DutaApplication = JSON.parse(userApp);
         if (parsed.membershipTier === 'DUTA') {
           setDutaData(parsed);
         }
-      } catch {
-        // Fallback for invalid local storage
+      } catch {}
+    } else {
+      // Fallback check against global admin list for this exact username
+      const adminList: any[] = JSON.parse(localStorage.getItem('wt_admin_rakan_apps') || '[]');
+      const userMatch = adminList.find((app) => app.username === storedUsername);
+      if (userMatch && userMatch.membershipTier === 'DUTA') {
+        setDutaData(userMatch);
+        localStorage.setItem(userAppKey, JSON.stringify(userMatch));
+      } else {
+        setDutaData(null);
       }
     }
 
@@ -76,11 +84,9 @@ export const ProfilePage: React.FC = () => {
           localStorage.setItem('wt_user_name', res.data.username);
         }
       })
-      .catch(() => {
-        // Stored local session remains default
-      });
+      .catch(() => {});
 
-    // 2. Fetch live real-time donation total
+    // 2. Fetch live donation total
     const donationEndpoint =
       activeRole === 'vendor'
         ? '/vendor/transactions/sum'
@@ -114,7 +120,6 @@ export const ProfilePage: React.FC = () => {
     return 'Pewakaf';
   };
 
-  // Generate public donation URL with the Duta's agent referral parameter
   const paymentLink = dutaData 
     ? `${window.location.origin}/imbas?ref=${dutaData.agentCode}` 
     : '';
@@ -162,11 +167,11 @@ export const ProfilePage: React.FC = () => {
         )}
       </div>
 
-      {/* Ahli Duta Dynamic Card */}
+      {/* Ahli Duta Dynamic Card (Scoped to applicant only) */}
       {dutaData && (
         dutaData.status === 'APPROVED' ? (
           /* UNLOCKED: Approved State */
-          <div className="bg-linear-to-b from-amber-50/70 via-white to-amber-50/30 rounded-3xl p-5 border-2 border-amber-300 shadow-xs space-y-4">
+          <div className="bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 rounded-3xl p-5 border-2 border-amber-300 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-amber-100 text-amber-700 rounded-xl">
@@ -212,7 +217,7 @@ export const ProfilePage: React.FC = () => {
               <div className="bg-white p-3.5 rounded-2xl border border-amber-200/70 flex flex-col justify-between shadow-2xs">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pautan Bayaran Terus</span>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-[11px] font-semibold text-slate-600 truncate max-w-32.5" title={paymentLink}>
+                  <span className="text-[11px] font-semibold text-slate-600 truncate max-w-[130px]" title={paymentLink}>
                     {paymentLink}
                   </span>
                   <button
@@ -225,22 +230,10 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Payout Bank Info */}
-            {dutaData.bankName && (
-              <div className="flex items-center gap-2 px-3.5 py-2.5 bg-white/80 rounded-xl border border-amber-200/50 text-[11px] text-slate-600">
-                <Building className="w-4 h-4 text-amber-700 shrink-0" />
-                <span>
-                  Akaun Penyaluran Elaun:{' '}
-                  <strong className="text-slate-800">{dutaData.bankName}</strong> (••••{' '}
-                  {dutaData.bankAccountNumber?.slice(-4)})
-                </span>
-              </div>
-            )}
           </div>
         ) : (
           /* LOCKED: Pending Review Notice */
-          <div className="bg-linear-to-r from-amber-50 to-orange-50 rounded-3xl p-5 border border-amber-200/80 shadow-xs flex items-start gap-3.5">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-5 border border-amber-200/80 shadow-xs flex items-start gap-3.5">
             <div className="p-2.5 bg-amber-100 text-amber-700 rounded-2xl shrink-0 mt-0.5">
               <Clock className="w-5 h-5 animate-pulse" />
             </div>
@@ -262,7 +255,7 @@ export const ProfilePage: React.FC = () => {
       )}
 
       {/* Dynamic Summary Stat Box */}
-      <div className="bg-linear-to-r from-[#1A8C4E] to-[#146C3C] text-white rounded-3xl p-5 shadow-xs space-y-3">
+      <div className="bg-gradient-to-r from-[#1A8C4E] to-[#146C3C] text-white rounded-3xl p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-emerald-100">
             {role === 'vendor' ? 'Jumlah Kutipan SoftPOS Anda' : 'Jumlah Infaq & Waqaf Anda'}
@@ -270,7 +263,7 @@ export const ProfilePage: React.FC = () => {
           <HeartHandshake className="w-5 h-5 text-emerald-200" />
         </div>
         <p className="text-3xl font-black">RM {totalDonated.toFixed(2)}</p>
-        <p className="text-[11px] text-emerald-100">Semua transaksi dilindungi rekod kriptografi.</p>
+        <p className="text-[11px] text-emerald-100">Semua transaksi dilindungi rekod berpusat.</p>
       </div>
 
       {/* Menu Settings Group */}

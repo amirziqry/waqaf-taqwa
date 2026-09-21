@@ -1,55 +1,96 @@
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AppLayout } from './components/AppLayout';
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { 
+  Home, 
+  Layers, 
+  QrCode, 
+  Receipt, 
+  User 
+} from 'lucide-react';
+
 import { HomePage } from './pages/user/HomePage';
 import { ProjectsExplorePage } from './pages/user/ProjectsExplorePage';
 import { ScanDonatePage } from './pages/user/ScanDonatePage';
-import { VendorPosPage } from './pages/user/VendorPosPage';
-import { ApplyTijarahPage } from './pages/user/ApplyTijarahPage';
-import { AutoWaqafPage } from './pages/user/AutoWaqafPage';
 import { TransactionHistoryPage } from './pages/user/TransactionHistoryPage';
 import { ProfilePage } from './pages/user/ProfilePage';
-import { ReceiptPage } from './pages/user/ReceiptPage';
-import { CampaignDetailPage } from './pages/user/CampaignDetailPage';
+import { RakanQrPage } from './pages/user/RakanQrPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { SignUpPage } from './pages/auth/SignUpPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminCampaignsPage } from './pages/admin/AdminCampaignsPage';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminVendorsPage } from './pages/admin/AdminVendorsPage';
-import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
-import { RakanQrPage } from './pages/user/RakanQrPage';
-import './index.css';
 
-
-export const App: React.FC = () => {
+// Layout shell for Pewakaf (Standard User) pages only
+const UserShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const isAuthPage = location.pathname.startsWith('/auth');
+
+  const navItems = [
+    { path: '/', label: 'Utama', icon: Home },
+    { path: '/projek', label: 'Projek', icon: Layers },
+    { path: '/imbas', label: 'Waqaf', icon: QrCode },
+    { path: '/transaksi', label: 'Transaksi', icon: Receipt },
+    { path: '/profil', label: 'Profil', icon: User },
+  ];
 
   return (
-    <AppLayout hideNav={isAuthPage}>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/projek" element={<ProjectsExplorePage />} />
-        <Route path="/projek/:id" element={<CampaignDetailPage />} />
-        <Route path="/imbas" element={<ScanDonatePage />} />
-        <Route path="/transaksi" element={<TransactionHistoryPage />} />
-        <Route path="/resit/:id" element={<ReceiptPage />} />
-        <Route path="/profil" element={<ProfilePage />} />
-        <Route path="/rakan-qr" element={<RakanQrPage />} />
-        <Route path="/pos" element={<VendorPosPage />} />
-        <Route path="/apply-tijarah" element={<ApplyTijarahPage />} />
-        <Route path="/auto-waqaf" element={<AutoWaqafPage />} />
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/campaigns" element={<AdminCampaignsPage />} />
-        <Route path="/admin/layout" element={<AdminLayout />} />
-        <Route path="/admin/vendors" element={<AdminVendorsPage />} />
-        <Route path="/admin/settings" element={<AdminSettingsPage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/signup" element={<SignUpPage />} />
-        <Route path="/auth" element={<LoginPage />} />
-      </Routes>
-    </AppLayout>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+      {/* User Header */}
+      <header className="bg-[#1A8C4E] text-white px-4 md:px-8 py-3.5 shadow-sm sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-black text-xl tracking-tight text-white">Waqaf Taqwa</span>
+          </Link>
+
+          <nav className="flex items-center gap-1 sm:gap-3">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                    isActive 
+                      ? 'bg-white/20 text-white shadow-2xs' 
+                      : 'text-emerald-100 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </header>
+
+      {/* Page Body */}
+      <main className="max-w-6xl w-full mx-auto p-4 md:p-6 flex-1">
+        {children}
+      </main>
+    </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <Routes>
+      {/* 1. Normal User Pages (with user navigation bar) */}
+      <Route path="/" element={<UserShell><HomePage /></UserShell>} />
+      <Route path="/projek" element={<UserShell><ProjectsExplorePage /></UserShell>} />
+      <Route path="/imbas" element={<UserShell><ScanDonatePage /></UserShell>} />
+      <Route path="/transaksi" element={<UserShell><TransactionHistoryPage /></UserShell>} />
+      <Route path="/profil" element={<UserShell><ProfilePage /></UserShell>} />
+      <Route path="/rakan-qr" element={<UserShell><RakanQrPage /></UserShell>} />
+
+      {/* 2. Authentication Pages */}
+      <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/signup" element={<SignUpPage />} />
+
+      {/* 3. Pure Admin Portal (NO user navbar) */}
+      <Route path="/admin" element={<AdminDashboardPage />} />
+
+      {/* Fallback to user home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
